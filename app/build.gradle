@@ -47,6 +47,6 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:[4,5)'
     compile 'com.android.support:support-v13:25.0.1'
     testCompile 'junit:junit:4.12'
-    compile files('/home/user/HelloReservationApp-current/mysql-connector-java-3.0.17-ga-bin.jar')
+    //compile files('/home/user/HelloReservationApp-current/mysql-connector-java-3.0.17-ga-bin.jar')
 }
 apply plugin: 'com.google.gms.google-services'

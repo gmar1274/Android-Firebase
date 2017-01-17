@@ -29,7 +29,7 @@ public class Store implements Parcelable {
     private int pos;
     private LatLng location;
     private double miles_away;
-    private BigDecimal ticket_price, reservation_calendar_price;
+    private double ticket_price, reservation_calendar_price;//changed from big decimal to double
     private HashMap<Integer, SalonService> services = null;
     private HashMap<String, Stylist> stylistHashMap = null;///this should hold all the stylists info
     private Reservation reservation;
@@ -39,7 +39,7 @@ public class Store implements Parcelable {
      * */
     public Store(){
         this.phone = "9091234567";
-        this.ticket_price = new BigDecimal(1.99);
+        this.ticket_price = 1.99;//new BigDecimal(1.99);
         this.name = "TEST STORE";
     }
 
@@ -61,11 +61,11 @@ public class Store implements Parcelable {
         this.location = new LatLng(lat, lon);
         this.pos = pos;
         this.miles_away = milesaway;
-        this.ticket_price = ticket_price;
+        this.ticket_price = ticket_price.doubleValue();
         this.services = new HashMap<>();
         this.stylistHashMap = new HashMap<>();
         this.reservation = new Reservation();
-        this.reservation_calendar_price = cprice;
+        this.reservation_calendar_price = cprice.doubleValue();//changed the big decimal to double
     }
 
     protected Store(Parcel in) {
@@ -76,7 +76,8 @@ public class Store implements Parcelable {
         this.pos = in.readInt();
         this.location = in.readParcelable(LatLng.class.getClassLoader());
         this.miles_away = in.readDouble();
-        this.ticket_price = (BigDecimal) in.readSerializable();
+        this.ticket_price =  (Double)in.readSerializable();//(BigDecimal) in.readSerializable();
+        this.reservation_calendar_price = (Double) in.readSerializable();
         in.readMap(services, SalonService.class.getClassLoader());
         in.readMap(stylistHashMap, Stylist.class.getClassLoader());
         this.reservation = in.readParcelable(Reservation.class.getClassLoader());
@@ -91,7 +92,7 @@ public class Store implements Parcelable {
     }
 
     public BigDecimal getReservationPrice() {
-        return this.reservation_calendar_price;
+        return new BigDecimal(this.reservation_calendar_price);
     }
 
     public String getID() {
@@ -136,7 +137,7 @@ public class Store implements Parcelable {
     }
 
     public BigDecimal getTicketPrice() {
-        return this.ticket_price;
+        return new BigDecimal(this.ticket_price);
     }
 
     public double getMilesAway() {
@@ -185,9 +186,10 @@ public class Store implements Parcelable {
         dest.writeInt(this.pos);
         dest.writeParcelable(this.location, flags);
         dest.writeDouble(this.miles_away);
-        dest.writeSerializable(this.ticket_price);
+        dest.writeDouble(this.ticket_price);
         dest.writeMap(this.services);
         dest.writeMap(stylistHashMap);
         dest.writeParcelable(this.reservation, flags);
+        dest.writeDouble(this.reservation_calendar_price);
     }
 }

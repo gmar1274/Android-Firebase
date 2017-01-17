@@ -41,6 +41,8 @@ public class Reservation implements Parcelable {
 
     public Reservation() {
         this.reservation_hm=new HashMap<>();
+        this.days_reserved_hm = new HashMap<>();//added for testing got error here
+        this.time_range_details_hm = new HashMap<>();//added for testing got an err for^^^ delete both if dont work
     }
 
     public Reservation(ArrayList<Stylist> list) {

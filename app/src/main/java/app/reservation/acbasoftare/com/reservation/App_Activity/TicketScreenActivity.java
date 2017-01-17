@@ -13,7 +13,11 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -25,6 +29,8 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -32,12 +38,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Map;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
+import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
 import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebTasks;
@@ -113,8 +122,10 @@ public class TicketScreenActivity extends AppCompatActivity {
                 pd.show();
             }
         }).start();
-        ClientWebTask cwt=new ClientWebTask(this, email, password, pd);
-        cwt.execute();
+        StoresWebTask swt = new StoresWebTask(pd);
+        swt.execute();
+        //ClientWebTask cwt=new ClientWebTask(this, email, password, pd);
+        //cwt.execute();
         stylist_postion=0;
         // this.ws=new WebService();
         database=FirebaseDatabase.getInstance();
@@ -127,8 +138,8 @@ public class TicketScreenActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
-                Stylist value=dataSnapshot.getValue(Stylist.class);
-                Log.d(TAG, "Value is: " + value);
+                //Stylist value=dataSnapshot.getValue(Stylist.class);
+               // Log.d(TAG, "Value is: " + value);
             }
 
             @Override
@@ -224,10 +235,10 @@ class ClientWebTask extends AsyncTask<String, Void, String> {
         }
         // Log.d("RESULT FROM WEB:: ",result);
         try {
+            TicketScreenActivity.myRef.child(store_id+"/stylists/").push().setValue(TicketScreenActivity.stylist_list);
+            //StorageReference sr=TicketScreenActivity.mStorageRef.child(store_id + "/" + STYLIST_FIREBASE_URL);
 
-            /**   StorageReference sr=TicketScreenActivity.mStorageRef.child(store_id + "/" + STYLIST_FIREBASE_URL);
-
-             for(final Stylist s : TicketScreenActivity.stylist_list) {
+            /* for(final Stylist s : TicketScreenActivity.stylist_list) {
              final File localFile=File.createTempFile(s.getID(), "png");
              sr.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
@@ -240,12 +251,10 @@ class ClientWebTask extends AsyncTask<String, Void, String> {
             FirebaseWebTasks.uploadImage(s.getImage(), s.getID());
             }
             });
-             }*/
+             }
+*/
 
-
-            for(Stylist s : TicketScreenActivity.stylist_list) {
-                FirebaseWebTasks.uploadImage(s.getImage(), s.getID());
-            }
+           // for(Stylist s : TicketScreenActivity.stylist_list) {FirebaseWebTasks.uploadImage(s.getImage(), s.getID());}
 
             if(pd != null) pd.dismiss();
         } catch(Exception e) {
@@ -284,18 +293,94 @@ class ClientWebTask extends AsyncTask<String, Void, String> {
     }
 }
 
-class FirebaseStylist {
-    private String name;
-    private String pic;
-    private String id;
-    private boolean avail;
-    private int wait;
+ class StoresWebTask extends AsyncTask<String, Void, String> {
 
-    public FirebaseStylist(Stylist s) {
-        this.name=s.getName();
-        this.pic=s.getImage().toString();
-        this.id=s.getID();
-        this.avail=s.isAvailable();
-        this.wait=s.getWait();
+    private ProgressDialog pd;
+    public StoresWebTask(ProgressDialog pd) {
+      this.pd = pd;
+
     }
+
+    protected void onPreExecute() {
+
+    }
+    @Override
+    protected String doInBackground(String... arg0) {
+
+        try {
+            int miles = 200;
+
+            String link = "http://acbasoftware.com/pos/store.php";
+            String data = URLEncoder.encode("store", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbastorelistacba"), "UTF-8");
+            data += "&" + URLEncoder.encode("lat", "UTF-8") + "=" + URLEncoder.encode(34.0633 + "", "UTF-8");
+            data += "&" + URLEncoder.encode("lon", "UTF-8") + "=" + URLEncoder.encode(  -117.6509+ "", "UTF-8");
+            data += "&" + URLEncoder.encode("radius", "UTF-8") + "=" + URLEncoder.encode(miles + "", "UTF-8");//meters
+
+            URL url = new URL(link);
+            URLConnection conn = url.openConnection();
+
+            conn.setDoOutput(true);
+            OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+
+            wr.write(data);
+            wr.flush();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+            StringBuilder sb = new StringBuilder();
+            String line = null;
+
+            // Read Server Response
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+                break;
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            return new String("Exception: " + e.getMessage());
+        }
+
+    }
+
+    @Override
+    protected void onPostExecute(String result) {
+
+
+        try {
+                ArrayList<Store> store = new ArrayList<>();
+            JSONObject jObject = new JSONObject(result);
+            JSONArray jArray = jObject.getJSONArray("store");
+            for (int i = 0; i < jArray.length(); i++) {
+                try {
+                    JSONObject oneObject = jArray.getJSONObject(i);
+                    // Pulling items from the array
+                    double lat = oneObject.getDouble("lat");
+                    double lon = oneObject.getDouble("lon");
+                    LatLng loc2 = new LatLng(lat, lon);//meters
+
+                    String name = oneObject.getString("Store");
+                    String addr = oneObject.getString("Address");
+                    String citystate = oneObject.getString("CityState");
+
+                    String phone = oneObject.getString("phone");
+                    double miles_away = oneObject.getDouble("distance");
+                    BigDecimal ticket_price = new BigDecimal(oneObject.getDouble("ticket_price"));
+                    String open = oneObject.getString("open_time");
+                    String close = oneObject.getString("close_time");
+                    BigDecimal cprice = new BigDecimal(oneObject.getDouble("reservation_price"));
+                    store.add(new Store(name, addr, citystate, phone, lat, lon,i,miles_away,ticket_price,open,close,cprice));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }///////end for
+           // Map<String, Object> hashtaghMap = new ObjectMapper().convertValue(hashtaghModel, Map.class);
+            TicketScreenActivity.myRef.setValue(store);
+
+                this.pd.dismiss();
+        } catch (JSONException e) {
+           e.printStackTrace();
+        }
+    }
+
+
 }

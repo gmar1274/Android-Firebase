@@ -7,25 +7,19 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -34,26 +28,22 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
-import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebTasks;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.WebTasks.WebService;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.STYLIST_FIREBASE_URL;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.store_id;
 
 /**
@@ -122,7 +112,7 @@ public class TicketScreenActivity extends AppCompatActivity {
                 pd.show();
             }
         }).start();
-        StoresWebTask swt = new StoresWebTask(pd);
+        StoresWebTaskPopulateStoreFromOldMYSQLServer swt = new StoresWebTaskPopulateStoreFromOldMYSQLServer(email,password,pd);
         swt.execute();
         //ClientWebTask cwt=new ClientWebTask(this, email, password, pd);
         //cwt.execute();
@@ -293,12 +283,14 @@ class ClientWebTask extends AsyncTask<String, Void, String> {
     }
 }
 
- class StoresWebTask extends AsyncTask<String, Void, String> {
+ class StoresWebTaskPopulateStoreFromOldMYSQLServer extends AsyncTask<String, Void, String> {
 
     private ProgressDialog pd;
-    public StoresWebTask(ProgressDialog pd) {
+     private String email,password;
+    public StoresWebTaskPopulateStoreFromOldMYSQLServer(String email,String pass,ProgressDialog pd) {
       this.pd = pd;
-
+this.email=email;
+        this.password=pass;
     }
 
     protected void onPreExecute() {
@@ -312,9 +304,16 @@ class ClientWebTask extends AsyncTask<String, Void, String> {
 
             String link = "http://acbasoftware.com/pos/store.php";
             String data = URLEncoder.encode("store", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbastorelistacba"), "UTF-8");
+
             data += "&" + URLEncoder.encode("lat", "UTF-8") + "=" + URLEncoder.encode(34.0633 + "", "UTF-8");
             data += "&" + URLEncoder.encode("lon", "UTF-8") + "=" + URLEncoder.encode(  -117.6509+ "", "UTF-8");
-            data += "&" + URLEncoder.encode("radius", "UTF-8") + "=" + URLEncoder.encode(miles + "", "UTF-8");//meters
+
+            /**data += "&" + URLEncoder.encode("radius", "UTF-8") + "=" + URLEncoder.encode(miles + "", "UTF-8");//meters
+
+*/
+           // String data=URLEncoder.encode("store_login", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbastore_loginacba"), "UTF-8");
+            data+="&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(email, "UTF-8");
+            data+="&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8");
 
             URL url = new URL(link);
             URLConnection conn = url.openConnection();
@@ -347,6 +346,8 @@ class ClientWebTask extends AsyncTask<String, Void, String> {
 
 
         try {
+           // Log.e("Web SERVER RESPONSE::",result);
+            Map<String,Object> store_map = new HashMap<>();
                 ArrayList<Store> store = new ArrayList<>();
             JSONObject jObject = new JSONObject(result);
             JSONArray jArray = jObject.getJSONArray("store");
@@ -363,24 +364,95 @@ class ClientWebTask extends AsyncTask<String, Void, String> {
                     String citystate = oneObject.getString("CityState");
 
                     String phone = oneObject.getString("phone");
-                    double miles_away = oneObject.getDouble("distance");
-                    BigDecimal ticket_price = new BigDecimal(oneObject.getDouble("ticket_price"));
+                  //  double miles_away = oneObject.getDouble("distance");
+                    double ticket_price = oneObject.getDouble("ticket_price");
                     String open = oneObject.getString("open_time");
                     String close = oneObject.getString("close_time");
-                    BigDecimal cprice = new BigDecimal(oneObject.getDouble("reservation_price"));
-                    store.add(new Store(name, addr, citystate, phone, lat, lon,i,miles_away,ticket_price,open,close,cprice));
+                    double cprice = oneObject.getDouble("reservation_price");
+                    long current_ticket = oneObject.getLong("current_ticket");
+                    String card_id = oneObject.getString("card_id");//stripe
+                    String subscription_id = oneObject.getString("subscription_id");
+                    String email = oneObject.getString("email");
+                    String password = oneObject.getString("password");
+                    Store s = new Store(i,name, addr, citystate, phone, lat, lon,i,i,ticket_price,open,close,cprice,email,password,current_ticket,card_id,subscription_id);
+                    store.add(s);
+                    store_map.put(""+i,s);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }///////end for
            // Map<String, Object> hashtaghMap = new ObjectMapper().convertValue(hashtaghModel, Map.class);
-            TicketScreenActivity.myRef.setValue(store);
+            TicketScreenActivity.myRef.updateChildren(store_map);//push cretes a new timestamp in the directory every time i call it
 
-                this.pd.dismiss();
+
         } catch (JSONException e) {
            e.printStackTrace();
+        }finally {
+            if(pd.isShowing() && pd!=null){
+                this.pd.dismiss();
+            }
         }
+
     }
 
 
+}
+class FirebaseLoadStylist extends AsyncTask<String,Void, Void>{
+    private ProgressDialog pd;
+    public FirebaseLoadStylist(ProgressDialog pd){
+        this.pd = pd;
+    }
+
+    @Override
+    protected void onPreExecute(){
+        if(pd !=null && !pd.isShowing()){
+            this.pd.show();
+        }
+    }
+    @Override
+    protected Void doInBackground(String... strings) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        reference.orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+               // dataSnapshot is the "issue" node with all children with id 0
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        // do something with the individual "key"
+                        Store s = ds.getValue(Store.class);
+                        //if(s.)
+                    }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+       /** Query query = reference.child("issue").orderByChild("id").equalTo(0);
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    // dataSnapshot is the "issue" node with all children with id 0
+                    for (DataSnapshot issue : dataSnapshot.getChildren()) {
+                        // do something with the individual "issues"
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });*/ //QUERY by the directory/JSON : {id:}
+        return null;
+    }
+    @Override
+    protected void onPostExecute(Void result){
+        if(this.pd!=null && !this.pd.isShowing()){
+            this.pd.dismiss();
+        }
+    }
 }

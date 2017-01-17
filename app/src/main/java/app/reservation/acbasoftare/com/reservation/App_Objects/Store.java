@@ -5,7 +5,6 @@ import android.os.Parcelable;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -25,6 +24,8 @@ public class Store implements Parcelable {
         }
     };
     private String name, address, citystate, phone, open_time, close_time;
+    private String email, password,card_id,  subscription_id;
+    private  long current_ticket;
     //private long id;
     private int pos;
     private LatLng location;
@@ -33,6 +34,7 @@ public class Store implements Parcelable {
     private HashMap<Integer, SalonService> services = null;
     private HashMap<String, Stylist> stylistHashMap = null;///this should hold all the stylists info
     private Reservation reservation;
+    private long store_number;
 
     /**DEBUG CONSTRUCTOR
      *
@@ -50,7 +52,7 @@ public class Store implements Parcelable {
         this.reservation = new Reservation();
     }
 
-    public Store(String name, String address, String citystate, String phone, double lat, double lon, int pos, double milesaway, BigDecimal ticket_price, String open, String close, BigDecimal cprice) {
+    public Store(String name, String address, String citystate, String phone, double lat, double lon, int pos, double milesaway, double ticket_price, String open, String close, double cprice) {
         this.name = name;
         this.open_time = open;
         this.close_time = close;
@@ -61,13 +63,30 @@ public class Store implements Parcelable {
         this.location = new LatLng(lat, lon);
         this.pos = pos;
         this.miles_away = milesaway;
-        this.ticket_price = ticket_price.doubleValue();
+        this.ticket_price = ticket_price;
         this.services = new HashMap<>();
         this.stylistHashMap = new HashMap<>();
         this.reservation = new Reservation();
-        this.reservation_calendar_price = cprice.doubleValue();//changed the big decimal to double
+        this.reservation_calendar_price = cprice;//changed the big decimal to double
     }
-
+    public Store(long storeNumber,String name, String address, String citystate, String phone, double lat, double lon, int pos, double milesaway, double ticket_price, String open, String close, double cprice) {
+        this.name = name;
+        this.open_time = open;
+        this.close_time = close;
+        this.address = address;
+        this.citystate = citystate;
+        //this.id=id;
+        this.phone = phone;
+        this.location = new LatLng(lat, lon);
+        this.pos = pos;
+        this.miles_away = milesaway;
+        this.ticket_price = ticket_price;
+        this.services = new HashMap<>();
+        this.stylistHashMap = new HashMap<>();
+        this.reservation = new Reservation();
+        this.reservation_calendar_price = cprice;//changed the big decimal to double
+        this.store_number=storeNumber;
+    }
     protected Store(Parcel in) {
         this.name = in.readString();
         this.address = in.readString();
@@ -83,6 +102,84 @@ public class Store implements Parcelable {
         this.reservation = in.readParcelable(Reservation.class.getClassLoader());
     }
 
+    public Store(long storeNumber, String name, String addr, String citystate, String phone, double lat, double lon, int i, double miles_away, double ticket_price, String open, String close, double cprice, String email, String password, long current_ticket, String card_id, String subscription_id) {
+        this.name = name;
+        this.open_time = open;
+        this.close_time = close;
+        this.address = address;
+        this.citystate = citystate;
+        //this.id=id;
+        this.phone = phone;
+        this.location = new LatLng(lat, lon);
+        this.pos = pos;
+       // this.miles_away = milesaway;
+        this.ticket_price = ticket_price;
+        this.services = new HashMap<>();
+        this.stylistHashMap = new HashMap<>();
+        this.reservation = new Reservation();
+        this.reservation_calendar_price = cprice;//changed the big decimal to double
+        this.store_number=storeNumber;
+        this.current_ticket=current_ticket;
+        this.email=email;
+        this.password=password;
+        this.card_id=card_id;
+        this.subscription_id=subscription_id;
+
+
+
+
+   }
+
+    public String getOpen_time() {
+        return open_time;
+    }
+
+    public String getClose_time() {
+        return close_time;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getCard_id() {
+        return card_id;
+    }
+
+    public String getSubscription_id() {
+        return subscription_id;
+    }
+
+    public long getCurrent_ticket() {
+        return current_ticket;
+    }
+
+
+
+    public double getTicket_price() {
+        return ticket_price;
+    }
+
+    public double getReservation_calendar_price() {
+        return reservation_calendar_price;
+    }
+
+    public HashMap<Integer, SalonService> getServices() {
+        return services;
+    }
+
+    public Reservation getReservation() {
+        return reservation;
+    }
+
+    public long getStore_number() {
+        return store_number;
+    }
+
     public String getOpeningHour() {
         return this.open_time;
     }
@@ -91,8 +188,8 @@ public class Store implements Parcelable {
         return this.close_time;
     }
 
-    public BigDecimal getReservationPrice() {
-        return new BigDecimal(this.reservation_calendar_price);
+    public double getReservationPrice() {
+        return this.reservation_calendar_price;
     }
 
     public String getID() {
@@ -136,8 +233,8 @@ public class Store implements Parcelable {
         this.services.put(ss.getId(), ss);
     }
 
-    public BigDecimal getTicketPrice() {
-        return new BigDecimal(this.ticket_price);
+    public double getTicketPrice() {
+        return (this.ticket_price);
     }
 
     public double getMilesAway() {

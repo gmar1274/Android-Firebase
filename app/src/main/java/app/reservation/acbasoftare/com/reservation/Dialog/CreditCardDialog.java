@@ -113,7 +113,7 @@ public CreditCardDialog(Activity act){
         phone_et.setText(phone);
         TextView amount = (TextView) layout.findViewById(R.id.textview_reservation_amount);
         DecimalFormat df = new DecimalFormat("$0.00");
-        amount.setText(df.format(store.getReservationPrice().doubleValue()));
+        amount.setText(df.format(store.getReservationPrice()));
         TextView store_tv = (TextView) layout.findViewById(R.id.store_reservation_textview);
         store_tv.setText("Store: " + store.getName().toUpperCase() + "\nService: " + salon_service.getName().toUpperCase());
         TextView stylist_tv = (TextView) layout.findViewById(R.id.stylist_reservation_textview);

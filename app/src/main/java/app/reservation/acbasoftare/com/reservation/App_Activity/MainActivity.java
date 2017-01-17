@@ -637,7 +637,7 @@ public class MainActivity extends AppCompatActivity {
             store_list = null;
             lv = null;
             la = null;
-            StoresWebTask swt = new StoresWebTask(rootView);
+            StoresWebTaskPopulateStoreFromOldMYSQLServer swt = new StoresWebTaskPopulateStoreFromOldMYSQLServer(rootView);
             swt.execute(sb.getProgress()+"");
             }
             }

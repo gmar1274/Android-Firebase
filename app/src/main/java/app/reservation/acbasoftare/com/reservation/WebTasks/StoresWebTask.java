@@ -122,10 +122,10 @@ public class StoresWebTask extends AsyncTask<String, Void, String> {
 
                     String phone = oneObject.getString("phone");
                     double miles_away = oneObject.getDouble("distance");
-                    BigDecimal ticket_price = new BigDecimal(oneObject.getDouble("ticket_price"));
+                    double ticket_price = (oneObject.getDouble("ticket_price"));
                     String open = oneObject.getString("open_time");
                     String close = oneObject.getString("close_time");
-                    BigDecimal cprice = new BigDecimal(oneObject.getDouble("reservation_price"));
+                    double cprice = (oneObject.getDouble("reservation_price"));
                     MainActivity.store_list.add(new Store(name, addr, citystate, phone, lat, lon,i,miles_away,ticket_price,open,close,cprice));
                 } catch (JSONException e) {
                     e.printStackTrace();

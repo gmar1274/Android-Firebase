@@ -1,0 +1,52 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        applicationId "app.reservation.acbasoftare.com.reservation"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        multiDexEnabled true
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+
+    //compile 'com.google.firebase:firebase-admin:4.0.3'
+
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    //23.1.1 fixes fab but tablayout breaks
+    compile 'com.stripe:stripe-android:2.0.2'
+
+    compile 'com.android.support:design:25.0.1'
+    compile 'com.android.support:design:25.0.1'
+    compile 'com.google.maps.android:android-maps-utils:0.4.+'
+    compile 'com.android.support:multidex:1.0.0'
+    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:recyclerview-v7:25.0.1'
+    compile 'com.android.support:support-v4:25.0.1'
+    compile 'com.google.firebase:firebase-ads:10.0.1'
+    compile 'com.google.android.gms:play-services-maps:10.0.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
+    compile 'com.google.firebase:firebase-core:10.0.1'
+    compile 'com.google.firebase:firebase-storage:10.0.1'
+    compile 'com.google.firebase:firebase-auth:10.0.1'
+    compile 'com.google.firebase:firebase-database:10.0.1'
+    compile 'com.google.firebase:firebase-messaging:10.0.1'
+    compile 'com.facebook.android:facebook-android-sdk:[4,5)'
+    compile 'com.android.support:support-v13:25.0.1'
+    testCompile 'junit:junit:4.12'
+    compile files('/home/user/HelloReservationApp-current/mysql-connector-java-3.0.17-ga-bin.jar')
+}
+apply plugin: 'com.google.gms.google-services'

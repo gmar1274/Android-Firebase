@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="horizontal">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Store:"
+            android:id="@+id/store_reservation_textview"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:editable="false"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:fontFamily="sans-serif"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Stylist:"
+            android:id="@+id/stylist_reservation_textview"
+            android:layout_below="@+id/store_reservation_textview"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"/>
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:ems="10"
+            android:id="@+id/reservation_name"
+            android:layout_below="@+id/stylist_reservation_textview"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:hint="Name On Card"
+            android:layout_alignRight="@+id/reservation_phone"
+            android:layout_alignEnd="@+id/reservation_phone"
+            android:maxLength="120"/>
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="phone"
+            android:ems="10"
+            android:id="@+id/reservation_phone"
+            android:layout_below="@+id/reservation_name"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:hint="Phone Number"
+            android:layout_alignRight="@+id/reservation_expyear"
+            android:layout_alignEnd="@+id/reservation_expyear"
+            android:maxLength="10"/>
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/reservation_creditcard"
+            android:layout_below="@+id/reservation_phone"
+            android:hint="Credit Card Number"
+            android:layout_alignRight="@+id/reservation_expyear"
+            android:layout_alignEnd="@+id/reservation_expyear"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:maxLength="19"/>
+
+        <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/reservation_ccv"
+            android:layout_below="@+id/reservation_expmonth"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignRight="@+id/reservation_expmonth"
+            android:layout_alignEnd="@+id/reservation_expmonth"
+            android:hint="CCV"
+            android:freezesText="false"
+            android:maxLength="4"/>
+
+        <EditText
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/reservation_expmonth"
+            android:layout_below="@+id/reservation_creditcard"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:hint="Expr Month"
+            android:maxLength="2"/>
+
+        <EditText
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:ems="10"
+            android:id="@+id/reservation_expyear"
+            android:layout_below="@+id/reservation_creditcard"
+            android:layout_centerHorizontal="true"
+            android:hint="Expr Year"
+            android:maxLength="2"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textview_reservation_amount"
+            android:textAlignment="center"
+            android:layout_alignRight="@+id/reservation_creditcard"
+            android:layout_alignEnd="@+id/reservation_creditcard"
+            android:layout_alignTop="@+id/reservation_ccv"
+            android:layout_alignLeft="@+id/reservation_expyear"
+            android:layout_alignStart="@+id/reservation_expyear"
+            android:layout_alignBottom="@+id/reservation_ccv"
+            android:textSize="30dp"
+            android:textColor="#ff0000"
+            android:visibility="visible"
+            android:editable="false"
+            android:maxLength="6"/>
+    </RelativeLayout>
+</LinearLayout>

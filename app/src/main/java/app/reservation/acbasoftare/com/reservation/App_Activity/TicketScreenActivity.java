@@ -41,6 +41,7 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
+import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebTasks;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.WebTasks.WebService;
 
@@ -112,8 +113,10 @@ public class TicketScreenActivity extends AppCompatActivity {
                 pd.show();
             }
         }).start();
-        StoresWebTaskPopulateStoreFromOldMYSQLServer swt = new StoresWebTaskPopulateStoreFromOldMYSQLServer(email,password,pd);
-        swt.execute();
+       // StoresWebTaskPopulateStoreFromOldMYSQLServer swt = new StoresWebTaskPopulateStoreFromOldMYSQLServer(email,password,pd);
+        //swt.execute();
+        FirebaseLoadStylist l = new FirebaseLoadStylist(pd,email,password);
+        l.execute();
         //ClientWebTask cwt=new ClientWebTask(this, email, password, pd);
         //cwt.execute();
         stylist_postion=0;
@@ -121,7 +124,6 @@ public class TicketScreenActivity extends AppCompatActivity {
         database=FirebaseDatabase.getInstance();
         mStorageRef=FirebaseStorage.getInstance().getReference();
         myRef=database.getReference();//.getReference("message");
-
 // Read from the database
         myRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -350,6 +352,29 @@ this.email=email;
             Map<String,Object> store_map = new HashMap<>();
                 ArrayList<Store> store = new ArrayList<>();
             JSONObject jObject = new JSONObject(result);
+            HashMap<String,Stylist> hm = new HashMap<>();
+
+            JSONArray jArray2 = jObject.getJSONArray("stylist");
+            for (int i = 0; i < jArray2.length(); i++) {
+                try {
+                    JSONObject jobj = jArray2.getJSONObject(i);
+                    // Pulling items from the array
+                    String fname = jobj.getString("fname");
+                    String mname = jobj.getString("mname");
+                    String lname = jobj.getString("lname");
+                    String stylist_id = jobj.getString("stylist_id");
+                    boolean available = jobj.getString("available").contains("1");//check to confirm 0 is false and 1 is true
+                    String qrimage = jobj.getString("image");
+                    String phone = jobj.getString("phone");
+                    // Bitmap myBitmap = jobj.getby
+
+                    Stylist s = new Stylist(stylist_id,fname,mname,lname,available,null,phone,null);
+                    hm.put(s.getID(),s);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
             JSONArray jArray = jObject.getJSONArray("store");
             for (int i = 0; i < jArray.length(); i++) {
                 try {
@@ -376,12 +401,16 @@ this.email=email;
                     String password = oneObject.getString("password");
                     Store s = new Store(i,name, addr, citystate, phone, lat, lon,i,i,ticket_price,open,close,cprice,email,password,current_ticket,card_id,subscription_id);
                     store.add(s);
+                    s.setStylistHashMap(hm);
                     store_map.put(""+i,s);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }///////end for
            // Map<String, Object> hashtaghMap = new ObjectMapper().convertValue(hashtaghModel, Map.class);
+
+
+
             TicketScreenActivity.myRef.updateChildren(store_map);//push cretes a new timestamp in the directory every time i call it
 
 
@@ -399,8 +428,13 @@ this.email=email;
 }
 class FirebaseLoadStylist extends AsyncTask<String,Void, Void>{
     private ProgressDialog pd;
-    public FirebaseLoadStylist(ProgressDialog pd){
+    private String email,password;
+    private Store store;
+    public FirebaseLoadStylist(ProgressDialog pd,String email, String pass){
+        this.email=email;
+        this.password=pass;
         this.pd = pd;
+        this.store = null;
     }
 
     @Override
@@ -409,24 +443,35 @@ class FirebaseLoadStylist extends AsyncTask<String,Void, Void>{
             this.pd.show();
         }
     }
+
+
     @Override
     protected Void doInBackground(String... strings) {
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        reference.orderByKey().addListenerForSingleValueEvent(new ValueEventListener() {
+        reference.orderByChild("email").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                // dataSnapshot is the "issue" node with all children with id 0
+                boolean found=false;
                     for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        Log.e("IN LOOP FIREBASE:: ",""+ds.getKey());
                         // do something with the individual "key"
                         Store s = ds.getValue(Store.class);
-                        //if(s.)
-                    }
+                        if(s.getEmail().equals(email) && s.getPassword().equals(password)){
+                            Log.e("Store selected is: ",s.getName());
+                            store = s;
+                               found = true;
+                        }
 
+                    }
+                if(found){
+                    FirebaseWebTasks.downloadImages(store,TicketScreenActivity.stylist_list,pd);
+                }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                Log.e("ERRRRRRR:",databaseError.getMessage());
             }
         });
 
@@ -451,8 +496,8 @@ class FirebaseLoadStylist extends AsyncTask<String,Void, Void>{
     }
     @Override
     protected void onPostExecute(Void result){
-        if(this.pd!=null && !this.pd.isShowing()){
-            this.pd.dismiss();
-        }
+
+
+
     }
 }

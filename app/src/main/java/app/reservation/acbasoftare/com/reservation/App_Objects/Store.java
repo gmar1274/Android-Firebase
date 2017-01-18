@@ -2,9 +2,6 @@ package app.reservation.acbasoftare.com.reservation.App_Objects;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import com.google.android.gms.maps.model.LatLng;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -156,16 +153,6 @@ public class Store implements Parcelable {
 
     public long getCurrent_ticket() {
         return current_ticket;
-    }
-
-
-
-    public double getTicket_price() {
-        return ticket_price;
-    }
-
-    public double getReservation_calendar_price() {
-        return reservation_calendar_price;
     }
 
     public HashMap<Integer, SalonService> getServices() {

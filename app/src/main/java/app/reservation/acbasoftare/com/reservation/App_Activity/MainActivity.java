@@ -44,7 +44,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -54,12 +53,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
+import app.reservation.acbasoftare.com.reservation.App_Objects.LatLng;
 import app.reservation.acbasoftare.com.reservation.App_Objects.MyIntent;
 import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
+import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Recycleview.RVAdapter;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
@@ -67,6 +67,8 @@ import app.reservation.acbasoftare.com.reservation.WebTasks.LockDBPreserveSpot;
 import app.reservation.acbasoftare.com.reservation.WebTasks.SalonServiceWebTask;
 import app.reservation.acbasoftare.com.reservation.WebTasks.StoresWebTask;
 import app.reservation.acbasoftare.com.reservation.WebTasks.StylistWebTask;
+
+//import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AppCompatActivity {
     public static int ticket_number;///is the potential ticket number
@@ -149,13 +151,13 @@ public class MainActivity extends AppCompatActivity {
                     //Log.e("ERRRR,,", "ERRRRR GM permission gor google maps");
                     return;
                 }
-                LatLng myLoc = new LatLng(MainActivity.user_loc.getLatitude(), MainActivity.user_loc.getLongitude());
+                 com.google.android.gms.maps.model.LatLng  myLoc = new com.google.android.gms.maps.model.LatLng(MainActivity.user_loc.getLatitude(), MainActivity.user_loc.getLongitude());
                 gm.addMarker(new MarkerOptions()
                                      .position(myLoc)
                                      .title("My Loctaion").alpha(.5f)).setTag(-1);
 
                 for (Store s : store_list) {
-                    LatLng loc = new LatLng(s.getLocation().latitude, s.getLocation().longitude);
+                     com.google.android.gms.maps.model.LatLng loc = new com.google.android.gms.maps.model.LatLng(s.getLocation().latitude, s.getLocation().longitude);
                     gm.addMarker(new MarkerOptions().position(loc).title(s.getName())).setTag(s.getPos());
                 }
 
@@ -725,7 +727,8 @@ public class MainActivity extends AppCompatActivity {
                     notifyDataSetChanged();//updates the button click isset
                     LatLng myLoc = getItem(position_item).getLocation();
                     // Updates the location and zoom of the MapView
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLoc, 14);//20 is closeset 5 is largest
+                     com.google.android.gms.maps.model.LatLng l = new com.google.android.gms.maps.model.LatLng(myLoc.latitude,myLoc.longitude);
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(l, 14);//20 is closeset 5 is largest
                     gm.animateCamera(cameraUpdate);
                     mv.onResume();
                 }

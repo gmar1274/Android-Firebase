@@ -102,7 +102,8 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
         map.put(String.valueOf(store.getStore_number()), store);
 
         DatabaseReference ref = TicketScreenActivity.myRef;
-        ref.setValue(map);
+        ref.getRoot().child("aagagagga").setValue(store);
+        //ref.setValue(map);
         store.setStylistList(TicketScreenActivity.stylist_list);
         TicketScreenActivity.stylist_list = (ArrayList<Stylist>) store.getStylistListFirebaseFormat(); //update styl array
         Toast.makeText(this,"Ticket received. Thank you!",Toast.LENGTH_LONG).show();

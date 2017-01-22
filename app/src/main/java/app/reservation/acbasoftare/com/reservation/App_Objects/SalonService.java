@@ -3,8 +3,6 @@ package app.reservation.acbasoftare.com.reservation.App_Objects;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 import app.reservation.acbasoftare.com.reservation.Utils.Duration;
@@ -14,13 +12,13 @@ import app.reservation.acbasoftare.com.reservation.Utils.Duration;
  */
 public class SalonService implements Parcelable {
     private String name;
-    private BigDecimal price;
+    private double price;
     private Duration duration;
     private int id;
     public SalonService(){
 
     }
-    public SalonService(int id,String name,BigDecimal price, Duration duration){
+    public SalonService(int id,String name,double price, Duration duration){
         this.id=id;
         this.name=name;
         this.price=price;
@@ -29,7 +27,7 @@ public class SalonService implements Parcelable {
     public String getName(){
         return this.name;
     }
-    public BigDecimal getPrice(){
+    public double getPrice(){
         return this.price;
     }
     public Duration getDuration(){
@@ -47,20 +45,20 @@ public class SalonService implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.name);
-        dest.writeSerializable(this.price);
+        dest.writeDouble(price);
         dest.writeParcelable(this.duration,flags);
         dest.writeInt(this.id);
     }
 
     protected SalonService(Parcel in) {
         this.name = in.readString();
-        this.price = (BigDecimal) in.readSerializable();
+        this.price = in.readDouble();
         this.duration = (Duration) in.readSerializable();
         this.id = in.readInt();
     }
 public String getFormattedPrice(){
     DecimalFormat df = new DecimalFormat("$ #,##0.00");
-    return df.format(price.doubleValue());
+    return df.format(price);
 }
     public static final Creator<SalonService> CREATOR = new Creator<SalonService>() {
         @Override
@@ -76,4 +74,10 @@ public String getFormattedPrice(){
     public String toString(){
         return this.getName();
     }
+    /**
+     * FIREBASE GETTERS
+     */
+
+    //end getters
+
 }

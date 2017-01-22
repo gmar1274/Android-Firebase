@@ -239,4 +239,19 @@ public class Reservation implements Parcelable {
         }
             return list;
     }
+
+//MEANT GETTERS FOR FIREBASE DONT ACTUALLY USE
+    public HashMap<TimeSet, ReservationDetails> getTime_range_details_hm() {
+        return time_range_details_hm;
+    }
+
+    public HashMap<Stylist, HashMap<Date, Date>> getReservation_hm() {
+        return reservation_hm;
+    }
+
+    public HashMap<String, HashMap<TimeSet, ReservationDetails>> getDays_reserved_hm() {
+        return days_reserved_hm;
+    }
+    //END O FIREBASE GETTERS
+
 }

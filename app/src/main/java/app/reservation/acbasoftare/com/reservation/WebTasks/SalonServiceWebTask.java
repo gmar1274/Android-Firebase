@@ -90,7 +90,7 @@ public class SalonServiceWebTask extends AsyncTask<String,Void,String> {
                     JSONObject oneObject=jArray.getJSONObject(i);
                     // Pulling items from the array
 
-                    BigDecimal price=new BigDecimal(oneObject.getDouble("price"));
+                    double price=oneObject.getDouble("price");
                     String name=oneObject.getString("name");
                     int id=oneObject.getInt("id");
                     String duration=oneObject.getString("duration");///string format

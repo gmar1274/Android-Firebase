@@ -129,4 +129,19 @@ set_total[a,d] where b>=a && c<=d
         if(this.lower_bound.after(ts.getLowerBound())){return 1;}
         return 0;
     }
+    /**
+     * FIREBASE GETTERS
+     */
+    public Date getLower_bound() {
+        return lower_bound;
+    }
+
+    public Date getUpper_bound() {
+        return upper_bound;
+    }
+
+    public long getDelta_time() {
+        return delta_time;
+    }//END FIREBASE GETTERS
+    public TimeSet(){}
 }

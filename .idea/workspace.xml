@@ -48,11 +48,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="InStoreTicketReservationActivity.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="InStoreTicketReservationActivity.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/InStoreTicketReservationActivity.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="219">
-              <caret line="111" column="22" selection-start-line="111" selection-start-column="22" selection-end-line="111" selection-end-column="22" />
+            <state relative-caret-position="108">
+              <caret line="104" column="0" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -66,21 +66,6 @@
             <state relative-caret-position="144">
               <caret line="246" column="10" selection-start-line="246" selection-start-column="10" selection-end-line="246" selection-end-column="10" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="TicketScreenActivity.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/TicketScreenActivity.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="97">
-              <caret line="124" column="105" selection-start-line="124" selection-start-column="98" selection-end-line="124" selection-end-column="105" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#4680#4688#0" expanded="true" />
-                <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-                <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -108,6 +93,41 @@
           <provider editor-type-id="text-editor">
             <state relative-caret-position="0">
               <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TicketScreenActivity.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/TicketScreenActivity.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="127">
+              <caret line="101" column="56" selection-start-line="101" selection-start-column="56" selection-end-line="101" selection-end-column="56" />
+              <folding>
+                <element signature="imports" expanded="true" />
+                <element signature="e#4816#4824#0" expanded="true" />
+                <marker date="1485086966457" expanded="false" signature="23848:23863" ph=" { " />
+                <marker date="1485086966457" expanded="false" signature="23892:23902" ph=" }" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SalonServiceWebTask.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/WebTasks/SalonServiceWebTask.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="97">
+              <caret line="92" column="61" selection-start-line="92" selection-start-column="61" selection-end-line="92" selection-end-column="61" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="RVAdapter.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/Recycleview/RVAdapter.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="157">
+              <caret line="80" column="92" selection-start-line="80" selection-start-column="92" selection-end-line="80" selection-end-column="92" />
               <folding />
             </state>
           </provider>
@@ -2154,19 +2174,22 @@
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Store.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/MainActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Stylist.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Reservation.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/WebTasks/StylistWebTask.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/EmployeeActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/WebTasks/LockDBPreserveSpot.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/WebTasks/ReservationWebTask.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/WebTasks/SalonServiceWebTask.java" />
-        <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/Recycleview/RVAdapter.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/ListAdapters/StylistArrayAdapter.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/FirebaseWebTasks/FirebaseWebTasks.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/Utils/Utils.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Ticket.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/InStoreTicketReservationActivity.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/TicketScreenActivity.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Reservation.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/TimeSet.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/SalonService.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/Utils/Duration.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/WebTasks/SalonServiceWebTask.java" />
+        <option value="$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/Recycleview/RVAdapter.java" />
       </list>
     </option>
   </component>
@@ -2279,6 +2302,28 @@
             <PATH_ELEMENT>
               <option name="myItemId" value="reservation" />
               <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Android-Firebase" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="app" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidModuleNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidSourceTypeNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="reservation" />
+              <option name="myItemType" value="com.android.tools.idea.navigator.nodes.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Utils" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
           <PATH>
@@ -2638,7 +2683,7 @@
       <window_info id="Nl-Palette" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Build Variants" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.47207448" sideWeight="0.1392024" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.52925533" sideWeight="0.8607976" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Android Monitor" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.52925533" sideWeight="0.8607976" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Properties" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -2646,7 +2691,7 @@
       <window_info id="Android Model" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33111703" sideWeight="0.46726862" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33111703" sideWeight="0.46726862" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -2656,7 +2701,7 @@
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Captures" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="true" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.22949587" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17155756" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Gradle" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3295711" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Theme Preview" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
@@ -2724,37 +2769,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/InStoreTicketReservationActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/TicketScreenActivity.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7215">
-          <caret line="535" column="85" selection-start-line="535" selection-start-column="85" selection-end-line="535" selection-end-column="85" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#4680#4688#0" expanded="true" />
-            <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-            <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/FirebaseWebTasks/FirebaseWebTasks.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="585">
-          <caret line="57" column="13" selection-start-line="57" selection-start-column="13" selection-end-line="57" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Stylist.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1200">
@@ -2779,9 +2793,9 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4680#4688#0" expanded="true" />
-            <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-            <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
+            <element signature="e#4816#4824#0" expanded="true" />
+            <marker date="1485086966457" expanded="false" signature="23848:23863" ph=" { " />
+            <marker date="1485086966457" expanded="false" signature="23892:23902" ph=" }" />
           </folding>
         </state>
       </provider>
@@ -2854,9 +2868,9 @@
           <caret line="468" column="92" selection-start-line="468" selection-start-column="92" selection-end-line="468" selection-end-column="92" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4680#4688#0" expanded="true" />
-            <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-            <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
+            <element signature="e#4816#4824#0" expanded="true" />
+            <marker date="1485086966457" expanded="false" signature="23848:23863" ph=" { " />
+            <marker date="1485086966457" expanded="false" signature="23892:23902" ph=" }" />
           </folding>
         </state>
       </provider>
@@ -2885,9 +2899,9 @@
           <caret line="118" column="31" selection-start-line="118" selection-start-column="31" selection-end-line="118" selection-end-column="31" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4680#4688#0" expanded="true" />
-            <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-            <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
+            <element signature="e#4816#4824#0" expanded="true" />
+            <marker date="1485086966457" expanded="false" signature="23848:23863" ph=" { " />
+            <marker date="1485086966457" expanded="false" signature="23892:23902" ph=" }" />
           </folding>
         </state>
       </provider>
@@ -2967,9 +2981,9 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4680#4688#0" expanded="true" />
-            <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-            <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
+            <element signature="e#4816#4824#0" expanded="true" />
+            <marker date="1485086966457" expanded="false" signature="23848:23863" ph=" { " />
+            <marker date="1485086966457" expanded="false" signature="23892:23902" ph=" }" />
           </folding>
         </state>
       </provider>
@@ -3032,9 +3046,9 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4680#4688#0" expanded="true" />
-            <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-            <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
+            <element signature="e#4816#4824#0" expanded="true" />
+            <marker date="1485086966457" expanded="false" signature="23848:23863" ph=" { " />
+            <marker date="1485086966457" expanded="false" signature="23892:23902" ph=" }" />
           </folding>
         </state>
       </provider>
@@ -3045,9 +3059,9 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4680#4688#0" expanded="true" />
-            <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-            <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
+            <element signature="e#4816#4824#0" expanded="true" />
+            <marker date="1485086966457" expanded="false" signature="23848:23863" ph=" { " />
+            <marker date="1485086966457" expanded="false" signature="23892:23902" ph=" }" />
           </folding>
         </state>
       </provider>
@@ -3102,9 +3116,9 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#4680#4688#0" expanded="true" />
-            <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-            <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
+            <element signature="e#4816#4824#0" expanded="true" />
+            <marker date="1485086966457" expanded="false" signature="23848:23863" ph=" { " />
+            <marker date="1485086966457" expanded="false" signature="23892:23902" ph=" }" />
           </folding>
         </state>
       </provider>
@@ -3241,14 +3255,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Reservation.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="157">
-          <caret line="71" column="25" selection-start-line="71" selection-start-column="25" selection-end-line="71" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/WebTasks/StylistWebTask.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="202">
@@ -3269,22 +3275,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="157">
           <caret line="56" column="48" selection-start-line="56" selection-start-column="48" selection-end-line="56" selection-end-column="48" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/WebTasks/SalonServiceWebTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="157">
-          <caret line="111" column="32" selection-start-line="111" selection-start-column="32" selection-end-line="111" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/Recycleview/RVAdapter.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="157">
-          <caret line="74" column="133" selection-start-line="74" selection-start-column="133" selection-end-line="74" selection-end-column="133" />
           <folding />
         </state>
       </provider>
@@ -3321,17 +3311,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Store.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="97">
-          <caret line="219" column="79" selection-start-line="219" selection-start-column="68" selection-end-line="219" selection-end-column="79" />
-          <folding>
-            <element signature="e#8386#8387#0" expanded="false" />
-            <element signature="e#8423#8424#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/src/main/res/layout/activity_ticket_screen.xml">
       <provider selected="true" editor-type-id="android-designer2">
         <state />
@@ -3340,6 +3319,16 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/InStoreTicketReservationActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="108">
+          <caret line="104" column="0" selection-start-line="104" selection-start-column="0" selection-end-line="104" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -3356,26 +3345,87 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/TicketScreenActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Reservation.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="97">
-          <caret line="124" column="105" selection-start-line="124" selection-start-column="98" selection-end-line="124" selection-end-column="105" />
+        <state relative-caret-position="235">
+          <caret line="255" column="3" selection-start-line="255" selection-start-column="3" selection-end-line="255" selection-end-column="3" />
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#4680#4688#0" expanded="true" />
-            <marker date="1485079032087" expanded="false" signature="23712:23727" ph=" { " />
-            <marker date="1485079032087" expanded="false" signature="23756:23766" ph=" }" />
+            <element signature="e#8493#8494#0" expanded="true" />
+            <element signature="e#8530#8531#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/InStoreTicketReservationActivity.java">
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/TimeSet.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="219">
-          <caret line="111" column="22" selection-start-line="111" selection-start-column="22" selection-end-line="111" selection-end-column="22" />
+        <state relative-caret-position="279">
+          <caret line="145" column="21" selection-start-line="145" selection-start-column="21" selection-end-line="145" selection-end-column="21" />
+          <folding>
+            <element signature="e#4243#4244#0" expanded="true" />
+            <element signature="e#4277#4278#0" expanded="true" />
+            <element signature="e#4313#4314#0" expanded="true" />
+            <element signature="e#4347#4348#0" expanded="true" />
+            <element signature="e#4382#4383#0" expanded="true" />
+            <element signature="e#4415#4416#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/Store.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2759">
+          <caret line="219" column="79" selection-start-line="219" selection-start-column="68" selection-end-line="219" selection-end-column="79" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/Utils/Duration.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="23" column="5" selection-start-line="23" selection-start-column="5" selection-end-line="23" selection-end-column="5" />
+          <folding>
+            <element signature="e#559#560#0" expanded="true" />
+            <element signature="e#586#587#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Objects/SalonService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="214">
+          <caret line="47" column="30" selection-start-line="47" selection-start-column="30" selection-end-line="47" selection-end-column="30" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/App_Activity/TicketScreenActivity.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="127">
+          <caret line="101" column="56" selection-start-line="101" selection-start-column="56" selection-end-line="101" selection-end-column="56" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#4816#4824#0" expanded="true" />
+            <marker date="1485086966457" expanded="false" signature="23848:23863" ph=" { " />
+            <marker date="1485086966457" expanded="false" signature="23892:23902" ph=" }" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/WebTasks/SalonServiceWebTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="97">
+          <caret line="92" column="61" selection-start-line="92" selection-start-column="61" selection-end-line="92" selection-end-column="61" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/java/app/reservation/acbasoftare/com/reservation/Recycleview/RVAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="157">
+          <caret line="80" column="92" selection-start-line="80" selection-start-column="92" selection-end-line="80" selection-end-column="92" />
+          <folding />
         </state>
       </provider>
     </entry>

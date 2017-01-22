@@ -78,7 +78,7 @@ public class RVAdapter<E> extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         } else {//do service
             DecimalFormat df = new DecimalFormat("$ ###,##0.00");
             SalonService s = (SalonService) list.get(position);
-            rb.setText("Service: " + s.getName() + "\n" + "Price: " + df.format(s.getPrice().doubleValue()) + "\nService Duration: " + s.getDuration());
+            rb.setText("Service: " + s.getName() + "\n" + "Price: " + df.format(s.getPrice()) + "\nService Duration: " + s.getDuration());
         }
     }
 

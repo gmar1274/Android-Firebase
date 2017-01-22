@@ -87,6 +87,7 @@ public class TicketScreenActivity extends AppCompatActivity {
         outState.putString("email", email);
         outState.putString("password", password);
         outState.putInt("stylist_position", stylist_postion);
+        outState.putParcelableArrayList("tickets",tickets);
     }
 
     @Override
@@ -101,6 +102,7 @@ public class TicketScreenActivity extends AppCompatActivity {
             email=savedInstanceState.getString("email");
             password=savedInstanceState.getString("password");
             stylist_postion=savedInstanceState.getInt("stylist_position");
+            tickets = savedInstanceState.getParcelableArrayList("tickets");
         } else {
             init();
         }

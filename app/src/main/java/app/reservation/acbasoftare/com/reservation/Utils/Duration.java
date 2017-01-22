@@ -18,6 +18,11 @@ public class Duration implements Parcelable {
         //Log.d("timeee: ",time);
        this.time=time;
     }
+        public Duration(){}
+    public String getTime() {
+        return time;
+    }
+
     public String getDuration(){
         return this.toString();
     }

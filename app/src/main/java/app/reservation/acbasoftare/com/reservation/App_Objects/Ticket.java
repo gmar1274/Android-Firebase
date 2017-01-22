@@ -3,6 +3,8 @@ package app.reservation.acbasoftare.com.reservation.App_Objects;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.HashMap;
+
 /**
  * Created by user on 2016-11-26.
  */
@@ -12,8 +14,14 @@ public class Ticket implements Parcelable {
     public String ticket;
     public String stylist;
     public String store_id;
+    private HashMap<String,Stylist>hm;
     public Ticket(){}
-
+    public void setHashMap(HashMap<String,Stylist>hm){
+        this.hm = hm;
+    }
+public String toString(){
+    return name+" "+ticket+" "+stylist+ " ??? ";
+}
     public Ticket(String store_id,String ticket,String name,String stylist,String phone){
         this.ticket=ticket;
         this.name=name;

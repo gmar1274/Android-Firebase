@@ -69,7 +69,7 @@ public class Reservation implements Parcelable {
     public void populateMap(ArrayList<Stylist> list) {
         this.reservation_hm=new HashMap<>();
         for(Stylist s : list) {
-            if(!s.getID().equalsIgnoreCase("-1"))
+            if(!s.getId().equalsIgnoreCase("-1"))
                 this.reservation_hm.put(s, new HashMap<Date, Date>());
         }
     }

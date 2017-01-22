@@ -2,11 +2,12 @@ package app.reservation.acbasoftare.com.reservation.Utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,6 +17,8 @@ import java.util.HashMap;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
+
+import static android.graphics.BitmapFactory.decodeByteArray;
 
 /**
  * Created by user on 12/6/16.
@@ -233,5 +236,43 @@ public class Utils {
         start.setMinutes(0);
         start.setSeconds(0);
         return start;
+    }
+    public static Bitmap convertBytesToBitmap(byte[] pic){
+        //BitmapFactory.Options options = new BitmapFactory.Options();
+        //options.inJustDecodeBounds = true;
+         Bitmap b =  BitmapFactory.decodeByteArray(pic, 0,pic.length);//, options);
+        //options.inSampleSize = 8;
+        //int imgHeight = options.outHeight;
+        //int imgWidth= options.outWidth;
+        //String imageType = options.outMimeType;
+
+        return b;
+    }
+  /*  public static Bitmap decodeSampledBitmapFromArray(byte[]arr,int reqWidth,int reqHeight){
+        final BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds=true;
+        BitmapFactory.decodeByteArray(arr,0,arr.length,opt);
+        opt.inSampleSize = calculateInSampleSize(opt,reqWidth,reqHeight);
+        opt.inJustDecodeBounds = false;
+        return BitmapFactory.decodeByteArray(arr,0,arr.length,opt);
+    }
+    */
+    public static byte[] convertBitmapToByteArray(Bitmap b){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        b.compress(Bitmap.CompressFormat.PNG,0, stream);
+        return stream.toByteArray();
+    }
+    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight){
+        final int h = options.outHeight;
+        final int w = options.outWidth;
+        int inSampleSize = 1;
+        if(h > reqHeight || w > reqHeight){
+                final int halfHeight = h / 2;
+                final int halfWidth = h / 2;
+                while((halfHeight/inSampleSize)>= reqHeight && (halfWidth/inSampleSize)>= reqWidth){
+                    inSampleSize *= 2;
+                }
+        }
+        return inSampleSize;
     }
 }

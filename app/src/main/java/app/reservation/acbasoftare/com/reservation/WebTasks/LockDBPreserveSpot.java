@@ -82,7 +82,7 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
                     data += "&" + URLEncoder.encode("lock", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbalockacba"), "UTF-8");
                     data += "&" + URLEncoder.encode("insert", "UTF-8") + "=" + URLEncoder.encode("true", "UTF-8");
                     data += "&" + URLEncoder.encode("date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");
-                    data += "&" + URLEncoder.encode("stylist", "UTF-8") + "=" + URLEncoder.encode(stylist_obj.getID(), "UTF-8");//get selected stylisy
+                    data += "&" + URLEncoder.encode("stylist", "UTF-8") + "=" + URLEncoder.encode(stylist_obj.getId(), "UTF-8");//get selected stylisy
 
                 }else if(arg0.length==2){//case 2: delete the ticket. 2 params, store and ticket_number
                     DELETE=true;

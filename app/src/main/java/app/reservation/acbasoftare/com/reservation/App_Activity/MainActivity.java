@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
                 for (Store s : store_list) {
                      com.google.android.gms.maps.model.LatLng loc = new com.google.android.gms.maps.model.LatLng(s.getLocation().latitude, s.getLocation().longitude);
-                    gm.addMarker(new MarkerOptions().position(loc).title(s.getName())).setTag(s.getPos());
+                    gm.addMarker(new MarkerOptions().position(loc).title(s.getName())).setTag(s.getStore_number());
                 }
 
                 // Updates the location and zoom of the MapView
@@ -710,7 +710,7 @@ public class MainActivity extends AppCompatActivity {
             // Creating store_list view of row.
             View rowView = inflater.inflate(R.layout.list_view_layout, parent, false);
             RadioButton r = (RadioButton) rowView.findViewById(R.id.radio_button);
-            double miles_away = getItem(position_item).getMilesAway();
+            double miles_away = getItem(position_item).getMiles_away();
             DecimalFormat df = new DecimalFormat("0.##");
             r.setText("Store: " + getItem(position_item) + "\n" + "Miles away: " + df.format(miles_away) + "\n" + "Address: " + getItem(position_item).getAddress().toUpperCase() + "\n" + getItem(position_item).getCitystate().toUpperCase());
 

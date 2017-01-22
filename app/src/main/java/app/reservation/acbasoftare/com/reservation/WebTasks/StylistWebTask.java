@@ -2,8 +2,6 @@
 package app.reservation.acbasoftare.com.reservation.WebTasks;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.provider.ContactsContract;
 import android.util.Base64;
@@ -141,13 +139,13 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
                     boolean available = jobj.getString("available").contains("1");//check to confirm 0 is false and 1 is true
                     String qrimage = jobj.getString("image");
 
-                    byte[] qrimageBytes = Base64.decode(qrimage.getBytes(), Base64.DEFAULT);
+                    byte[] pic = Base64.decode(qrimage.getBytes(), Base64.DEFAULT);
 
-                    Bitmap bmp = BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length);//Utils.resize(BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length),100,100);
+                   // Bitmap bmp = BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length);//Utils.resize(BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length),100,100);
                     String phone = jobj.getString("phone");
                     // Bitmap myBitmap = jobj.getby
 
-                    Stylist s = new Stylist(stylist_id,fname,mname,lname,available,bmp,phone,store.getID());
+                    Stylist s = new Stylist(stylist_id,fname,mname,lname,available,pic,phone,store.getPhone());
                     this.stylist_hash.put(stylist_id, s);
 
                 } catch (JSONException e) {
@@ -166,7 +164,7 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
                     String stylist_id = oneObject.getString("stylist_id");
                     Stylist s = this.stylist_hash.get(stylist_id);
                     s.setWait(wait);
-                    this.stylist_hash.put(s.getID(),s);
+                    this.stylist_hash.put(s.getId(),s);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -187,7 +185,7 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
             @Override
             public int compare(Stylist s, Stylist ss)
             {
-                return  s.getID().compareTo(ss.getID());
+                return  s.getId().compareTo(ss.getId());
             }
         });
         showProgressBar(false, this.rootView);
@@ -274,10 +272,10 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
             setListener(tv6,r);
             //Bitmap myBitmap = BitmapFactory.decodeFile("\\res\\drawable\\logo.png");
             QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.quickContactBadge);
-            if(s.getImage() == null){
+            if(s.getImage_bytes() == null){
                 //iv.setImageDrawable(R.drawable.acba);//Utils.resize(rootView.getContext(),rootView.getResources().getDrawable(R.drawable.acba),50,50));
             }else {
-                iv.setImageBitmap(s.getImage());
+                iv.setImageBitmap(Utils.convertBytesToBitmap(s.getImage_bytes()));
             }
             iv.assignContactFromPhone(s.getPhone(),true);
             iv.setMode(ContactsContract.QuickContact.MODE_LARGE);

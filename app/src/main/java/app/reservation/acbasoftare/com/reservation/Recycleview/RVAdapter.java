@@ -72,7 +72,7 @@ public class RVAdapter<E> extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder.stylist) {
             Stylist s = (Stylist) list.get(position);
             rb.setText(s.getName().toUpperCase());
-            Drawable d = new BitmapDrawable(MainActivity.a.getResources(), Utils.resize(s.getImage(),80,80));
+            Drawable d = new BitmapDrawable(MainActivity.a.getResources(), Utils.resize(Utils.convertBytesToBitmap(s.getImage_bytes()),80,80));
             rb.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
 
         } else {//do service

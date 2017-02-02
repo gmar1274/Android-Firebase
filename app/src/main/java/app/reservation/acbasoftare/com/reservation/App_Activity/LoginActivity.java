@@ -88,7 +88,7 @@ public class LoginActivity extends AppCompatActivity  {
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
+        mAuth = FirebaseAuth.getInstance();
         super.onCreate(savedInstanceState);
 
         FacebookSdk.sdkInitialize(getApplicationContext());
@@ -159,7 +159,6 @@ public class LoginActivity extends AppCompatActivity  {
         if (username != null && password != null) {
             Login login = new Login(this);
             login.execute(username, Encryption.encryptPassword(password));
-            this.setVisible(true);
             return;
         }
         // Set up the login form.
@@ -180,8 +179,6 @@ public class LoginActivity extends AppCompatActivity  {
                 FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                       // Log.e("LOGING IN ..."," ON LOG IN ANON ");
-                        //Log.e("LOOOOOOOOOK","loooooook");
                         if (task.isSuccessful()) {
                             goToMainActivity();
                         } else {
@@ -208,7 +205,7 @@ public class LoginActivity extends AppCompatActivity  {
             }
         });
 
-        mAuth = FirebaseAuth.getInstance();
+
         mAuthListener = new FirebaseAuth.AuthStateListener() {
 
             @Override
@@ -252,8 +249,8 @@ public class LoginActivity extends AppCompatActivity  {
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        final String email = mEmailView.getText().toString();
+        final String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -291,22 +288,28 @@ public class LoginActivity extends AppCompatActivity  {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     pd.dismiss();
+                    if(task.isSuccessful()) {
+                        goToMainActivity();
+                    }else{
+                        //LOGIN USING MY SERVER
+                        myLogin(email,password);
+
+                    }
                     Log.e("IN ON COMPLETE LISTENER","HERE ");
                 }
             });
-           /*
-            //LOGIN USING MY SERVER
-            Login login = new Login(this, mEmailView, mPasswordView, pref);
-            login.execute(email, Encryption.encryptPassword(password));//sends sha1 encrypted password
-            */
-            //showProgress(false);
 
         }
     }
-@Override
+    private void myLogin(String email, String password) {
+        Login login = new Login(this, mEmailView, mPasswordView, pref);
+        login.execute(email, Encryption.encryptPassword(password));//sends sha1 encrypted password
+    }
+
+    @Override
 public void onStart(){
     super.onStart();
-    mAuth.addAuthStateListener(this.mAuthListener);
+   if(mAuth!=null && mAuthListener!=null) mAuth.addAuthStateListener(this.mAuthListener);
 }
 @Override
 public void onStop(){
@@ -337,7 +340,7 @@ public void onStop(){
     }
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.contains("@");
+        return email.contains("@") || email.length()>3;
     }
 
     private boolean isPasswordValid(String password) {

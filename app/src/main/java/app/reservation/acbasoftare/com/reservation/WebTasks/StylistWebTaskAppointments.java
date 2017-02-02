@@ -36,7 +36,6 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
 import app.reservation.acbasoftare.com.reservation.ExpandableListView.ExpandableListViewAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.EmployeeActivity.stylist;
 
 /**
  * Created by user on 12/13/16.
@@ -48,10 +47,12 @@ public class StylistWebTaskAppointments extends AsyncTask<String, Void, String> 
         private final String link = "http://acbasoftware.com/pos/stylist.php";
         private ListView lvv;
         private  ExpandableListView lv;
-        public StylistWebTaskAppointments(View rootView, ExpandableListView lv) {
-            store_id =EmployeeActivity.getStoreID();
-            stylist_id=EmployeeActivity.getStylistID();
+    private EmployeeActivity ea;
+        public StylistWebTaskAppointments(EmployeeActivity ea,View rootView, ExpandableListView lv) {
+            store_id =ea.getStoreID();
+            stylist_id=ea.getStylistID();
             this.rootView= rootView;
+            this.ea = ea;
         }
 
         protected void onPreExecute() {
@@ -111,7 +112,8 @@ public class StylistWebTaskAppointments extends AsyncTask<String, Void, String> 
             try {
                 JSONObject jObject = new JSONObject(result);
                 JSONArray arr = jObject.getJSONArray("stylist");
-                for(int i =0; i <arr.length();++i){
+                Stylist stylist = null;
+                for(int i = 0; i <arr.length(); ++i){
                     JSONObject jobj = arr.getJSONObject(i);
                     // Pulling items from the array
                     String fname = jobj.getString("fname");
@@ -124,7 +126,7 @@ public class StylistWebTaskAppointments extends AsyncTask<String, Void, String> 
                   //  Bitmap bmp = BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length);//Utils.resize(BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length),100,100);
                     String phone = jobj.getString("phone");
                     // Bitmap myBitmap = jobj.getby
-                    Stylist s = new Stylist(stylist_id,fname,mname,lname,available,qrimage,phone,EmployeeActivity.getStoreID());
+                    Stylist s = new Stylist(stylist_id,fname,mname,lname,available,qrimage,phone,ea.getStoreID());
                     stylist = s;
                 }
                 ///////////////////////read stylist
@@ -173,7 +175,7 @@ public class StylistWebTaskAppointments extends AsyncTask<String, Void, String> 
             }
             ArrayList<TimeSet> headers = EmployeeActivity.reservation.getDayTimes(new Date());
             HashMap<TimeSet,ReservationDetails> child = EmployeeActivity.reservation.getReservationDetailsHashMap();
-            ExpandableListViewAdapter lva = new ExpandableListViewAdapter(EmployeeActivity.employeeActivity,headers,child);
+            ExpandableListViewAdapter lva = new ExpandableListViewAdapter(ea,headers,child);
             EmployeeActivity.lva=lva;
             lv = (ExpandableListView)rootView.findViewById(R.id.expandable_List_view);
             lv.setAdapter(lva);

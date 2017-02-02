@@ -21,9 +21,11 @@ import app.reservation.acbasoftare.com.reservation.R;
  * Created by user on 12/16/16.
  */
 public class DateArrayAdapter extends ArrayAdapter<String> {
+private EmployeeActivity ea;
+        public DateArrayAdapter(EmployeeActivity ea, int resource, ArrayList<String> objects) {
+            super(ea.getApplicationContext(), resource, objects);
+            this.ea = ea;
 
-        public DateArrayAdapter(Context context, int resource, ArrayList<String> objects) {
-            super(context, resource, objects);
         }
 
         public View getView(int position, View convertView, ViewGroup parent) {
@@ -43,7 +45,7 @@ public class DateArrayAdapter extends ArrayAdapter<String> {
                 public void onClick(View view) {
                     Intent i = new Intent(getContext(),DateViewerActivity.class);
                     i.putExtra("date",date);
-                    EmployeeActivity.employeeActivity.startActivity(i);
+                    ea.startActivity(i);
                 }
             });
             return convertView;

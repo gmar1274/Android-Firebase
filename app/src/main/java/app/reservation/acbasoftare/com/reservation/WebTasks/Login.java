@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -37,11 +38,13 @@ public class Login extends AsyncTask<String, Void, String> {
     private SharedPreferences pref;
     private EditText passView;
     private AutoCompleteTextView emailView;
-    private ProgressBar pb;
     private final  String link = "http://acbasoftware.com/pos/login.php";
     private  enum LOGIN_TYPE{USER,STYLIST};
+    private ProgressDialog pd;
     public Login(Activity a) {
         this.a = a;
+        pd = ProgressDialog.show(this.a, "Authenticating", "Please Wait...", true, false);
+        pd.show();
         pref = null;
     }
 
@@ -50,22 +53,14 @@ public class Login extends AsyncTask<String, Void, String> {
         this.passView = mPasswordView;
         this.pref = pref;
         this.a = a;
-
     }
 
-    public  void showProgress(boolean show) {
-        if(pb!=null){
-            pb.setIndeterminate(false);
-            pb.setVisibility(pb.GONE);
-            return;
-        }
-        pb = (ProgressBar) a.findViewById(R.id.login_progress);
-        pb.setIndeterminate(true);
-        pb.setVisibility(pb.VISIBLE);
-    }
 
     protected void onPreExecute() {
-        showProgress(true);
+        if (pd == null) {
+            pd = ProgressDialog.show(this.a, "Authenticating", "Please Wait...", true, false);
+            pd.show();
+        }
     }
 
     @Override
@@ -74,7 +69,6 @@ public class Login extends AsyncTask<String, Void, String> {
         try {
             String username = arg0[0];
             String password = arg0[1];
-
 
             String data = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(username, "UTF-8");
             data += "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8");
@@ -109,7 +103,7 @@ public class Login extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
-        showProgress(false);
+        this.pd.dismiss();
        try {
            JSONObject response =new JSONObject(result);
            JSONArray arr= response.getJSONArray("status");

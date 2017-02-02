@@ -79,9 +79,6 @@ import app.reservation.acbasoftare.com.reservation.Recycleview.RVAdapter;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 import app.reservation.acbasoftare.com.reservation.WebTasks.SalonServiceWebTask;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.EmployeeActivity.stylist;
-import static app.reservation.acbasoftare.com.reservation.R.id.map;
-
 
 //import com.google.android.gms.maps.model.LatLng;
 
@@ -890,7 +887,7 @@ public class MainActivity extends AppCompatActivity {
                     if(MainActivity.store_list!=null)MainActivity.store_list.clear();
                     if(MainActivity.stylist_bitmaps!=null)MainActivity.stylist_bitmaps.clear();
                     List<Store> map = dataSnapshot.getValue(gti);
-                    Log.e("TICKETS::onLOAD::",map.get(0).getTickets().toString());
+                    //Log.e("TICKETS::onLOAD::",map.get(0).getTickets().toString());
                    store_list = Utils.calculateDistance(MainActivity.user_loc, map, MainActivity.miles);
                     MainActivity.selectedPosition = 0;
                    // MainActivity.lv = null;
@@ -994,9 +991,11 @@ public class MainActivity extends AppCompatActivity {
      * A {@link FragmentPagerAdapter} that returns store_list fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class CustomFragPageAdapter extends FragmentPagerAdapter {
-        public CustomFragPageAdapter(FragmentManager fm) {
+    public class CustomFragPageAdapter extends FragmentPagerAdapter implements MainActivityData {
+        private MainActivity ma;
+        public CustomFragPageAdapter(FragmentManager fm,MainActivity ma) {
             super(fm);
+            this.ma=ma;
         }
 
         @Override
@@ -1024,5 +1023,19 @@ public class MainActivity extends AppCompatActivity {
             }
             return null;
         }
+
+        @Override
+        public void setMainActivity(MainActivity ma) {
+            this.ma = ma;
+        }
+
+        @Override
+        public MainActivity getMainActivity() {
+            return null;
+        }
+    }
+    public interface MainActivityData{
+        void setMainActivity(MainActivity ma);
+        MainActivity getMainActivity();
     }
 }

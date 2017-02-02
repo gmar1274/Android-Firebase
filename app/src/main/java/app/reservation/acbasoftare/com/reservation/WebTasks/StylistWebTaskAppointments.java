@@ -120,11 +120,11 @@ public class StylistWebTaskAppointments extends AsyncTask<String, Void, String> 
                     String stylist_id = jobj.getString("stylist_id");
                     boolean available = jobj.getString("available").contains("1");//check to confirm 0 is false and 1 is true
                     String qrimage = jobj.getString("image");
-                    byte[] qrimageBytes = Base64.decode(qrimage.getBytes(), Base64.DEFAULT);
+                   // byte[] qrimageBytes = Base64.decode(qrimage.getBytes(), Base64.DEFAULT);
                   //  Bitmap bmp = BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length);//Utils.resize(BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length),100,100);
                     String phone = jobj.getString("phone");
                     // Bitmap myBitmap = jobj.getby
-                    Stylist s = new Stylist(stylist_id,fname,mname,lname,available,qrimageBytes,phone,EmployeeActivity.getStoreID());
+                    Stylist s = new Stylist(stylist_id,fname,mname,lname,available,qrimage,phone,EmployeeActivity.getStoreID());
                     stylist = s;
                 }
                 ///////////////////////read stylist

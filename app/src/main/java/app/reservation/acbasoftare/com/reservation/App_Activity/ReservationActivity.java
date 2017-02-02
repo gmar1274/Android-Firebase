@@ -26,11 +26,7 @@ import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.TICKET;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.isSuccess;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.selectedPosition;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.store_list;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.ticket_number;
 
 public class ReservationActivity extends AppCompatActivity {
     public static boolean isSuccessful;//thought for signaling whether payment was succesful& reserved
@@ -72,7 +68,7 @@ public class ReservationActivity extends AppCompatActivity {
         stylist = MainActivity.myIntent.stylist;
         salon_service = MainActivity.myIntent.salonService;
         setUpGUI();
-        reserved_appointments = store.getReservations().getAppointments(stylist);//"Store: " + store + " Stylist: " + stylist + " ss: " + salon_service
+        reserved_appointments = store.getReservation().getAppointments(stylist);//"Store: " + store + " Stylist: " + stylist + " ss: " + salon_service
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -181,7 +177,7 @@ public String getCommentSection(){
         Store s = MainActivity.store_list.get(MainActivity.selectedPosition);//get store
         //Log.d("BEFORE:: ",(s.getReservations().getAppointments(stylist).get(ts.getLowerBound())==null)+"");
 
-        s.getReservations().removeReservationDate(stylist,ts.getLowerBound());
+        s.getReservation().removeReservationDate(stylist,ts.getLowerBound());
         MainActivity.store_list.remove(MainActivity.selectedPosition);
         MainActivity.store_list.add(MainActivity.selectedPosition,s);
        // Log.d("AFTER:: ",(s.getReservations().getAppointments(stylist).get(ts.getLowerBound())==null)+"");

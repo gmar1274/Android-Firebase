@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.util.Base64;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -14,11 +16,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
-
-import static android.graphics.BitmapFactory.decodeByteArray;
 
 /**
  * Created by user on 12/6/16.
@@ -40,7 +42,7 @@ public class Utils {
     /*Should return the new time in advanced.
     * */
     public static String calculateWait(int waiting) {
-        int wait = Utils.minTomilliseconds(45) * waiting;//45 mins to milliseconds
+        int wait = 45 * waiting;//45 mins * #wait
         int hour= new Integer(""+wait/60);
         int min= new Integer(""+wait%60);
         if(hour>0)return hour+" hrs "+min+" mins";
@@ -238,15 +240,20 @@ public class Utils {
         return start;
     }
     public static Bitmap convertBytesToBitmap(byte[] pic){
-        //BitmapFactory.Options options = new BitmapFactory.Options();
-        //options.inJustDecodeBounds = true;
-         Bitmap b =  BitmapFactory.decodeByteArray(pic, 0,pic.length);//, options);
+        BitmapFactory.Options options = new BitmapFactory.Options();
+         Bitmap b =  BitmapFactory.decodeByteArray(pic, 0,pic.length, options);
         //options.inSampleSize = 8;
         //int imgHeight = options.outHeight;
         //int imgWidth= options.outWidth;
         //String imageType = options.outMimeType;
 
         return b;
+    }
+    public static String convertToString(byte[] arr){
+        return Base64.encodeToString(arr,Base64.DEFAULT);
+    }
+    public static byte[] convertToByteArray(String arr){
+        return Base64.decode(arr,Base64.DEFAULT);
     }
   /*  public static Bitmap decodeSampledBitmapFromArray(byte[]arr,int reqWidth,int reqHeight){
         final BitmapFactory.Options opt = new BitmapFactory.Options();
@@ -274,5 +281,28 @@ public class Utils {
                 }
         }
         return inSampleSize;
+    }
+
+    /**
+     * This method  querys firebase stores stores all the stores in a list then calculates thhe distance from the user and
+     * determines whether the store is in bounds(in radius search)
+     * @param myLoc
+     * @param l
+     * @param radius
+     * @return
+     */
+    public static ArrayList<Store> calculateDistance(Location myLoc,  List<Store> l, int radius) {
+        ArrayList<Store> list = new ArrayList<>();
+        for(Store store : l){//search keySet
+
+            double dist = Distance.calculateDistance(myLoc.getLatitude(),myLoc.getLongitude(),store.getLocation().latitude,store.getLocation().longitude);
+            store.setDistanceAway(dist);
+            if(dist <= radius) {
+                list.add(store);
+            }
+        }
+        Collections.sort(list);
+        l.clear();
+        return list;
     }
 }

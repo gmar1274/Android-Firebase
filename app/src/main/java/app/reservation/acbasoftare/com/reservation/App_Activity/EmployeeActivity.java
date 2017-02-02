@@ -220,7 +220,7 @@ public class EmployeeActivity extends AppCompatActivity {
 
         private void fragmentView2(View rootView) {
             ImageView iv=(ImageView) rootView.findViewById(R.id.imageView_employee_activity);
-            iv.setImageBitmap(Utils.convertBytesToBitmap(stylist.getImage_bytes()));
+            iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(stylist.getImage_bytes())));
             TextView tv=(TextView) rootView.findViewById(R.id.textView_tab3_employee_activity);
             tv.setText(tv.getText() + stylist.getName().toUpperCase());
             Button b=(Button) rootView.findViewById(R.id.button_upload_profile_pic);
@@ -363,7 +363,7 @@ public class EmployeeActivity extends AppCompatActivity {
                 UploadImageWebTask u = new UploadImageWebTask(bitmap);
                 u.execute();
                // stylist.setBitmap(bitmap);
-                stylist.setImage_bytes(Utils.convertBitmapToByteArray(bitmap));
+                stylist.setImage_bytes(Utils.convertToString(Utils.convertBitmapToByteArray(bitmap)));
             } catch (IOException e) {
                 e.printStackTrace();
             }

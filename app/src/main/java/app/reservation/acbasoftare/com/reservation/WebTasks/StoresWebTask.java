@@ -1,7 +1,6 @@
 package app.reservation.acbasoftare.com.reservation.WebTasks;
 
 import android.os.AsyncTask;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -16,7 +15,6 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -26,7 +24,6 @@ import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.R;
-import app.reservation.acbasoftare.com.reservation.Utils.UnitConversion;
 
 /**
  * Created by user on 2016-08-06.
@@ -133,13 +130,14 @@ public class StoresWebTask extends AsyncTask<String, Void, String> {
             }///////end for
 
 
-            if (MainActivity.lv == null) {
-                MainActivity.lv = (ListView) rootView.findViewById(R.id.fragment_listview);
-            }
-            if (MainActivity.la == null) {
-                MainActivity.la = new MainActivity.ListViewAdapter(rootView.getContext(), MainActivity.store_list);
-                MainActivity.lv.setAdapter(MainActivity.la);
-            }
+           // if (MainActivity.lv == null) {
+                //MainActivity.lv =
+                ListView lv = (ListView) rootView.findViewById(R.id.fragment_listview);
+            //}
+           // if (MainActivity.la == null) {
+             MainActivity.ListViewAdapter la = new MainActivity.ListViewAdapter(rootView.getContext(), MainActivity.store_list);
+               lv.setAdapter(la);
+            //}
             showProgressBar(false, this.rootView);
 
             MainActivity.showGoogleMaps(rootView, MainActivity.store_list);

@@ -112,7 +112,7 @@ public class SalonServiceWebTask extends AsyncTask<String,Void,String> {
                     if(sty.getId().equalsIgnoreCase("-1")){continue;}
                     String start_time = oneObject.getString("start_time");
                     String end_time = oneObject.getString("end_time");
-                    store.getReservations().setDateTime(sty,start_time,end_time);//sets appointments//or updates the appointment
+                    store.getReservation().setDateTime(sty,start_time,end_time);//sets appointments//or updates the appointment
                 } catch(JSONException e) {
                     e.printStackTrace();
                 }

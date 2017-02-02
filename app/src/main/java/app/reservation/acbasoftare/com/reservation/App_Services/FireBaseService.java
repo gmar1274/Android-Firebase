@@ -15,9 +15,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.messaging.FirebaseMessagingService;
-import com.google.firebase.messaging.RemoteMessage;
 
 import java.util.concurrent.Executor;
 
@@ -30,11 +27,11 @@ public class FireBaseService implements FirebaseAuth.AuthStateListener{
 
     private FirebaseAuth mAuth;
     private Activity activity;
-    private User user;
+  //  private User user;
     public  FireBaseService(Activity a){
         mAuth = FirebaseAuth.getInstance();
         this.activity=a;
-        this.user=new User();
+       // this.user=new User();
     }
     public void createNewUser(String email,String password){
 
@@ -88,7 +85,7 @@ public class FireBaseService implements FirebaseAuth.AuthStateListener{
             }
         });
     }
-    private class User extends FirebaseMessagingService{
+  /*  private class User extends FirebaseMessagingService{
       public User(){
 
       }
@@ -102,4 +99,5 @@ public class FireBaseService implements FirebaseAuth.AuthStateListener{
             Log.d("", "Notification Message Body: " + remoteMessage.getNotification().getBody());
         }
     }
+    */
 }

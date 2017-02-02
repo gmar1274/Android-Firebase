@@ -29,6 +29,7 @@ public class LatLng implements Parcelable {
     public LatLng(){
 
     }
+    public String toString(){return "Lat: "+latitude+", Long: "+longitude;}
     public LatLng(double lat,double lng){
         this.latitude = lat;
         this.longitude = lng;

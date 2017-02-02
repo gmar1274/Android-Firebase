@@ -2,6 +2,7 @@ package app.reservation.acbasoftare.com.reservation.Dialog;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Looper;
@@ -65,11 +66,12 @@ public class CreditCardDialog {
     public CreditCardDialog(int store_pos, int styl_pos, String phone) {
         this.store_pos = store_pos;
         this.stylist_pos = styl_pos;
-
         this.store = MainActivity.store_list.get(store_pos);
         this.stylist = MainActivity.stylists_list.get(styl_pos);
         this.phone = phone;
         this.activity=null;
+        this.ws = new WebService();
+        this.act = MainActivity.a;
     }
 
     public CreditCardDialog(ReservationActivity c, Store store, Stylist stylist, SalonService ss, TimeSet datetime) {///month reservation
@@ -203,7 +205,7 @@ public CreditCardDialog(Activity act){
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 LockDBPreserveSpot db = new LockDBPreserveSpot();
-                db.execute(store.getPhone(), "" + MainActivity.ticket_number);// Canceled.
+               // db.execute(store.getPhone(), "" + MainActivity.ticket_number);// Canceled.
             }
         });
         alertd = alert.create();
@@ -302,8 +304,6 @@ public void showCreditCardDialog(boolean test) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy");
                     String year = sdf.format(new Date());
                     yr = year.substring(0,2) + yr;
-
-
                     execute(creditcard.getText().toString(), ccv.getText().toString(), exp_month.getText().toString(), yr, name.getText().toString(), "" + amount_b);
 
                 }
@@ -320,6 +320,7 @@ public void showCreditCardDialog(boolean test) {
 
     /**
      * Perform the credit card authentication to stripe.
+     * Flow is coming the credit card fields..
      */
     private void execute(String... params) {
         try {
@@ -350,6 +351,11 @@ public void showCreditCardDialog(boolean test) {
             return;
 
         }
+        ////////////////////////////then i think we can close the dialog
+        alertd.dismiss();////////////////////not sure here
+        final ProgressDialog pd = ProgressDialog.show(MainActivity.a,"Grabbing Ticket","Please Wait...",true,false);
+        pd.show();
+
         Stripe stripe = null;
 
         try {
@@ -369,7 +375,7 @@ public void showCreditCardDialog(boolean test) {
                             Thread t = new Thread() {
                                 public void run() {
 
-                                  webCallMakeCharge(token);//makeCharge(token);
+                                  webCallMakeCharge(token,pd);//makeCharge(token);
                                 }
                             };
                             t.start();
@@ -378,9 +384,7 @@ public void showCreditCardDialog(boolean test) {
             );
         }
     }
-private void webCallMakeCharge(Token token){
-
-
+private void webCallMakeCharge(Token token,ProgressDialog pd){
     if(ws != null) {
         ArrayList<ParamPair> l=new ArrayList<>();
         l.add(new ParamPair("stripeToken", token.getId()));
@@ -390,15 +394,24 @@ private void webCallMakeCharge(Token token){
         l.add(new ParamPair("email", "gnmartinezedu@hotmail.com"));
         l.add(new ParamPair("fingerprint", token.getCard().getFingerprint()));
         JSONObject ob=ws.makeHttpRequest(WebService.createChargeURL, l);
-        if(ob != null) {
-            Log.d("IN CREDIT:: ", ob.toString());
+        if(ob != null) {//payment successful
+            firebaseAddTicket(store, stylist, name, phone,pd);
+            //Log.e("IN CREDIT:: ", ob.toString());
         } else {
-
-
+            Log.e("IN CREDIT:: ", "ERROR in creating params");
+            Toast.makeText(this.act,"Payment unsuccessful. No charges were made. Try again.",Toast.LENGTH_LONG).show();
         }
         alertd.dismiss();
     }
 }
+
+    /**
+     * Calls firebase to add ticket
+     */
+    private void firebaseAddTicket(Store s, Stylist sty, String cust_name,String phone,ProgressDialog pd) {
+        MainActivity.sendTicket(s,sty,cust_name,phone,pd);
+    }
+
     private void displayError() {
         success = false;
         error("Please fill in all fields.");

@@ -1,21 +1,17 @@
 package app.reservation.acbasoftare.com.reservation.App_Objects;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import java.io.Serializable;
 
 /**
  * Created by user on 2016-08-06.
  */
-public class Stylist implements Parcelable {
+public class Stylist implements Parcelable, Comparable<Stylist> {
     private String fname, mname, lname,id,phone;
     private int wait;
     private boolean available;
   //  private Bitmap image;
-    private byte[] image_bytes;
+    private String image_bytes;//Base64.encode(byte[]);
     private String store_id;
 
     public String getFname() {
@@ -34,12 +30,12 @@ public class Stylist implements Parcelable {
         return id;
     }
 
-    public byte[] getImage_bytes() {
+    public String getImage_bytes() {
         return image_bytes;
     }
 
-    public void setImage_bytes(byte[] image_bytes) {
-        this.image_bytes = image_bytes;
+    public void setImage_bytes(String encodedByteArr) {
+        this.image_bytes = encodedByteArr;
     }
 
     public void setStore_id(String store_id) {
@@ -49,7 +45,11 @@ public class Stylist implements Parcelable {
     public static Creator<Stylist> getCREATOR() {
         return CREATOR;
     }
-
+    @Override
+    public boolean equals(Object o){
+        Stylist s = (Stylist) o;
+        return this.id.equalsIgnoreCase(s.getId());
+    }
     /**
      * DEBUG TEST STYLIST
      * @param test
@@ -73,7 +73,7 @@ public Stylist(){
     this.store_id="9091234567";
 }
 
-    public Stylist(String id,String fname, String mname, String lname, boolean avail,byte[] pic,String phone,String store_id) {
+    public Stylist(String id,String fname, String mname, String lname, boolean avail,String pic_byte_arr,String phone,String store_id) {
         this.fname = fname;
         this.lname = lname;
         this.mname=mname;
@@ -85,7 +85,7 @@ public Stylist(){
         }
         this.available = avail;
         //this.image=pic;
-        this.image_bytes = pic;
+        this.image_bytes = pic_byte_arr;
         this.wait=0;
         this.phone = phone;
         this.store_id=store_id;
@@ -144,7 +144,7 @@ public void setWait(int wait){
         dest.writeInt(this.wait);
         dest.writeByte(this.available ? (byte) 1 : (byte) 0);
        // dest.writeParcelable(this.image, flags);
-        dest.writeByteArray(this.image_bytes);
+        dest.writeString(image_bytes);
     }
 
     protected Stylist(Parcel in) {
@@ -156,7 +156,7 @@ public void setWait(int wait){
         this.wait = in.readInt();
         this.available = in.readByte() != 0;
         //this.image = in.readParcelable(Bitmap.class.getClassLoader());
-       in.readByteArray(this.image_bytes);
+      this.image_bytes = in.readString();
     }
 
     public static final Creator<Stylist> CREATOR = new Creator<Stylist>() {
@@ -171,5 +171,17 @@ public void setWait(int wait){
         }
     };
 
+    @Override
+    public int hashCode(){
+        return id.hashCode();
+    }
 
+    @Override
+    public int compareTo(Stylist stylist) {
+        int id = Integer.valueOf(this.id);
+        int id2 = Integer.valueOf(stylist.id);
+        if(id<id2)return  -1;
+        else if(id>id2)return 1;
+        return 0;
+    }
 }

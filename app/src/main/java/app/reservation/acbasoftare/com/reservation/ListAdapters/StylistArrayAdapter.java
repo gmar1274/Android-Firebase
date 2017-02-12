@@ -15,6 +15,8 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
+import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_bitmaps;
+
 /**
  * Created by user on 2016-12-04.
  */
@@ -38,7 +40,7 @@ public class StylistArrayAdapter extends ArrayAdapter<Stylist> {
         }
         RadioButton r = (RadioButton) convertView.findViewById(R.id.rb_rv_stylist);
         //When clicked on the stylist this method should populate the give stylist appointments on the calendarView
-        r.setButtonDrawable(new BitmapDrawable(c.getResources(), Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes()))));
+        r.setButtonDrawable(new BitmapDrawable(c.getResources(), stylist_bitmaps.get(position)));//Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes()))));
         r.setText(s.getName().toUpperCase());
         r.setOnClickListener(new View.OnClickListener() {//when
             @Override

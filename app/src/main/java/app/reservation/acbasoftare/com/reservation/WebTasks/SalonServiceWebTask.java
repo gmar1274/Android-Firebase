@@ -35,9 +35,11 @@ public class SalonServiceWebTask extends AsyncTask<String,Void,String> {
     private Store store;
     private final String link = "http://acbasoftware.com/pos/services.php";
     private int pos;
-    public SalonServiceWebTask(View rv,Store store,final int pos){
+    private MainActivity ma;
+    public SalonServiceWebTask(MainActivity ma,View rv,Store store,final int pos){
         this.rootView = rv;this.store=store;
         this.pos = pos;
+        this.ma = ma;
     }
     @Override
     protected String doInBackground(String... arg0) {
@@ -118,9 +120,9 @@ public class SalonServiceWebTask extends AsyncTask<String,Void,String> {
                 }
             }///////end for
 
-            MainActivity.store_list.remove(MainActivity.selectedPosition);
-            MainActivity.store_list.add(pos,store);
-            MainActivity.updateRVServices(store);//update GUI for services...because I had the arraylist for stylist but need services
+            ma.store_list.remove(ma.selectedPosition);
+            //ma.store_list.add(pos,store);
+            ma.updateRVServices(store);//update GUI for services...because I had the arraylist for stylist but need services
             //update Calendar
         } catch (JSONException e) {
             e.printStackTrace();

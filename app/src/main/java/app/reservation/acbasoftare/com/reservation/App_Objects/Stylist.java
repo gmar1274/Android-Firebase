@@ -11,7 +11,7 @@ public class Stylist implements Parcelable, Comparable<Stylist> {
     private int wait;
     private boolean available;
   //  private Bitmap image;
-    private String image_bytes;//Base64.encode(byte[]);
+
     private String store_id;
 
     public String getFname() {
@@ -30,13 +30,6 @@ public class Stylist implements Parcelable, Comparable<Stylist> {
         return id;
     }
 
-    public String getImage_bytes() {
-        return image_bytes;
-    }
-
-    public void setImage_bytes(String encodedByteArr) {
-        this.image_bytes = encodedByteArr;
-    }
 
     public void setStore_id(String store_id) {
         this.store_id = store_id;
@@ -68,7 +61,6 @@ public Stylist(){
     this.lname="";
     this.wait=0;
     this.available=true;
-    this.image_bytes=null;
     this.phone=null;
     this.store_id="9091234567";
 }
@@ -85,7 +77,6 @@ public Stylist(){
         }
         this.available = avail;
         //this.image=pic;
-        this.image_bytes = pic_byte_arr;
         this.wait=0;
         this.phone = phone;
         this.store_id=store_id;
@@ -144,7 +135,7 @@ public void setWait(int wait){
         dest.writeInt(this.wait);
         dest.writeByte(this.available ? (byte) 1 : (byte) 0);
        // dest.writeParcelable(this.image, flags);
-        dest.writeString(image_bytes);
+        //dest.writeString(image_bytes);
     }
 
     protected Stylist(Parcel in) {
@@ -156,7 +147,7 @@ public void setWait(int wait){
         this.wait = in.readInt();
         this.available = in.readByte() != 0;
         //this.image = in.readParcelable(Bitmap.class.getClassLoader());
-      this.image_bytes = in.readString();
+     // this.image_bytes = in.readString();
     }
 
     public static final Creator<Stylist> CREATOR = new Creator<Stylist>() {

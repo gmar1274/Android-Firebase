@@ -27,18 +27,19 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
     private  boolean INSERT,DELETE,UPDATE;
 
     private String store_id,ticket,stylist,name,phone;
-
-    public LockDBPreserveSpot() {
+private MainActivity ma;
+    public LockDBPreserveSpot(MainActivity ma) {
             INSERT=false;
             DELETE=false;
             UPDATE=false;
+        this.ma =ma;
         }
     private String updateTicket(String[] param) throws UnsupportedEncodingException {
         store_id=param[0];
          ticket = param[1];
          name = param[2];
          stylist=param[3];
-         phone=MainActivity.phone;
+         phone=ma.phone;
         //no email.. phone we can get from the OS
         String data="";
         data = URLEncoder.encode("store_id", "UTF-8") + "=" + URLEncoder.encode(store_id, "UTF-8");
@@ -68,7 +69,7 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
                 String store_id=arg0[0];
                 String link = this.site;
                 String data="";
-                final Stylist stylist_obj=  MainActivity.stylists_list.get(MainActivity.stylist_position);
+                final Stylist stylist_obj=  ma.stylists_list.get(ma.stylist_position);
                 if(arg0.length==1) {//////////case 1: only 1 param. Make a arbritarty insert ticket
                     //no need to specify stylist id
                     INSERT=true;

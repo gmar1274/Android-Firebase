@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.R;
 
-import static android.R.attr.resource;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.ticket_history;
+import static app.reservation.acbasoftare.com.reservation.R.id.ticket_history;
+
 
 public class TicketHistoryActivity extends AppCompatActivity {
 
@@ -26,10 +26,11 @@ public class TicketHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ticket_history);
+       ArrayList<Ticket> ticket_history = this.getIntent().getParcelableArrayListExtra("ticket_history");
         ListView lv = (ListView)this.findViewById(R.id.ticket_history_listview);
         ListAdapterTicket la = new ListAdapterTicket(this,R.layout.ticket_history_listview_item,ticket_history);
         lv.setAdapter(la);
-        Log.e("Size list:",ticket_history.size()+"");
+        //Log.e("Size list:",ticket_history.size()+"");
     }
     @Override
     public void onBackPressed(){

@@ -62,10 +62,14 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.LatLng;
 import app.reservation.acbasoftare.com.reservation.App_Objects.MyIntent;
 import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
@@ -77,42 +81,44 @@ import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebT
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Recycleview.RVAdapter;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
-import app.reservation.acbasoftare.com.reservation.WebTasks.SalonServiceWebTask;
+
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
+import static android.os.Build.VERSION_CODES.M;
 
 
 //import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AppCompatActivity {
     //public static int ticket_number;///is the potential ticket number
-    public static ArrayList<Store> store_list = null;
-    public static ArrayList<Stylist> stylists_list = null;
+    public  ArrayList<FirebaseStore> store_list = null;
+    public  ArrayList<Stylist> stylists_list = null;
    // public static ListView lv = null;
    // public static ListAdapter la = null;
-    public static View rootView = null, mainView = null;
-    public static int stylist_position = 0;
-    public static Activity a;
-    public static TabLayout tabLayout;
-    public static Location user_loc;
-    public static int miles = 10;
-    public static GoogleMap gm;
-    public static MapView mv;
-    public static int selectedPosition;
+    public  View rootView = null;//, mainView = null;
+    public  int stylist_position = 0;
+
+    public  TabLayout tabLayout;
+    public  Location user_loc;
+    public  int miles = 10;
+    public  GoogleMap gm;
+    public  MapView mv;
+    public int selectedPosition;
     //public static Ticket TICKET;
-    public static String phone;//user phone number
-    public static boolean isSuccess;//success payment ticket register
-    public static boolean STYLIST_BITMAPS_LOADED;
-    public static View rootView_LiveTab, rootView_Reservation;
+    public  String phone;//user phone number
+    public  boolean isSuccess;//success payment ticket register
+    public  boolean STYLIST_BITMAPS_LOADED;
+    public  View rootView_LiveTab, rootView_Reservation;
     // public static Appointment appointment;//used to hold data in third tab...
     //public static SwipeRefreshLayout srl;
-    public static Profile user_fb_profile;
-    public static MyIntent myIntent;
-    public static RecyclerView recyclerView_stylists;
-    public static boolean noStaff;
+    public  Profile user_fb_profile;
+    public  MyIntent myIntent;
+    public  RecyclerView recyclerView_stylists;
+    public  boolean noStaff;
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private static AlphaAnimation inAnimation;
-    private static RecyclerView recyclerView_services;
+    private  RecyclerView recyclerView_services;
     /**
      * The {@link } that will provide
      * fragments for each of the sections. We use store_list
@@ -123,12 +129,14 @@ public class MainActivity extends AppCompatActivity {
      */
     public CustomFragPageAdapter mCustomFragPageAdapter;
     public ViewPager mViewPager;
-    public static FirebaseDatabase db;
+    public FirebaseDatabase db;
     public DatabaseReference db_ref;
     public static ArrayList<Bitmap> stylist_bitmaps;
-    public static ArrayList<Ticket> ticket_history;
+    public  ArrayList<Ticket> ticket_history;
+    private long current_ticket;
+    private HashMap<String, Stylist> sty_hm;
 
-    public static void showGoogleMaps(final View rootView, final ArrayList<Store> store_list) {
+    public  void showGoogleMaps(final View rootView, final ArrayList<FirebaseStore> store_list) {
 
         if(mv==null)
         mv = (MapView) rootView.findViewById(R.id.mapView);
@@ -169,12 +177,12 @@ public class MainActivity extends AppCompatActivity {
                     //Log.e("ERRRR,,", "ERRRRR GM permission gor google maps");
                     return;
                 }
-                 com.google.android.gms.maps.model.LatLng  myLoc = new com.google.android.gms.maps.model.LatLng(MainActivity.user_loc.getLatitude(), MainActivity.user_loc.getLongitude());
+                 com.google.android.gms.maps.model.LatLng  myLoc = new com.google.android.gms.maps.model.LatLng(MainActivity.this.user_loc.getLatitude(), MainActivity.this.user_loc.getLongitude());
                 gm.addMarker(new MarkerOptions()
                                      .position(myLoc)
                                      .title("My Loctaion").alpha(.5f)).setTag(-1);
 
-                for (Store s : store_list) {
+                for (FirebaseStore s : store_list) {
                      com.google.android.gms.maps.model.LatLng loc = new com.google.android.gms.maps.model.LatLng(s.getLocation().latitude, s.getLocation().longitude);
                     gm.addMarker(new MarkerOptions().position(loc).title(s.getName())).setTag(s.getStore_number());
                 }
@@ -194,14 +202,14 @@ public class MainActivity extends AppCompatActivity {
      * This method doesnt need to check null states of lists because this function will only get called when list>0 and not null
      * Update Calendar with appointments
      */
-    public static void updateRVServices(final Store s) {
+    public  void updateRVServices(final Store s) {
         //fill out the
         //Store s=store_list.get(selectedPosition);////get the store
         final RVAdapter<Stylist> stylist_adapter = (RVAdapter<Stylist>) recyclerView_stylists.getAdapter();
 
         recyclerView_services = (RecyclerView) rootView_Reservation.findViewById(R.id.rv_service_view);
         recyclerView_services.setHasFixedSize(true);
-        recyclerView_services.setAdapter(new RVAdapter<SalonService>(s.getSalonServicesArrayList(), R.layout.rv_service, false));//fasle for not stylits...services==true
+        recyclerView_services.setAdapter(new RVAdapter<SalonService>(this,s.getSalonServicesArrayList(), R.layout.rv_service, false));//fasle for not stylits...services==true
         LinearLayoutManager lll = new LinearLayoutManager(rootView_Reservation.getContext());
         lll.setOrientation(lll.HORIZONTAL);
         recyclerView_services.setLayoutManager(lll);
@@ -237,34 +245,34 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param store - Stylist and SalonService
      */
-    private static void startReservationActivity(Date date, Store store, Stylist s, SalonService ss) {
+    private  void startReservationActivity(Date date, Store store, Stylist s, SalonService ss) {
         myIntent = null;
-        myIntent = new MyIntent(date, store, s, ss);
-        Intent intent = new Intent(MainActivity.a, ReservationActivity.class);
+        myIntent = new MyIntent(date, store, s, ss, this.selectedPosition);
+        Intent intent = new Intent(MainActivity.this, ReservationActivity.class);
         // intent.putExtra("store",store);
         //intent.putExtra("stylist",s);
         // intent.putExtra("service",ss);
-        MainActivity.a.startActivity(intent);
+        MainActivity.this.startActivity(intent);
     }
 
-    private static void showCreditCard() {
-        if (MainActivity.stylists_list == null || MainActivity.store_list == null || MainActivity.store_list.size() == 0)
+    private  void showCreditCard() {
+        if (stylists_list == null || store_list == null || store_list.size() == 0)
             return;
        // LockDBPreserveSpot db = new LockDBPreserveSpot();
         //db.execute(store_list.get(selectedPosition).getPhone());
-        CreditCardDialog ccd = new CreditCardDialog(MainActivity.selectedPosition, MainActivity.stylist_position, phone);
+        CreditCardDialog ccd = new CreditCardDialog(this,selectedPosition, stylist_position, phone);
         ccd.showCreditCardDialog();
     }
 
     /**
      * Reset the RV for this tab
      */
-    public static void updateTab3() {
-        if (MainActivity.recyclerView_stylists != null) {//delete stylists
-            MainActivity.recyclerView_stylists.setAdapter(null);
+    public  void updateTab3() {
+        if (MainActivity.this.recyclerView_stylists != null) {//delete stylists
+            MainActivity.this.recyclerView_stylists.setAdapter(null);
         }
-        if (MainActivity.recyclerView_services != null) {
-            MainActivity.recyclerView_services.setAdapter(null);
+        if (MainActivity.this.recyclerView_services != null) {
+            MainActivity.this.recyclerView_services.setAdapter(null);
         }
     }
 
@@ -287,6 +295,7 @@ public class MainActivity extends AppCompatActivity {
         outState.putBoolean("issSuccess", isSuccess);
         outState.putParcelableArrayList("stylist_bitmaps",stylist_bitmaps);
         outState.putBoolean("STYLIST_BITMAPS_LOADED", STYLIST_BITMAPS_LOADED);
+        outState.putSerializable("sty_hm",sty_hm);
     }
 
     @Override
@@ -309,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
             stylist_bitmaps = savedInstanceState.getParcelableArrayList("stylist_bitmaps");
             STYLIST_BITMAPS_LOADED = savedInstanceState.getBoolean("STYLIST_BITMAPS_LOADED");
             ticket_history = savedInstanceState.getParcelableArrayList("ticket_history");
+            sty_hm = (HashMap<String, Stylist>) savedInstanceState.getSerializable("sty_hm");
         } else {
             selectedPosition = 0;//initial pos
             //ticket_number = -1;//not set
@@ -320,6 +330,7 @@ public class MainActivity extends AppCompatActivity {
             stylist_bitmaps = new ArrayList<>();
             STYLIST_BITMAPS_LOADED =false;
             ticket_history = new ArrayList<>();
+            sty_hm = new HashMap<>();
         }
         db = FirebaseDatabase.getInstance();
         db_ref = db.getReference();
@@ -328,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
-        mCustomFragPageAdapter = new CustomFragPageAdapter(getSupportFragmentManager());
+        mCustomFragPageAdapter = new CustomFragPageAdapter(getSupportFragmentManager(),MainActivity.this);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
@@ -352,10 +363,10 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 } else if (position == 1) {//second tab or LIVE FEED TAB//0,1,2 page numbers
                     // Appointment.reset();
-                    if (MainActivity.store_list == null || store_list.size() == 0) {
+                    if (store_list == null || store_list.size() == 0) {
                         return;//nothing to display...
                     } else {
-                        Store s = store_list.get(selectedPosition);
+                        FirebaseStore s = store_list.get(selectedPosition);
                         /*StylistWebTask swt = new StylistWebTask(rootView_LiveTab);
                         if (stylists_list == null) {
                             swt.execute(s.getPhone());
@@ -364,12 +375,12 @@ public class MainActivity extends AppCompatActivity {
                             return;
                         }else {
                             STYLIST_BITMAPS_LOADED =true;
-                            stylist_bitmaps = null;
+                            recycleBitmaps();
                             loadFirebaseStylist(s);
                         }
                     }
                     //mv.onCreate(savedInstanceState);
-                } else if (position == 2) {//the third tab . aka Reservation Appointment
+                } /*else if (position == 2) {//the third tab . aka Reservation Appointment
                     updateTab3();
                     if (stylists_list == null || stylists_list.size() == 0) {
                         noStaff = true;
@@ -378,17 +389,17 @@ public class MainActivity extends AppCompatActivity {
                         setUpRV3rdTab();
                         if (store_list != null && store_list.size() > 0) {
                             Store store = store_list.get(selectedPosition);
-                            SalonServiceWebTask ss = new SalonServiceWebTask(rootView_Reservation, store, selectedPosition);
+                            SalonServiceWebTask ss = new SalonServiceWebTask(MainActivity.this,rootView_Reservation, store, selectedPosition);
                             ss.execute(store.getPhone());//loads the R.V. adapter with the loaded list of Services
                         }
                     }
-                }
+                }*/
             }
 
             private void setUpRV3rdTab() {
                 recyclerView_stylists = (RecyclerView) rootView_Reservation.findViewById(R.id.rv_stylist_view);
                 recyclerView_stylists.setHasFixedSize(true);
-                recyclerView_stylists.setAdapter(new RVAdapter<Stylist>(Utils.getArrayListStylist(stylists_list), R.layout.rv_stylist, true));
+                recyclerView_stylists.setAdapter(new RVAdapter<Stylist>(MainActivity.this,Utils.getArrayListStylist(stylists_list), R.layout.rv_stylist, true));
                 LinearLayoutManager ll = new LinearLayoutManager(rootView_Reservation.getContext());
                 ll.setOrientation(ll.HORIZONTAL);
                 recyclerView_stylists.setLayoutManager(ll);
@@ -402,26 +413,78 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        MainActivity.a = this;
+       // MainActivity.a = this;
     }
 
     /**
      * Fetch the stylist pictures from the database.
      */
-    private void loadFirebaseStylist(final Store store){
-
-        final ProgressDialog pd = ProgressDialog.show(this,"Searching","Please Wait...",true,false);
+    private void loadFirebaseStylist(final FirebaseStore store){
         if(store == null)return;
-        if(stylists_list == null)
+        final ProgressDialog pd = ProgressDialog.show(this,"Searching","Please Wait...",true,false);
+        pd.show();
+        if(stylists_list == null) {
             stylists_list = new ArrayList<>();
-        stylist_bitmaps = null;
-        stylist_bitmaps  = new ArrayList<>();
-        stylists_list = null;
-        stylists_list = new ArrayList<>();
-        FirebaseWebTasks.downloadImages(store,stylists_list,pd);
+        }else{
+            this.stylists_list.clear(); //store_list.clear();
+        }
+        recycleBitmaps();
+        ;
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("stylists").child(String.valueOf(store.getStore_number()));
+        db.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.e("STORE_NUMBER IN:","IN stylists "+store.getStore_number());
+                if(dataSnapshot.getValue()==null){
+                    if(stylists_list!=null)stylists_list.clear();
+                    if(stylist_bitmaps!=null)stylist_bitmaps.clear();
+                    ListView lv=(ListView) rootView_LiveTab.findViewById(R.id.fragment_livefeed_listview);
+                    lv.setAdapter(null);
+                    pd.dismiss();
+                    return;
+                }
 
+                GenericTypeIndicator<Map<String,Stylist>> gti = new GenericTypeIndicator<Map<String, Stylist>>() {};
+                Map<String, Stylist> map = dataSnapshot.getValue(gti);
+                sty_hm = new HashMap<String, Stylist>(map);
+                stylists_list = new ArrayList<Stylist>(map.values());
+                Collections.sort(stylists_list);
+               FirebaseDatabase.getInstance().getReference().child("tickets/"+store.getStore_number()).addListenerForSingleValueEvent(new ValueEventListener() {
+                   @Override
+                   public void onDataChange(DataSnapshot dataSnapshot) {
+                       if(dataSnapshot.getValue()==null){return;}
+                       GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
+                       List<Ticket> list = dataSnapshot.getValue(gti);
+                      store.setCurrent_ticket(list.get(0).getUnique_id());
+                   }
+
+                   @Override
+                   public void onCancelled(DatabaseError databaseError) {
+
+                   }
+               });
+                FirebaseWebTasks.downloadImages(MainActivity.this,store,stylists_list,pd);
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                pd.dismiss();
+            }
+        });
        // Log.e("LOADED #: ","# loaded: [ "+stylists_list.size()+" ] look on loaded from firebase...");
     }
+
+    private void recycleBitmaps() {
+        if(MainActivity.stylist_bitmaps!=null){
+            for(Bitmap bm : stylist_bitmaps)
+            {
+                Log.e("IN LOOP:","looop");
+                bm.recycle();
+            }
+            stylist_bitmaps=null;
+            stylist_bitmaps=new ArrayList<Bitmap>();
+        }
+    }
+
     /**
      * This method request the OS for permission to grab a phone number
      * If this is a tablet then it will return null
@@ -506,10 +569,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ticketHistoryActivity() {
-       // Intent i = new Intent(this,TicketHistoryActivity.class);
+       Intent i = new Intent(this,TicketHistoryActivity.class);
        // i.putExtra("ticket_number",this.ticket_number);
        // i.putExtra("stylist",this.stylist);
-        this.startActivity(new Intent(this,TicketHistoryActivity.class));
+        i.putParcelableArrayListExtra("ticket_history",this.ticket_history);
+        this.startActivity(i);
     }
 
     ///////////////////////for ggogle maps
@@ -584,9 +648,9 @@ public class MainActivity extends AppCompatActivity {
      * Update the store in the list with the parameter store
      * @param store
      */
-    public static void updateStore(Store store) {
-        MainActivity.store_list.remove(selectedPosition);
-        MainActivity.store_list.add(selectedPosition,store);
+    public  void updateStore(FirebaseStore store) {
+        MainActivity.this.store_list.remove(selectedPosition);
+        MainActivity.this.store_list.add(selectedPosition,store);
     }
 
     /**
@@ -598,10 +662,10 @@ public class MainActivity extends AppCompatActivity {
      *
      */
 
-    public static void sendTicket(final Store store, Stylist sty, String cust_name, String phone,final ProgressDialog pd) {
+    public  void sendTicket(final FirebaseStore store, Stylist sty, String cust_name, String phone,final ProgressDialog pd) {
 
-        final  Ticket t = new Ticket(store.getCurrent_ticket(),(sty.getWait()+1)+"",cust_name,sty.getId(), sty.getName(),phone);//create the ticket
-        DatabaseReference ref =  db.getReference().child(String.valueOf(store.getStore_number())).child("tickets");
+        final  Ticket t = new Ticket(current_ticket,(sty.getWait()+1)+"",cust_name,sty.getId(), sty.getName(),phone);//create the ticket
+        DatabaseReference ref =  FirebaseDatabase.getInstance().getReference().child("tickets").child(String.valueOf(store.getStore_number()));
         /**Listen to firebase data changes and update new values..
          * */
         ref.addValueEventListener(new ValueEventListener() {
@@ -611,20 +675,24 @@ public class MainActivity extends AppCompatActivity {
                 List<Ticket> list = dataSnapshot.getValue(gti);
 
                 long curr_ticket = list!=null && list.size()>0 ? list.get(0).unique_id : 1;
-                store.setCurrentStoreTicket(curr_ticket);
+                 store.setCurrent_ticket (curr_ticket);
+
                 for(Ticket t : list){//linear runtime
-                    Stylist sty = store.getStylistHashMap().get(t.getStylist_id());//get the stylist of ticket
+                    Stylist sty = sty_hm.get(t.getStylist_id());//get the stylist of ticket
+                    Log.e("sty_hm ",sty_hm.toString());
+                    Log.e("ticket id:",t.stylist_id);
                     if(sty != null) {
                         sty.setWait(Integer.valueOf(t.getTicket()));//assume the last known record is the current max
-                        store.updateStylist(sty);//update stylist
-                        int pos = MainActivity.stylists_list.indexOf(sty);//old to new
-                        MainActivity.stylists_list.remove(pos);
-                        MainActivity.stylists_list.add(pos, sty);//update stylist_list
+                        sty_hm.put(sty.getId(),sty);//update stylist
+                        int pos = stylists_list.indexOf(sty);//old to new
+                        stylists_list.remove(pos);
+                        stylists_list.add(pos, sty);//update stylist_list
                     }
                 }//end for
                 //might need to update store list
-                 MainActivity.updateStore(store);
-               initializeStylists(MainActivity.stylists_list,stylist_bitmaps);//update GUI
+                 updateStore(store);
+
+               initializeStylists(stylists_list,stylist_bitmaps);//update GUI
 
             }
 
@@ -648,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
                             t.ticket = String.valueOf(Long.valueOf(t.ticket) + 1);//increment the next ticket waiting in line for stylist
                         }
                         curr_values.add(t);
-                        store.setCurrentStoreTicket(t.unique_id);
+                        store.setCurrent_ticket(t.unique_id);
 
                         mutableData.setValue(curr_values);
                     }else{//there was no entries in the url so create new List<Ticket> with the first entry
@@ -664,10 +732,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
                     pd.dismiss();
-                    Toast.makeText(MainActivity.a,"Your ticket is #"+t.unique_id,Toast.LENGTH_LONG).show(); //resetStylistChoice();//deselect radio button
+                    Toast.makeText(MainActivity.this,"Your ticket is #"+t.unique_id,Toast.LENGTH_LONG).show(); //resetStylistChoice();//deselect radio button
                      ticket_history.add(t);
-                    DatabaseReference hm = db.getReference().child(String.valueOf(store.getStore_number())).child("stylistHashMap");
-                    hm.setValue(store.getStylistHashMap());
+                    DatabaseReference hm = db.getReference().child("stylists").child(String.valueOf(store.getStore_number()));
+                    hm.setValue(sty_hm);
                     hm.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -688,7 +756,7 @@ public class MainActivity extends AppCompatActivity {
      * @param list_stylist
      * @param stylist_bitmaps
      */
-    public static void initializeStylists(ArrayList<Stylist> list_stylist, ArrayList<Bitmap> stylist_bitmaps) {
+    public  void initializeStylists(ArrayList<Stylist> list_stylist, ArrayList<Bitmap> stylist_bitmaps) {
         if(list_stylist==null){
             list_stylist = new ArrayList<>();
         }
@@ -696,20 +764,20 @@ public class MainActivity extends AppCompatActivity {
             stylist_bitmaps = new ArrayList<>();
         }
 
-        TextView tv = (TextView)rootView_LiveTab.findViewById(R.id.currentTicketTextView);
-        tv.setText(String.valueOf(store_list.get(selectedPosition).getCurrent_ticket()));
-        ListAdapter la=new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.a, R.layout.list_view_live_feed, list_stylist);
-        ListView lv=(ListView) MainActivity.rootView_LiveTab.findViewById(R.id.fragment_livefeed_listview);
+        TextView tv = (TextView)findViewById(R.id.currentTicketTextView);
+        tv.setText(""+store_list.get(selectedPosition).getCurrent_ticket());//String.valueOf(store_list.get(selectedPosition).getCurrent_ticket()));
+        ListAdapter la=new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, list_stylist);
+        ListView lv=(ListView) rootView_LiveTab.findViewById(R.id.fragment_livefeed_listview);
         lv.setAdapter(null);
         lv.setAdapter(la);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(final AdapterView<?> adapterView, View view, int position, long l) {
                 //Update selected stylist position  index
-                MainActivity.stylist_position = position;
-                Stylist s = MainActivity.stylists_list.get(position);
+                stylist_position = position;
+                Stylist s =stylists_list.get(position);
                 ((FirebaseWebTasks.ListViewAdpaterStylist) adapterView.getAdapter()).notifyDataSetChanged();
-                Toast.makeText(MainActivity.a, s.getName() + " selected.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, s.getName() + " selected.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -717,11 +785,12 @@ public class MainActivity extends AppCompatActivity {
     /**
      * A placeholder fragment containing store_list simple view.
      */
-    public static class TabFragment extends Fragment {
+    public static class TabFragment extends Fragment  implements MainActivityData{
         /**
          * The fragment argument representing the section number for this
          * fragment.
          */
+        private MainActivity ma;
         private static final String ARG_SECTION_NUMBER = "section_number";
 
         public TabFragment() {
@@ -733,7 +802,6 @@ public class MainActivity extends AppCompatActivity {
          * number.
          */
         public static TabFragment newInstance(int sectionNumber) {
-
             TabFragment fragment = new TabFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
@@ -754,7 +822,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case 1:
                     rootView = inflater.inflate(R.layout.fragment_layout_live_feed, container, false);
-                    rootView_LiveTab = rootView;
+                   ma.rootView_LiveTab = rootView;
                     break;
                 case 2:
                     rootView = inflater.inflate(R.layout.layout_appointment, container, false);
@@ -782,11 +850,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         private void fragmentView2(View rootView) {
-            MainActivity.rootView_Reservation = rootView;
+            ma.rootView_Reservation = rootView;
         }
 
         private void fragmentView0(final View rootView) {
-            MainActivity.rootView = rootView;
+            ma.rootView = rootView;
             final TextView miles = (TextView) rootView.findViewById(R.id.textView_distance);
             final SeekBar sb = (SeekBar) rootView.findViewById(R.id.seekBar_radius);
             sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -837,16 +905,15 @@ public class MainActivity extends AppCompatActivity {
             search.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (MainActivity.miles == sb.getProgress() + 1) {//repeated
+                    if (ma.miles == sb.getProgress() + 1) {//repeated
                         return;
                     } else {//get new search results
-                        if(store_list!=null)store_list.clear();
-                        if(stylists_list!=null)stylists_list.clear();
-                        if(stylist_bitmaps!=null)stylist_bitmaps.clear();
-                        store_list = null;
-                        stylists_list = null;
-                        stylist_bitmaps=null;
-                        MainActivity.miles = sb.getProgress();
+                        if(ma.store_list!=null)ma.store_list.clear();
+                        if(ma.stylists_list!=null)ma.stylists_list.clear();
+                        recycleBitmaps();
+                        ma.store_list = null;
+                       ma.stylists_list = null;
+                        ma.miles = sb.getProgress();
                        // lv = null;
                        // la = null;
                        /* StoresWebTask swt = new StoresWebTask(rootView);
@@ -855,16 +922,27 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
-            if (MainActivity.store_list == null) {//first time running
+            if (ma.store_list == null) {//first time running
                /* StoresWebTask swt = new StoresWebTask(rootView); //old style fetch from my database
                 swt.execute(sb.getProgress() + "");*/
                 loadStoresFromFirebase();
 
             } else {///could be here because of screen orient change so update ui
                 ListView lv = (ListView) rootView.findViewById(R.id.fragment_listview);
-                ListViewAdapter la = new ListViewAdapter(rootView.getContext(), store_list);
+                ListViewAdapter la = new ListViewAdapter(ma, ma.store_list);
+                lv.setAdapter(null);
                 lv.setAdapter(la);
-                showGoogleMaps(rootView, store_list);
+                ma.showGoogleMaps(rootView, ma.store_list);
+            }
+        }
+
+        private void recycleBitmaps() {
+            if(MainActivity.stylist_bitmaps!=null){
+                for(Bitmap bm : stylist_bitmaps)
+                {
+                    //Log.e("IN LOOP:","looop");
+                    bm.recycle();
+                }
             }
         }
 
@@ -873,43 +951,36 @@ public class MainActivity extends AppCompatActivity {
          * Then it populates the store list for program.
          */
         private void loadStoresFromFirebase() {
-            if(store_list != null){//empty list if not null
-                store_list.clear();
-            }
-            DatabaseReference db_ref = db.getReference();
-            final ProgressDialog pd = ProgressDialog.show(MainActivity.a, "Searching nearby stores", "Please wait...", true, false);
+            final ProgressDialog pd = ProgressDialog.show(ma, "Searching nearby stores", "Please wait...", true, false);
             pd.show();
-            db_ref.orderByChild("store_number").addListenerForSingleValueEvent(new ValueEventListener() {
+            if (ma.store_list != null) {//empty list if not null
+                ma.store_list.clear();
+            }
+            DatabaseReference db_ref = FirebaseDatabase.getInstance().getReference().child("user");
+            db_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    GenericTypeIndicator<List<Store>> gti = new GenericTypeIndicator<List<Store>>() {};
-                    if(MainActivity.stylists_list!=null)MainActivity.stylists_list.clear();
-                    if(MainActivity.store_list!=null)MainActivity.store_list.clear();
-                    if(MainActivity.stylist_bitmaps!=null)MainActivity.stylist_bitmaps.clear();
-                    List<Store> map = dataSnapshot.getValue(gti);
-                    //Log.e("TICKETS::onLOAD::",map.get(0).getTickets().toString());
-                   store_list = Utils.calculateDistance(MainActivity.user_loc, map, MainActivity.miles);
-                    MainActivity.selectedPosition = 0;
-                   // MainActivity.lv = null;
-                   // MainActivity.la = null;
-                    //MainActivity.lv =
-                    ListView lv = (ListView) rootView.findViewById(R.id.fragment_listview);
-                    ListViewAdapter la  = new ListViewAdapter(rootView.getContext(), store_list);
+                    if(dataSnapshot.getValue() ==null)return;
+                    GenericTypeIndicator<List<FirebaseStore>>gti = new GenericTypeIndicator<List< FirebaseStore>>() {};
+                    List<FirebaseStore> map = dataSnapshot.getValue(gti);
+                    ma.store_list = Utils.calculateDistance(ma.user_loc,map,ma.miles);
+                    ListView lv = (ListView) ma.rootView.findViewById(R.id.fragment_listview);
+                    ListViewAdapter la = new ListViewAdapter(ma, ma.store_list);
+                    lv.setAdapter(null);
                     lv.setAdapter(la);
                     pd.dismiss();
-                    showGoogleMaps(rootView, store_list);
-
+                    ma.showGoogleMaps(ma.rootView, ma.store_list);
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    Log.e("ON CANCEL","ERROR...\n"+databaseError.getMessage());
+                    pd.dismiss();
                 }
             });
-            db_ref = null;
-           // db = null;
-        }
 
+
+
+        }
 
         /**
          * This is the View to be inflated for the 2 tab or (tab #=1). Stylist View
@@ -925,10 +996,20 @@ public class MainActivity extends AppCompatActivity {
 
                     Snackbar.make(view, "Make Reservation", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
-                    showCreditCard();
+                    ma.showCreditCard();
 
                 }
             });
+        }
+
+        @Override
+        public void setMainActivity(MainActivity ma) {
+            this.ma = ma;
+        }
+
+        @Override
+        public MainActivity getMainActivity() {
+            return this.ma;
         }
     }
     /////////////////////////////////////////////////////////////////////////////////END CLASS
@@ -937,9 +1018,11 @@ public class MainActivity extends AppCompatActivity {
      * This is for Store list.
      * ArrayAdpater for stores.
      */
-    public static class ListViewAdapter extends ArrayAdapter<Store> {
-        public ListViewAdapter(Context c, ArrayList<Store> values) {
-            super(c, R.layout.list_view_layout, values);
+    public static class ListViewAdapter extends ArrayAdapter<FirebaseStore> {
+        private MainActivity ma;
+        public ListViewAdapter(MainActivity ma, ArrayList<FirebaseStore> values) {
+            super(ma, R.layout.list_view_layout, values);
+            this.ma = ma;
         }
 
         /**
@@ -950,37 +1033,38 @@ public class MainActivity extends AppCompatActivity {
         public View getView(final int position_item, View convertView, ViewGroup parent) {
             LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
             // Creating store_list view of row.
+            final FirebaseStore store = getItem(position_item);
             View rowView = inflater.inflate(R.layout.list_view_layout, parent, false);
             RadioButton r = (RadioButton) rowView.findViewById(R.id.radio_button);
-            double miles_away = getItem(position_item).getMiles_away();
+            double miles_away = store.getMiles_away();
             DecimalFormat df = new DecimalFormat("0.##");
-            r.setText("Shop: " + getItem(position_item) + "\n" + "Miles away: " + df.format(miles_away) + "\n" + "Address: " + getItem(position_item).getAddress().toUpperCase() + "\n" + getItem(position_item).getCitystate().toUpperCase());
+            r.setText("Shop: " + store.getName() + "\n" + "Miles away: " + df.format(miles_away) + "\n" + "Address: " + store.getAddress().toUpperCase() + "\n" + store.getCitystate().toUpperCase());
 
-            r.setChecked(position_item == selectedPosition);
+            r.setChecked(position_item == ma.selectedPosition);
             r.setTag(position_item);
             r.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (position_item != selectedPosition) {//new store...go get the stylists from that db
-                        stylists_list = null;//new store null stylists
+                    if (position_item != ma.selectedPosition) {//new store...go get the stylists from that db
+                       ma. stylists_list = null;//new store null stylists
                     }
-                    int LAST_PICKED=selectedPosition;
-                    selectedPosition = (Integer) view.getTag();
-                    if(selectedPosition != LAST_PICKED){
-                        Log.e("DIFF CHOICE::","sp: "+selectedPosition+" <> lastpicked: "+LAST_PICKED);
-                        STYLIST_BITMAPS_LOADED = false;
-                        if(stylists_list!=null)stylists_list.clear();
+                    int LAST_PICKED=ma.selectedPosition;
+                    ma.selectedPosition = (Integer) view.getTag();
+                    if(ma.selectedPosition != LAST_PICKED){
+                        Log.e("DIFF CHOICE::","sp: "+ma.selectedPosition+" <> lastpicked: "+LAST_PICKED);
+                        ma.STYLIST_BITMAPS_LOADED = false;
+                        if(ma.stylists_list!=null)ma.stylists_list.clear();
                         if(stylist_bitmaps!=null)stylist_bitmaps.clear();
                         stylist_bitmaps=null;
-                        stylists_list=null;
+                       ma.stylists_list=null;
                     }
                     notifyDataSetChanged();//updates the button click isset
-                    LatLng myLoc = getItem(position_item).getLocation();
+                    LatLng myLoc =store.getLocation();
                     // Updates the location and zoom of the MapView
                      com.google.android.gms.maps.model.LatLng l = new com.google.android.gms.maps.model.LatLng(myLoc.latitude,myLoc.longitude);
                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(l, 14);//20 is closeset 5 is largest
-                    gm.animateCamera(cameraUpdate);
-                    mv.onResume();
+                    ma.gm.animateCamera(cameraUpdate);
+                    ma.mv.onResume();
                 }
             });
             return rowView;
@@ -991,18 +1075,32 @@ public class MainActivity extends AppCompatActivity {
      * A {@link FragmentPagerAdapter} that returns store_list fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class CustomFragPageAdapter extends FragmentPagerAdapter implements MainActivityData {
+    public class CustomFragPageAdapter extends FragmentPagerAdapter{
         private MainActivity ma;
+        private HashMap<Integer,Fragment>map;
         public CustomFragPageAdapter(FragmentManager fm,MainActivity ma) {
             super(fm);
             this.ma=ma;
+            this.map = new HashMap<>();
         }
-
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return store_list TabFragment (defined as store_list static inner class above).
-            return TabFragment.newInstance(position + 1);
+            switch (position){
+                case 0:
+                    TabFragment tf = TabFragment.newInstance(position+1);
+                    tf.setMainActivity(ma);
+                    map.put(position,tf);
+                    return tf;
+                case 1:
+                    TabFragment tf2 = TabFragment.newInstance(position+1);
+                    tf2.setMainActivity(ma);
+                    map.put(position,tf2);
+                    return tf2;
+                default:
+                    return null;
+            }
         }
 
         @Override
@@ -1021,16 +1119,6 @@ public class MainActivity extends AppCompatActivity {
                // case 2:
                  //   return "Make Reservation";
             }
-            return null;
-        }
-
-        @Override
-        public void setMainActivity(MainActivity ma) {
-            this.ma = ma;
-        }
-
-        @Override
-        public MainActivity getMainActivity() {
             return null;
         }
     }

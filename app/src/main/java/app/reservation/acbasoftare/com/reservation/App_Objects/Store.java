@@ -23,7 +23,6 @@ public class Store implements Parcelable, Comparable<Store>  {
     private HashMap<String, Stylist> stylistHashMap = null;///this should hold all the stylists info
     private Reservation reservation;
     private long store_number;
-    private List<Stylist> stylistList;
     private List<Ticket> tickets;
     private long current_ticket;
     /**DEBUG CONSTRUCTOR
@@ -135,7 +134,6 @@ public class Store implements Parcelable, Comparable<Store>  {
         reservation_calendar_price = in.readDouble();
         reservation = in.readParcelable(Reservation.class.getClassLoader());
         store_number = in.readLong();
-        stylistList = in.createTypedArrayList(Stylist.CREATOR);
         tickets = in.createTypedArrayList(Ticket.CREATOR);
         current_ticket = in.readLong();
     }
@@ -192,15 +190,12 @@ public class Store implements Parcelable, Comparable<Store>  {
         return this.services;
     }
     public void addStoreStylist(){
-        if(stylistList==null){
-            stylistList = new ArrayList<>();
-        }
         if(this.stylistHashMap == null){
             stylistHashMap = new HashMap<>();
         }
         Stylist store = new Stylist();
         store.setStore_id(this.phone);
-        stylistList.add(0,store);
+        store.setPhone(this.phone);
         stylistHashMap.put(store.getId(),store);
     }
     public void addService(SalonService ss) {
@@ -225,14 +220,6 @@ public class Store implements Parcelable, Comparable<Store>  {
         s.incrementWait();
         this.stylistHashMap.put(id,s);
     }
-    public void setStylistList(List<Stylist> l){
-        if(this.stylistList == null){
-            this.stylistList = new ArrayList<>();
-        }
-        this.stylistList = l;
-    }
-    public List<Stylist> getStylistListFirebaseFormat(){return this.stylistList;}
-
 
     public String getName() {
         return name;
@@ -329,7 +316,6 @@ public String toString(){return this.getName();}
         parcel.writeDouble(reservation_calendar_price);
         parcel.writeParcelable(reservation, i);
         parcel.writeLong(store_number);
-        parcel.writeTypedList(stylistList);
         parcel.writeTypedList(tickets);
         parcel.writeLong(current_ticket);
     }

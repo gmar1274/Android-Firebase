@@ -18,7 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
 
@@ -241,6 +241,11 @@ public class Utils {
     }
     public static Bitmap convertBytesToBitmap(byte[] pic){
         BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 8;
+      //  options.inJustDecodeBounds =true;
+        options.outHeight=200;
+        options.outWidth =200;
+        options.inScaled=true;
          Bitmap b =  BitmapFactory.decodeByteArray(pic, 0,pic.length, options);
         //options.inSampleSize = 8;
         //int imgHeight = options.outHeight;
@@ -287,22 +292,21 @@ public class Utils {
      * This method  querys firebase stores stores all the stores in a list then calculates thhe distance from the user and
      * determines whether the store is in bounds(in radius search)
      * @param myLoc
-     * @param l
+     * @param map
      * @param radius
      * @return
      */
-    public static ArrayList<Store> calculateDistance(Location myLoc,  List<Store> l, int radius) {
-        ArrayList<Store> list = new ArrayList<>();
-        for(Store store : l){//search keySet
-
+    public static ArrayList<FirebaseStore> calculateDistance(Location myLoc, List<FirebaseStore> map, int radius) {
+        ArrayList<FirebaseStore> list = new ArrayList<>();
+        for(FirebaseStore store : map){//search keySet
             double dist = Distance.calculateDistance(myLoc.getLatitude(),myLoc.getLongitude(),store.getLocation().latitude,store.getLocation().longitude);
-            store.setDistanceAway(dist);
             if(dist <= radius) {
+                store.setMiles_away(dist);
                 list.add(store);
             }
         }
         Collections.sort(list);
-        l.clear();
+        map.clear();
         return list;
     }
 }

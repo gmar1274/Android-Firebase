@@ -12,7 +12,6 @@ import java.util.HashMap;
 
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.a;
 
 /**
  * Created by Gabe-ACBA on 12/1/2016.

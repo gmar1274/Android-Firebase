@@ -179,10 +179,10 @@ public boolean isPermissionError(){return  this.error;}
         }
         if(this.location.getLatitude()==loc.getLatitude() && this.location.getLongitude()==loc.getLongitude())return;///equal so dismiss
         this.location = loc;//might need to update google maps
-        if(MainActivity.mv != null && MainActivity.mainView!=null){//update map
-            MainActivity.user_loc = this.location;
+        /*if(ma.mv != null && ma.mainView!=null){//update map
+            ma.user_loc = this.location;
             //MainActivity.showGoogleMaps(MainActivity.mainView,MainActivity.store_list);
-        }
+        }*/
     }
 
     @Override

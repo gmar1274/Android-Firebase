@@ -31,6 +31,7 @@ import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.ReservationActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.ACBAPackage;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.ParamPair;
 import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
@@ -57,24 +58,24 @@ public class CreditCardDialog {
     private boolean success = false;
     private AlertDialog.Builder alert;
     private AlertDialog alertd;
-    private Store store;
+    private FirebaseStore store;
     private Stylist stylist;
     private View rootView;
     private ReservationActivity activity;
     private Card card;
-    private Activity act;
-    public CreditCardDialog(int store_pos, int styl_pos, String phone) {
+    private MainActivity act;
+    public CreditCardDialog(MainActivity ma,int store_pos, int styl_pos, String phone) {
         this.store_pos = store_pos;
         this.stylist_pos = styl_pos;
-        this.store = MainActivity.store_list.get(store_pos);
-        this.stylist = MainActivity.stylists_list.get(styl_pos);
+        this.store = ma.store_list.get(store_pos);
+        this.stylist = ma.stylists_list.get(styl_pos);
         this.phone = phone;
         this.activity=null;
         this.ws = new WebService();
-        this.act = MainActivity.a;
+        this.act = ma;
     }
 
-    public CreditCardDialog(ReservationActivity c, Store store, Stylist stylist, SalonService ss, TimeSet datetime) {///month reservation
+    public CreditCardDialog(ReservationActivity c, FirebaseStore store, Stylist stylist, SalonService ss, TimeSet datetime) {///month reservation
         this.activity = c;
         this.store = store;
         this.stylist = stylist;
@@ -82,15 +83,24 @@ public class CreditCardDialog {
         this.appointment = datetime;
     }
     public CreditCardDialog(Activity act, WebService ws){
-        this.act = act;
-        this.store = new Store();
+        try {
+            this.act = (MainActivity) act;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        this.store = new FirebaseStore();
         this.stylist = new Stylist("1212",true);
         this.phone = "";//user phone
         this.ws = ws;
     }
 public CreditCardDialog(Activity act){
-    this.act = act;
-    this.store = new Store();
+
+    try {
+        this.act = (MainActivity) act;
+    }catch (Exception e){
+        e.printStackTrace();
+    }
+    this.store = new FirebaseStore();
     this.stylist = new Stylist("1212",true);
     this.phone = "";//user phone
 
@@ -178,11 +188,11 @@ public CreditCardDialog(Activity act){
     }
 
     public void showCreditCardDialog() {
-        alert = new AlertDialog.Builder(MainActivity.a);
+        alert = new AlertDialog.Builder(this.act);
 
         alert.setTitle("Enter Contact Information");
 
-        LayoutInflater inflater = MainActivity.a.getLayoutInflater();
+        LayoutInflater inflater = this.act.getLayoutInflater();
 
         final View layout = inflater.inflate(R.layout.make_reservation_fragment, null);
 
@@ -204,7 +214,7 @@ public CreditCardDialog(Activity act){
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                LockDBPreserveSpot db = new LockDBPreserveSpot();
+                LockDBPreserveSpot db = new LockDBPreserveSpot(act);
                // db.execute(store.getPhone(), "" + MainActivity.ticket_number);// Canceled.
             }
         });
@@ -353,7 +363,7 @@ public void showCreditCardDialog(boolean test) {
         }
         ////////////////////////////then i think we can close the dialog
         alertd.dismiss();////////////////////not sure here
-        final ProgressDialog pd = ProgressDialog.show(MainActivity.a,"Grabbing Ticket","Please Wait...",true,false);
+        final ProgressDialog pd = ProgressDialog.show(act,"Grabbing Ticket","Please Wait...",true,false);
         pd.show();
 
         Stripe stripe = null;
@@ -408,8 +418,8 @@ private void webCallMakeCharge(Token token,ProgressDialog pd){
     /**
      * Calls firebase to add ticket
      */
-    private void firebaseAddTicket(Store s, Stylist sty, String cust_name,String phone,ProgressDialog pd) {
-        MainActivity.sendTicket(s,sty,cust_name,phone,pd);
+    private void firebaseAddTicket(FirebaseStore s, Stylist sty, String cust_name,String phone,ProgressDialog pd) {
+        act.sendTicket(s,sty,cust_name,phone,pd);
     }
 
     private void displayError() {
@@ -433,7 +443,7 @@ private void webCallMakeCharge(Token token,ProgressDialog pd){
                             Toast.makeText(activity.getApplicationContext(), msg, Toast.LENGTH_LONG).show();
 
                         } else {
-                            Toast.makeText(MainActivity.a.getApplicationContext(), msg, Toast.LENGTH_LONG).show();
+                            Toast.makeText(act.getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                         }
                         if (success) alertd.dismiss();
                     }
@@ -453,7 +463,7 @@ private void webCallMakeCharge(Token token,ProgressDialog pd){
             plan = new ACBAPackage();
             plan.debug();//
         }
-        this.act = a;
+        //this.act = a;
         alert = new AlertDialog.Builder(act);//
 
         alert.setTitle("Billing Information");

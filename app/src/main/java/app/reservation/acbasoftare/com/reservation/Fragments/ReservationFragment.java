@@ -12,15 +12,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import java.util.Date;
-
-import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.R;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.a;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.rootView_Reservation;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class ReservationFragment extends Fragment {
@@ -59,7 +55,7 @@ public class ReservationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        a.getWindow().setStatusBarColor(a.getResources().getColor(R.color.colorPrimaryDark));
+       // a.getWindow().setStatusBarColor(a.getResources().getColor(R.color.colorPrimaryDark));
         if(getArguments() != null) {
         } else {
 
@@ -93,9 +89,9 @@ public class ReservationFragment extends Fragment {
 
     private void delete() {
         Log.d("In Method:", "Btn pressed");
-      MainActivity.a.getFragmentManager().beginTransaction().remove(this).commit();
+      /*MainActivity.a.getFragmentManager().beginTransaction().remove(this).commit();
         ((ViewGroup)MainActivity.rootView_Reservation.getParent()).removeView(rootView_Reservation);
-        MainActivity.tabLayout.addView(rootView_Reservation,2);
+        MainActivity.tabLayout.addView(rootView_Reservation,2);*/
 
 
     }

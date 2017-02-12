@@ -34,19 +34,14 @@ import java.util.Collections;
 import app.reservation.acbasoftare.com.reservation.App_Activity.InStoreTicketReservationActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
-import app.reservation.acbasoftare.com.reservation.WebTasks.StylistWebTask;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.a;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.rootView;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_bitmaps;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_position;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.bitmaps;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.store;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.stylist_list;
 
 
 /**
@@ -65,7 +60,7 @@ public class FirebaseWebTasks {
         bit.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] arr=stream.toByteArray();
         TicketScreenActivity tsa = (TicketScreenActivity) a;
-        StorageReference ref= tsa.mStorageRef.child(store.getStore_number() + "/images/stylists/" + filename);//ticketScreenActivity
+        StorageReference ref= tsa.mStorageRef.child(tsa.store.getStore_number() + "/images/stylists/" + filename);//ticketScreenActivity
         UploadTask up=ref.putBytes(arr);
         up.addOnFailureListener(new OnFailureListener() {
             @Override
@@ -95,10 +90,10 @@ public class FirebaseWebTasks {
      * @param list_stylist
      * @param pd
      */
-    public static void downloadImages(final TicketScreenActivity tsa,final Store store,final ArrayList<Stylist>list_stylist, final ProgressDialog pd){
-       Collection<Stylist> arr = store.getStylistHashMap().values();
+    public static void downloadImages(final TicketScreenActivity tsa, final FirebaseStore store, final ArrayList<Stylist>list_stylist, final ProgressDialog pd){
+
        // final TicketScreenActivity tsa = (TicketScreenActivity) pd.getContext();
-        for(final Stylist s : arr ) {
+        for(final Stylist s : list_stylist ) {
            //Log.e("FIREBASE IMAGES STYLIS:",s.getId()+" ID AND NAME: "+s.getName());
             String name = s.getId();
            // if(name.equals("-1")){name = "-1.png";}
@@ -107,33 +102,19 @@ public class FirebaseWebTasks {
                 @Override
                 public void onSuccess(byte[] bytes) {
                     Log.e("OnSuccessImage","image on success");
-                   // byte[] qrimageBytes = Base64.decode(bytes, Base64.DEFAULT);
-                   // Bitmap bmp = BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length);//Utils.resize(BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length),100,100);
-                    //Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0,bytes.length);
-                    //ss.setBitmap(bmp); // Use the bytes to display the image
-                   // s.setImage_bytes(Utils.convertToString(bytes));
-                    //String byte_string = Utils.convertToString(bytes);
-                   // Log.e("ORIGINAL BYTES: ", Arrays.toString(bytes));
-                    //Log.e("BYTES TO STRING: ",byte_string);
-                    //Log.e("REVERSE back: ",Arrays.toString(Utils.convertToByteArray(byte_string)));
-                   // Bitmap b= Utils.convertBytesToBitmap(bytes);
-                    s.setImage_bytes(Utils.convertToString(bytes));
-                    bytes=null;
-                    list_stylist.add(s);
-                    Bitmap b = Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())); //Utils.decodeSampledBitmapFromArray(s.getImage_bytes(), 50, 50);
+                    Bitmap b = Utils.convertBytesToBitmap(bytes);//Utils.convertToByteArray(s.getImage_bytes())); //Utils.decodeSampledBitmapFromArray(s.getImage_bytes(), 50, 50);
                     bitmaps.add(b);
-                    if(bitmaps.size() == store.getStylistHashMap().values().size()){
+                    bytes=null;
+                    if(bitmaps.size() == list_stylist.size()){
                         pd.dismiss();
                     }
-                   //not sure store gets updated will delete the use even though its stored in array cant useon the change but its ok because i can set the stylist list to the list for store
-                   // pd.dismiss();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
                    Log.e("ERROR","IMAGE ERROR"); // Handle any errors
                     exception.printStackTrace();
-                   // pd.dismiss();
+                   pd.dismiss();
                 }
             });
         }
@@ -146,15 +127,10 @@ public class FirebaseWebTasks {
      * @param list_stylist
      * @param pd
      */
-    public static void downloadImages(final Store store, final ArrayList<Stylist>list_stylist, final ProgressDialog pd){
-        if(!store.getStylistHashMap().containsKey("-1")){
-            store.addStoreStylist();
-        }
-      ArrayList<Stylist> arr = new ArrayList<>(store.getStylistHashMap().values());
-        Collections.sort(arr);
+    public static void downloadImages(final MainActivity ma , final FirebaseStore store, final ArrayList<Stylist>list_stylist, final ProgressDialog pd){
 
         // final TicketScreenActivity tsa = (TicketScreenActivity) pd.getContext();
-        for(final Stylist s : arr ) {
+        for(final Stylist s : list_stylist ) {
             //Log.e("FIREBASE IMAGES STYLIS:",s.getId()+" ID AND NAME: "+s.getName());
             String name = s.getId();
             StorageReference sr = FirebaseStorage.getInstance().getReference().child(store.getPhone()+ "/images/stylists/"+name);
@@ -162,18 +138,20 @@ public class FirebaseWebTasks {
                 @Override
                 public void onSuccess(byte[] bytes) {
                     Log.e("OnSuccessImage","image on success");
-                    s.setImage_bytes(Utils.convertToString(bytes));
+                   // s.setImage_bytes(Utils.convertToString(bytes));
+                    //bytes=null;
+                    //list_stylist.add(s);
+                    Bitmap b = Utils.convertBytesToBitmap(bytes); //Utils.decodeSampledBitmapFromArray(s.getImage_bytes(), 50, 50);
                     bytes=null;
-                    list_stylist.add(s);
-                    Bitmap b = Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())); //Utils.decodeSampledBitmapFromArray(s.getImage_bytes(), 50, 50);
-                    MainActivity.stylist_bitmaps.add(b);
-                    if(MainActivity.stylist_bitmaps.size() == store.getStylistHashMap().values().size()){
-                        store.determineCurrentTicketAfterFirebaseLoads();
-                        MainActivity.updateStore(store);
-                        MainActivity.initializeStylists(list_stylist,stylist_bitmaps);
+                    if(stylist_bitmaps==null){stylist_bitmaps = new ArrayList<Bitmap>();}
+                    stylist_bitmaps.add(b);
+                    if(stylist_bitmaps.size() == list_stylist.size()){
+                        //store.determineCurrentTicketAfterFirebaseLoads();
+                        ma.updateStore(store);
+                        ma.initializeStylists(list_stylist,stylist_bitmaps);
                         Log.e("FINISH: ","Finished download images");
                         pd.dismiss();
-                        ProgressBar pb = (ProgressBar)MainActivity.rootView_LiveTab.findViewById(R.id.progressBar_live_feed);
+                        ProgressBar pb = (ProgressBar)ma.rootView_LiveTab.findViewById(R.id.progressBar_live_feed);
                         pb.setVisibility(View.GONE);
                     }
                     //not sure store gets updated will delete the use even though its stored in array cant useon the change but its ok because i can set the stylist list to the list for store
@@ -182,9 +160,8 @@ public class FirebaseWebTasks {
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
-                    MainActivity.stylists_list = null;
-                    MainActivity.stylist_bitmaps = null;
-                    MainActivity.initializeStylists(null,null);
+                    stylist_bitmaps = null;
+                    //ma.initializeStylists(ma.stylists_list,null);
                     Log.e("ERROR","IMAGE ERROR"); // Handle any errors
                     exception.printStackTrace();
                     pd.dismiss();
@@ -194,8 +171,10 @@ public class FirebaseWebTasks {
 
     }
     public static class ListViewAdpaterStylist extends ArrayAdapter<Stylist> {
-        public ListViewAdpaterStylist(Context c, int list_view_live_feed, ArrayList<Stylist> values) {
-            super(c, list_view_live_feed, values);
+        private MainActivity ma;
+        public ListViewAdpaterStylist(MainActivity ma, int list_view_live_feed, ArrayList<Stylist> values) {
+            super(ma, list_view_live_feed, values);
+            this.ma = ma;
         }
 
         public View getView(final int position, View convertView, ViewGroup parent) {
@@ -203,12 +182,12 @@ public class FirebaseWebTasks {
             // Check if an existing view is being reused, otherwise inflate the view
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_view_live_feed, parent, false);
             RadioButton r = (RadioButton) convertView.findViewById(R.id.live_feed_radiobtn);
-            r.setChecked(position ==  stylist_position);
+            r.setChecked(position ==  ma.stylist_position);
             r.setTag(position);
             r.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    stylist_position = (Integer) view.getTag();
+                    ma.stylist_position = (Integer) view.getTag();
                     notifyDataSetChanged();
                     //Toast.makeText(getContext(), getItem(position) + " selected", Toast.LENGTH_LONG).show();
                 }
@@ -216,7 +195,7 @@ public class FirebaseWebTasks {
             TextView tv_stylist=(TextView)convertView.findViewById(R.id.textView_stylist_lv);
             tv_stylist.setText(s.getName().toUpperCase());
             TextView tv_waiting=(TextView)convertView.findViewById(R.id.tv_waiting_lv);
-            tv_waiting.setText(""+s.getWait());
+            tv_waiting.setText(String.valueOf(s.getWait()));
             TextView tv_approx_wait=(TextView)convertView.findViewById(R.id.textView_aprox_wait_lv);
             tv_approx_wait.setText(Utils.calculateWait(s.getWait()));
             TextView tv_readyby=(TextView)convertView.findViewById(R.id.textView_readyby_lv);
@@ -229,15 +208,18 @@ public class FirebaseWebTasks {
 
             //Bitmap myBitmap = BitmapFactory.decodeFile("\\res\\drawable\\logo.png");
             QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.quickContactBadge);
-            if(s.getImage_bytes() == null){
+            //if(s.getImage_bytes() == null){
                 //iv.setImageDrawable(R.drawable.acba);//Utils.resize(rootView.getContext(),rootView.getResources().getDrawable(R.drawable.acba),50,50));
-            }else {
-                if (MainActivity.stylist_bitmaps == null || MainActivity.stylist_bitmaps.size() < position + 1) {
-                } else {
-                    iv.setImageBitmap(MainActivity.stylist_bitmaps.get(position)); // iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
+           // }else {
+                if (stylist_bitmaps != null && stylist_bitmaps.size()>=position+1 ){
+                    iv.setImageBitmap(stylist_bitmaps.get(position)); // iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
+                    if(position==0){
+                        iv.assignContactFromPhone(ma.store_list.get(ma.selectedPosition).getPhone(),true);
+                    }else{
+                        iv.assignContactFromPhone(s.getPhone(),true);
+                    }
                 }
-            }
-            iv.assignContactFromPhone(s.getPhone(),true);
+            //}
             iv.setMode(ContactsContract.QuickContact.MODE_LARGE);
             // iv.setVisibility(View.VISIBLE);
                 /*r.setOnClickListener(new View.OnClickListener() {

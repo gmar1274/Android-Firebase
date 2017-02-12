@@ -17,6 +17,8 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
+import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_bitmaps;
+
 /**
  * Created by user on 12/6/16.
  * A generic recycleview adapter. Of list Generic.
@@ -24,14 +26,16 @@ import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 public class RVAdapter<E> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static int CURSOR = 0;
     public static int SERVICE_CURSOR = 0;
+    private final MainActivity ma;
     private ArrayList<E> list;
     private int layout;
     private boolean stylist;
 
-    public RVAdapter(ArrayList<E> list, int layout, boolean stylist) {
+    public RVAdapter(MainActivity ma ,ArrayList<E> list, int layout, boolean stylist) {
         this.list = list;
         this.layout = layout;
         this.stylist = stylist;
+        this.ma = ma;
     }
 
     public Stylist getStylist() {
@@ -72,7 +76,7 @@ public class RVAdapter<E> extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder.stylist) {
             Stylist s = (Stylist) list.get(position);
             rb.setText(s.getName().toUpperCase());
-            Drawable d = new BitmapDrawable(MainActivity.a.getResources(), Utils.resize(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())),80,80));
+            Drawable d = new BitmapDrawable(ma.getResources(), Utils.resize(stylist_bitmaps.get(position),100,100));//Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())),80,80));
             rb.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
 
         } else {//do service

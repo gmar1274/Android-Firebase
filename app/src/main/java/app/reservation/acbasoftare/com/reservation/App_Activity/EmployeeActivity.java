@@ -364,7 +364,7 @@ public Store getStore(){
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if(dataSnapshot.getValue()==null)return;
-                    Log.e("DATASNAP: ",dataSnapshot.toString());
+                    //Log.e("DATASNAP: ",dataSnapshot.toString());
                     GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
                     List<Ticket> list = dataSnapshot.getValue(gti);
                     ArrayList<Ticket> tickets = new ArrayList<Ticket>(list);

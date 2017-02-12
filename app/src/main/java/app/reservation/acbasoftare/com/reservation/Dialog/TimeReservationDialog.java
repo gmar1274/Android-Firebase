@@ -23,14 +23,16 @@ public class TimeReservationDialog {
         private AlertDialog alertd;
         private Store store;
         private Stylist stylist;
+        private MainActivity ma;
         public boolean isSuccess() {
             return this.success;
         }
 
-        public void showReservationGUI() {
-            alert = new AlertDialog.Builder(MainActivity.a);
+        public void showReservationGUI(MainActivity ma) {
+            this.ma = ma;
+            alert = new AlertDialog.Builder(ma);
             alert.setTitle("Reservation Dialog");
-            LayoutInflater inflater = MainActivity.a.getLayoutInflater();
+            LayoutInflater inflater = ma.getLayoutInflater();
             final View layout = inflater.inflate(R.layout.activity_reservation, null);
             alert.setView(layout);
             alert.setPositiveButton("Reserve", new DialogInterface.OnClickListener() {
@@ -79,7 +81,7 @@ public class TimeReservationDialog {
                     new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(MainActivity.a.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ma.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
                             if (success) alertd.dismiss();
                         }
                     }

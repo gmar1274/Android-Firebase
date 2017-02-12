@@ -1,12 +1,14 @@
 package app.reservation.acbasoftare.com.reservation.App_Activity;
 
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +16,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -34,11 +38,15 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStoreMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Objects.LatLng;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
@@ -61,14 +69,16 @@ public class TicketScreenActivity extends AppCompatActivity {
     public  FirebaseDatabase database;
     private String email;
     private String password;
-    public static  ArrayList<Stylist> stylist_list;
+    public ArrayList<Stylist> stylist_list;
    // public static String store_id=null;
-    public static  Store store;
-    public  int stylist_position=0;
-    public static DatabaseReference myRef;
+    public FirebaseStore store;
+    public  int stylist_position=-1;
+    public DatabaseReference myRef;
     public ListView listView;
-    public static ArrayList<Ticket> tickets;
+   // public ArrayList<Ticket> tickets;
     public static  ArrayList<Bitmap>bitmaps;
+    public HashMap<String,Stylist> sty_hm;
+    public long current_ticket;
 
     //public Store store_firebase;
     protected void onSaveInstanceState(Bundle outState) {
@@ -79,8 +89,10 @@ public class TicketScreenActivity extends AppCompatActivity {
         outState.putString("email", email);
         outState.putString("password", password);
         outState.putInt("stylist_position", this.stylist_position);
-        outState.putParcelableArrayList("tickets",tickets);
+       // outState.putParcelableArrayList("tickets",tickets);
         outState.putParcelableArrayList("stylist_bitmaps",bitmaps);
+        outState.putSerializable("sty_hm",sty_hm);
+        outState.putLong("current_ticket", current_ticket);
     }
 
 
@@ -96,8 +108,10 @@ public class TicketScreenActivity extends AppCompatActivity {
             email=savedInstanceState.getString("email");
             password=savedInstanceState.getString("password");
             stylist_position=savedInstanceState.getInt("stylist_position");
-            tickets = savedInstanceState.getParcelableArrayList("tickets");
+           // tickets = savedInstanceState.getParcelableArrayList("tickets");
            bitmaps = savedInstanceState.getParcelableArrayList("stylist_bitmaps");
+            sty_hm = (HashMap<String, Stylist>) savedInstanceState.getSerializable("sty_hm");
+            this.current_ticket = savedInstanceState.getLong("current_ticket");
         } else {
             init();
         }
@@ -117,10 +131,11 @@ public class TicketScreenActivity extends AppCompatActivity {
      * Initialize all variables
      */
     private void init() {
+        sty_hm = new HashMap<>();
         bitmaps = new ArrayList<>();
-        tickets = new ArrayList<>();
+       // tickets = new ArrayList<>();
         listView = (ListView)this.findViewById(R.id.listview_main_ticket_queue);
-        ArrayAdapter<Ticket> adpt = new ArrayAdapter<Ticket>(this,R.layout.array_adapter_layout,R.id.textView_arrayadapter,tickets);
+        ArrayAdapter<Ticket> adpt = new ArrayAdapter<Ticket>(this,R.layout.array_adapter_layout,R.id.textView_arrayadapter,new ArrayList<Ticket>());
         this.listView.setAdapter(adpt);
         store=null;
         stylist_list=new ArrayList<>();
@@ -138,11 +153,12 @@ public class TicketScreenActivity extends AppCompatActivity {
         mStorageRef= FirebaseStorage.getInstance().getReference();
       /// myRef=database.getReference();//.getReference("message");
         /***********DEBUG POPULATE STORES FROM TEST DB MYSQL acba.com*************/
-       // StoresWebTaskPopulateStoreFromOldMYSQLServer swt = new StoresWebTaskPopulateStoreFromOldMYSQLServer(email,password,pd);
+       //StoresWebTaskPopulateStoreFromOldMYSQLServer swt = new StoresWebTaskPopulateStoreFromOldMYSQLServer(email,password,pd);
         //swt.execute();
 
         FirebaseLoadStylist l = new FirebaseLoadStylist(this,pd,email,password);
         l.execute();
+
         //ClientWebTask cwt=new ClientWebTask(this, email, password, pd);
         //cwt.execute();
 
@@ -167,24 +183,32 @@ protected void onPause(){
      */
     private void reserve() {
         Intent i=new Intent(this, InStoreTicketReservationActivity.class);
-       this.stylist_position=-1;//reset every time
+         this.stylist_position=-1;//reset every time
        ///FirebaseIntent fi = new FirebaseIntent(stylist_list,tickets,stylist_position);
-        //i.putParcelableArrayListExtra("stylist_list",this.stylist_list);
-        //i.putParcelableArrayListExtra("tickets",this.stylist_list);
-        //i.putExtra("store",store);
-        i.putExtra("stylist_position",this.stylist_position);
 
-        this.startActivity(i);
+        Bundle b = new Bundle();
+        b.putSerializable("sty_hm",sty_hm);
+        b.putParcelableArrayList("stylist_list",this.stylist_list);
+        b.putParcelableArrayList("tickets",this.stylist_list);
+        b.putParcelable("store",store);
+        b.putInt("stylist_position",this.stylist_position);
+        b.putLong("current_ticket",current_ticket);
+        i.putExtras(b);
+        startActivity(i);
     }
 @Override
 protected void onActivityResult(int requestCode, int resultCode, Intent intent){
-    if(resultCode==1){//1 will be the default readBack value from InStoreTicketReservationActivity
+    if(resultCode==1 && requestCode==1){//1 will be the default readBack value from InStoreTicketReservationActivity
         Log.d("onActivityResult TAG","on activity result tag completed in ticketScreenAct");
        // this.stylist_list = intent.getParcelableArrayListExtra("stylist_list");
-
-        this.tickets = intent.getParcelableArrayListExtra("tickets");
+        Bundle b = intent.getExtras();
+       // this.tickets = b.getParcelableArrayList("tickets");
        // this.store = intent.getParcelableExtra("store");
-        this.stylist_position =intent.getIntExtra("stylist_position",-1);
+        //this.stylist_position =intent.getIntExtra("stylist_position",-1);
+        this.stylist_list = b.getParcelableArrayList("stylist_list");
+        this.sty_hm = (HashMap<String, Stylist>) b.getSerializable("sty_hm");
+        this.store = b.getParcelable("store");
+        this.current_ticket = b.getLong("current_ticket");
 
         super.onActivityResult(requestCode,resultCode,intent);
 
@@ -195,15 +219,15 @@ protected void onActivityResult(int requestCode, int resultCode, Intent intent){
         ccd.showCreditCardDialog(true);
     }
 
-    public void updateListView() {
+    public void updateListView(List<Ticket> tickets) {
         if(stylist_list.size()==0){
-            stylist_list = store.getStylistList();
+            return;
         }
         for(Ticket t : tickets){//linear runtime
-            Stylist sty = store.getStylistHashMap().get(t.getStylist_id());//get the stylist of ticket
+            Stylist sty = sty_hm.get(t.getStylist_id());//get the stylist of ticket
             if(sty != null) {
                 sty.setWait(Integer.valueOf(t.getTicket()));//assume the last known record is the current max
-                store.updateStylist(sty);//update stylist
+                sty_hm.put(sty.getId(),sty);//update hashmap
                 int pos = stylist_list.indexOf(sty);//old to new
                 stylist_list.remove(pos);
                 stylist_list.add(pos, sty);//update stylist_list
@@ -354,8 +378,8 @@ this.email=email;
         try {
             int miles = 200;
 
-            String link = "http://acbasoftware.com/pos/store_firebase.php";
-            String data = URLEncoder.encode("store_firebase", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbastorelistacba"), "UTF-8");
+            String link = "http://acbasoftware.com/pos/store.php";
+            String data = URLEncoder.encode("store", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbastorelistacba"), "UTF-8");
 
             data += "&" + URLEncoder.encode("lat", "UTF-8") + "=" + URLEncoder.encode(34.0633 + "", "UTF-8");
             data += "&" + URLEncoder.encode("lon", "UTF-8") + "=" + URLEncoder.encode(  -117.6509+ "", "UTF-8");
@@ -396,14 +420,18 @@ this.email=email;
     @Override
     protected void onPostExecute(String result) {
 
+       Log.e("Web SERVER RESPONSE::",result);
+        Map<String,Object> store_map = new HashMap<>();
+        //  ArrayList<Store> store_firebase = new ArrayList<>();
 
+        HashMap<String,Stylist> hm = new HashMap<>();
+
+        Map<String,Object>sty_hm=new HashMap<>();////firebase/stylists/stylistHashMap{hm}
+        Map<String, Object> firebaseStore = new HashMap<>();
+
+        Map<String,Object>firebaseMetaData = new HashMap<>();
         try {
-           // Log.e("Web SERVER RESPONSE::",result);
-            Map<String,Object> store_map = new HashMap<>();
-              //  ArrayList<Store> store_firebase = new ArrayList<>();
             JSONObject jObject = new JSONObject(result);
-            HashMap<String,Stylist> hm = new HashMap<>();
-
             JSONArray jArray2 = jObject.getJSONArray("stylist");
             for (int i = 0; i < jArray2.length(); i++) {
                 try {
@@ -419,13 +447,15 @@ this.email=email;
                     // Bitmap myBitmap = jobj.getby
 
                     Stylist s = new Stylist(stylist_id,fname,mname,lname,available,null,phone,null);
+
                     hm.put(s.getId(),s);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
-            JSONArray jArray = jObject.getJSONArray("store_firebase");
+            JSONArray jArray = jObject.getJSONArray("store");
             for (int i = 0; i < jArray.length(); i++) {
                 try {
                     JSONObject oneObject = jArray.getJSONObject(i);
@@ -449,16 +479,60 @@ this.email=email;
                     String subscription_id = oneObject.getString("subscription_id");
                     String email = oneObject.getString("email");
                     String password = oneObject.getString("password");
+                    String google = oneObject.getString("google_place_id");
                     Store s = new Store(i,name, addr, citystate, phone, lat, lon,i,i,ticket_price,open,close,cprice,email,password,current_ticket,card_id,subscription_id);
                     //store_firebase.add(s);
                     s.setStylistHashMap(hm);
+                    s.addStoreStylist();
+                    hm.put("-1",s.getStylistHashMap().get("-1"));
                     store_map.put(""+i,s);
+
+                    sty_hm.put(i+"",hm);
+
+                    FirebaseStoreMetaData fsmd = new FirebaseStoreMetaData(i,s.getPhone(),loc2,google);
+                    firebaseMetaData.put(i+"",fsmd);
+                    FirebaseStore fs = new FirebaseStore(i,name, addr, citystate, phone, loc2,ticket_price,open,close,cprice,email,password,card_id,subscription_id,google);
+                    firebaseStore.put(i+"",fs);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }///////end for
            // Map<String, Object> hashtaghMap = new ObjectMapper().convertValue(hashtaghModel, Map.class);
         //update just make unstatic   // myRef.updateChildren(store_map); //push cretes a new timestamp in the directory every time i call it
+Log.e("MAKING CALLLLLL:","making calls");
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+            ref.child("user-meta-data").setValue(firebaseMetaData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.e("meta data: ",""+task.isSuccessful());
+                }
+            });
+            ref.child("user").setValue(firebaseStore).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.e("user: ",""+task.isSuccessful());
+                }
+            });
+            List<Ticket> t = new ArrayList<>();
+            Map<String,Object> mt = new HashMap<>();
+            for(int i =0 ; i < firebaseMetaData.values().size(); ++i){
+                mt.put(i+"",t);
+            }
+            ref.child("tickets").setValue(mt).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.e("tickets: ",""+task.isSuccessful());
+                }
+            });
+            ref.child("stylists").setValue(sty_hm).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Log.e("stylists: ",""+task.isSuccessful());
+                }
+            });
+            Log.e("HERe","here");
+
+
         } catch (JSONException e) {
            e.printStackTrace();
         }finally {
@@ -475,7 +549,7 @@ this.email=email;
 class FirebaseLoadStylist extends AsyncTask<String,Void, Void> {
     private ProgressDialog pd;
     private String email, password;
-    private Store store_firebase;
+    private FirebaseStore store_firebase;
     private TicketScreenActivity act;
 
     public FirebaseLoadStylist(TicketScreenActivity act,ProgressDialog pd, String email, String pass) {
@@ -496,7 +570,7 @@ class FirebaseLoadStylist extends AsyncTask<String,Void, Void> {
 
     @Override
     protected Void doInBackground(final String... strings) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("user");
         //roots order by child get the Store JSON and gets the value email
         reference.orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -506,7 +580,7 @@ class FirebaseLoadStylist extends AsyncTask<String,Void, Void> {
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {//will produce all of the keys in firebase db
                     // Log.e("IN LOOP FIREBASE:: ",""+dds.getKey());
                     // do something with the individual "key"
-                   Store s = ds.getValue(Store.class);
+                   FirebaseStore s = ds.getValue(FirebaseStore.class);
                    if (s.getEmail().equals(email) && s.getPassword().equals(password)) {
                      //   Log.e("Store selected is: ", s.getName());
                        //Log.e("STORE KEY",ds.getKey());// GenericTypeIndicator<List<Stylist>> g = new GenericTypeIndicator<List<Stylist>>() {};
@@ -518,20 +592,37 @@ class FirebaseLoadStylist extends AsyncTask<String,Void, Void> {
                         //  Log.d("Stylists class:: ", sty_obj.toString());
                         //Log.e("Stylist are without/ge", obj.toString());
                        store_firebase = s;
-                       store_firebase.addStoreStylist();
                        // store_firebase.setStylistList(list);
                         //  store_firebase.setStylistList(l);
                         found = true;
+                        break;
                    }
 
                 }
                 if (found) {///set up program like like to database
+                    act.store = store_firebase;
+                    DatabaseReference ref_get_hm = FirebaseDatabase.getInstance().getReference().child("stylists").child(String.valueOf(store_firebase.getStore_number()));
+                    ref_get_hm.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.getValue()==null)return;
+                            GenericTypeIndicator<Map<String,Stylist>> gti = new GenericTypeIndicator<Map<String, Stylist>>() {};
+                            Map<String,Stylist> hm = dataSnapshot.getValue(gti);
+                            Log.e("FETCHING STYLISTs: ",hm.toString());
+                            act.sty_hm = new HashMap<String, Stylist>(hm);
+                             act. stylist_list = new ArrayList<Stylist>(hm.values());
 
-                   act.myRef=act.database.getReference().child(store_firebase.getStore_number()+"").child("tickets");//refernce to all tickets for the store_firebase Store.
-                     FirebaseWebTasks.downloadImages(act,store_firebase,act.stylist_list, pd);
+                            Collections.sort(act.stylist_list);
+                            FirebaseWebTasks.downloadImages(act,store_firebase, act.stylist_list, pd);
+                        }
 
-                    store_firebase.setStylistList(act.stylist_list);//hopefullys stores the stylist
-                    act.store= store_firebase;
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                                databaseError.toException().printStackTrace();
+                        }
+                    });
+
+                   act.myRef=act.database.getReference().child("tickets").child(store_firebase.getStore_number()+"");//refernce to all tickets for the store_firebase Store.
                     // Read from the database
                     act.myRef.addValueEventListener(new ValueEventListener() {
                         @Override
@@ -541,12 +632,11 @@ class FirebaseLoadStylist extends AsyncTask<String,Void, Void> {
                             Log.d("FIREBASE LISTENER", "Value UPDATEDDDDD...."+dataSnapshot.getValue().toString());
                             GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
                             List<Ticket> current_tickets  = dataSnapshot.getValue(gti);
+                            act.current_ticket = current_tickets.get(0).unique_id;
                             //update current store_firebase absolute ticket #
                             //update stores current ticket list but as of now im not storing that just displaying
-
-                            act.tickets = new ArrayList<Ticket>(current_tickets);//finalize the updating
-                            act.updateListView();
-
+                            //act.tickets = new ArrayList<Ticket>(current_tickets);//finalize the updating
+                            act.updateListView(current_tickets);
                         }
 
                         @Override

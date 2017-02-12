@@ -162,7 +162,7 @@ protected void onPause(){
     }
 
     /**
-     * On Button click to grab ticket...
+     * On Button click to grab ticket_number...
      * Pass this object to class
      */
     private void reserve() {
@@ -200,9 +200,9 @@ protected void onActivityResult(int requestCode, int resultCode, Intent intent){
             stylist_list = store.getStylistList();
         }
         for(Ticket t : tickets){//linear runtime
-            Stylist sty = store.getStylistHashMap().get(t.getStylist_id());//get the stylist of ticket
+            Stylist sty = store.getStylistHashMap().get(t.getStylist_id());//get the stylist of ticket_number
             if(sty != null) {
-                sty.setWait(Integer.valueOf(t.getTicket()));//assume the last known record is the current max
+                sty.setWait(Integer.valueOf(t.getTicket_number()));//assume the last known record is the current max
                 store.updateStylist(sty);//update stylist
                 int pos = stylist_list.indexOf(sty);//old to new
                 stylist_list.remove(pos);
@@ -541,8 +541,8 @@ class FirebaseLoadStylist extends AsyncTask<String,Void, Void> {
                             Log.d("FIREBASE LISTENER", "Value UPDATEDDDDD...."+dataSnapshot.getValue().toString());
                             GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
                             List<Ticket> current_tickets  = dataSnapshot.getValue(gti);
-                            //update current store_firebase absolute ticket #
-                            //update stores current ticket list but as of now im not storing that just displaying
+                            //update current store_firebase absolute ticket_number #
+                            //update stores current ticket_number list but as of now im not storing that just displaying
 
                             act.tickets = new ArrayList<Ticket>(current_tickets);//finalize the updating
                             act.updateListView();

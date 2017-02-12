@@ -37,6 +37,7 @@ import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherInterstitialAd;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,6 +45,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
+import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseEmployeeLogin;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.WebTasks.Login;
 
@@ -150,20 +152,21 @@ public class LoginActivity extends AppCompatActivity  {
         AdRequest adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
         mAdView.loadAd(adRequest);
         //////////load Ad
-
+        // Set up the login form.
+        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        mPasswordView = (EditText) findViewById(R.id.password);
        //////////
         pref = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
        // pref.edit().putString(PREF_USERNAME,null).putString(PREF_PASSWORD,null).commit();//debug clear memory of use
         String username = pref.getString(PREF_USERNAME, null);
         String password = pref.getString(PREF_PASSWORD, null);
         if (username != null && password != null) {
-            Login login = new Login(this);
-            login.execute(username, Encryption.encryptPassword(password));
+            signIn(username,password);
+            //Login login = new Login(this);
+            //login.execute(username, Encryption.encryptPassword(password));
             return;
         }
-        // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
-        mPasswordView = (EditText) findViewById(R.id.password);
+
         final Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -282,24 +285,24 @@ public class LoginActivity extends AppCompatActivity  {
             focusView.requestFocus();
         } else {
 ////////sign in listener for firebase
-            pd = ProgressDialog.show(this,"Authenticating","Please wait...",true,false);
-            pd.show();
-            mAuth.signInWithEmailAndPassword(email,Encryption.encryptPassword(password)).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    pd.dismiss();
-                    if(task.isSuccessful()) {
-                        goToMainActivity();
-                    }else{
-                        //LOGIN USING MY SERVER
-                        myLogin(email,password);
-
-                    }
-                    Log.e("IN ON COMPLETE LISTENER","HERE ");
-                }
-            });
+            ///sign in if user in firebase otherwise sign in anon to check if stylist
+            signIn(email,password);
 
         }
+    }
+
+    private void signIn(final String email, final String password){
+        pd = ProgressDialog.show(this,"Authenticating","Please wait...",true,false);
+        pd.show();
+       FirebaseAuth.getInstance().signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                        @Override
+                        public void onSuccess(AuthResult authResult) {
+                            FirebaseEmployeeLogin fe = new FirebaseEmployeeLogin(LoginActivity.this, email, password, mEmailView, mPasswordView, pd);
+                            fe.execute();
+                            //LOGIN USING MY SERVER
+                            // myLogin(email,password);
+                        }
+                    });
     }
     private void myLogin(String email, String password) {
         Login login = new Login(this, mEmailView, mPasswordView, pref);

@@ -107,15 +107,17 @@
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
+        <activity
+            android:name=".App_Activity.EmployeeActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden"></activity>
+
+
 
         <activity
             android:name=".App_Activity.ReservationActivity"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden"></activity>
-        <activity
-            android:name=".App_Activity.EmployeeActivity"
-            android:label="@string/title_activity_employee"
-            android:screenOrientation="portrait"></activity>
         <activity android:name=".App_Activity.DateViewerActivity"></activity>
         <activity
             android:name=".App_Activity.RegisterShopActivity"

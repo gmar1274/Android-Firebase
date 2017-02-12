@@ -2,7 +2,6 @@ package app.reservation.acbasoftare.com.reservation.App_Activity;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,6 +13,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.annotation.StringDef;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -24,6 +25,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +33,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -38,6 +41,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -46,19 +51,25 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseEmployee;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Reservation;
-import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
+import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.ExpandableListView.ExpandableListViewAdapter;
+import app.reservation.acbasoftare.com.reservation.ListAdapters.DateArrayAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
+import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 import app.reservation.acbasoftare.com.reservation.WebTasks.StylistWebTaskAppointments;
 import app.reservation.acbasoftare.com.reservation.WebTasks.UploadImageWebTask;
 
@@ -66,88 +77,58 @@ import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActi
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.PREF_USERNAME;
 
 public class EmployeeActivity extends AppCompatActivity {
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+   // private SectionsPagerAdapter mSectionsPagerAdapter;
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
-    public static Reservation reservation;
-    public  String stylist_id;
-    public  String store_id;
-   // public static employee_activity employeeActivity;
+    // public static Reservation reservation;
+    // public static String stylist_id;
+    // public static String store_id;
+    //  public static EmployeeActivity employeeActivity;
     private SectionsPagerAdapter mCustomFragPageAdapter;
     private TabLayout tabLayout;
-   // public static Stylist stylist;
-   // public static View tab2;// tab3;
-    public static ExpandableListViewAdapter lva;
-    private Store store;
+    //  public static Stylist stylist;
+    //  public static View tab3, tab2;
+    //public static ExpandableListViewAdapter lva;
+    private FirebaseEmployee firebaseEmployee;
+    public static Bitmap empBitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_employee);
-       // employeeActivity=this;
-        store_id=getIntent().getStringExtra("store_id");
-        stylist_id=getIntent().getStringExtra("stylist_id");
 
+        this.firebaseEmployee = this.getIntent().getParcelableExtra("employee");
+        //Log.e("Emppp:",firebaseEmployee.toString());
+        // employeeActivity=this;
+        // store_id=getIntent().getStringExtra("store_id");
+        // stylist_id=getIntent().getStringExtra("stylist_id");
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter=new SectionsPagerAdapter(getSupportFragmentManager(),EmployeeActivity.this);
+      //  mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), this);
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager=(ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+      //  mViewPager = (ViewPager) findViewById(R.id.container);
+       // mViewPager.setAdapter(mSectionsPagerAdapter);
 ///////////////////////////////////////////////////////////////
         //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_employeeactivity);
         //setSupportActionBar(toolbar);
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
-        /*Bundle b = new Bundle();
-        b.putString("store_id",store_id);
-        b.putString("stylist_id",stylist_id);*/
-        mCustomFragPageAdapter=new EmployeeActivity.SectionsPagerAdapter(getSupportFragmentManager(),this);
+        mCustomFragPageAdapter = new EmployeeActivity.SectionsPagerAdapter(getSupportFragmentManager(), this);
 
         // Set up the ViewPager with the sections adapter.
-        mViewPager=(ViewPager) findViewById(R.id.container);
+        mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mCustomFragPageAdapter);
-        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                /*Log.e("PAGE SELECTED::: ", String.valueOf(position));
-                SectionsPagerAdapter sp  =  (SectionsPagerAdapter)mViewPager.getAdapter();
-                Log.e("SP: Key[int]: ",""+sp.map.containsKey(position)+" <> is emp_act null? "+String.valueOf(sp.map.get(position).employee_activity==null));
-               PlaceholderFragment p = sp.map.get(position);
-                p.setEmployeeActivityData(EmployeeActivity.this);
-                Log.e("PlaceHolder Frag: #",p.toString());*/
-
-                if(position==1){
-
-                }
-                /*if(position == 1) {
-                    if(reservation == null || lva == null || tab2 == null) return;//break if null
-                    fragmentTab2();
-                }*/
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
-        tabLayout=(TabLayout) findViewById(R.id.tabs_employeeactivity);
+        tabLayout = (TabLayout) findViewById(R.id.tabs_employeeactivity);
         tabLayout.setupWithViewPager(mViewPager);
 
         /////////////////////////
 
     }
-public Store getStore(){
-    return this.store;
-}
+
     /*private void fragmentTab2() {
         ListView lv=(ListView) tab2.findViewById(R.id.listview_employee_activity);
         ArrayList<String> days=reservation.getDaysReserved();//for given stylist
@@ -167,12 +148,14 @@ public Store getStore(){
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id=item.getItemId();
+        int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if(id == R.id.log_out) {
-            SharedPreferences pref=PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+        if (id == R.id.log_out) {
+            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
             pref.edit().putString(PREF_USERNAME, null).putString(PREF_PASSWORD, null).commit();//debug clear memory of use
+            Intent i = new Intent(this, LoginActivity.class);
+            startActivity (i);
             finish();
             return true;
         }
@@ -180,20 +163,20 @@ public Store getStore(){
         return super.onOptionsItemSelected(item);
     }
 
-   /* public static String getStoreID() {return store_id;}
+    //public static String getStoreID() {return store_id;}
 
-    public static String getStylistID() {return stylist_id;}*/
+    //public static String getStylistID() {return stylist_id;}
 
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment implements EmployeeActivityData {
+    public static class PlaceholderFragment extends Fragment implements EmployeeData {
         /**
          * The fragment argument representing the section number for this
          * fragment.
          */
-        private static final String ARG_SECTION_NUMBER="section_number";
-        private EmployeeActivity employee_activity;
+        private EmployeeActivity ea;
+        private static final String ARG_SECTION_NUMBER = "section_number";
 
         public PlaceholderFragment() {
         }
@@ -203,8 +186,8 @@ public Store getStore(){
          * number.
          */
         public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment=new PlaceholderFragment();
-            Bundle args=new Bundle();
+            PlaceholderFragment fragment = new PlaceholderFragment();
+            Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
             return fragment;
@@ -214,27 +197,20 @@ public Store getStore(){
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             //that holds all components(Views) for the tab screens
-            int page=this.getArguments().getInt(ARG_SECTION_NUMBER);
-            View rootView=null;
-            switch(page - 1) {
+            int page = this.getArguments().getInt(ARG_SECTION_NUMBER);
+            View rootView = null;
+            switch (page - 1) {
                 case 0:
-                    rootView =inflater.inflate(R.layout.fragment_employee_settings_current_tickets, container, false);///this is the fragment view
+                    rootView = inflater.inflate(R.layout.fragment_employee_store_ticket_lists, container, false); //inflater.inflate(R.layout.fragment_employee_today_layout, container, false);///this is the fragment view
                     break;
                 case 1:
-                    rootView = inflater.inflate(R.layout.fragment_employee_activity_settings_layout, container, false);///this is the fragment view
-                    ///tab2=rootView;
-                    break;
-               /* case 0:
-                    rootView=inflater.inflate(R.layout.fragment_employee_today_layout, container, false);///this is the fragment view
-                    break;
-                case 1:
-                    rootView=inflater.inflate(R.layout.fragment_employee_upcoming_layout, container, false);
-                    tab2=rootView;
+                    rootView = inflater.inflate(R.layout.fragment_employee_activity_settings_layout, container, false);  //rootView = inflater.inflate(R.layout.fragment_employee_upcoming_layout, container, false);
+                    //tab2=rootView;
                     break;
                 case 2:
-                    rootView=inflater.inflate(R.layout.fragment_employee_activity_settings_layout, container, false);
-                    tab3=rootView;
-                    break;*/
+                    rootView = inflater.inflate(R.layout.fragment_employee_activity_settings_layout, container, false);
+                    // tab3=rootView;
+                    break;
             }
             return displayView(rootView, page - 1);
         }
@@ -244,160 +220,124 @@ public Store getStore(){
               * */
         private View displayView(View rootView, int page) {
 
-            switch(page) {
+            switch (page) {
                 case 0:
-                    firebaseFrag1(rootView);
+                    fragmentStoreList(rootView);//fragmentView0(rootView);
                     break;
                 case 1:
-                    firebaseFrag2(rootView);
-                    break;
-                /*case 0:
-                   // fragmentView0(rootView);
-                    break;
-                case 1:
+                    fragmentView2(rootView);
                     break;
                 case 2:
-                    fragmentView2(rootView);
-                    break;*/
+                    //fragmentView2(rootView);
+                    break;
             }
             return rootView;
         }
 
-        private void firebaseFrag2(View rootView) {
-        }
-
-        /**
-         * Display all current tickets(ArrayList<Ticket> from firebase)
-         * @param rootView
-         */
-        private void firebaseFrag1(View rootView) {
-           final ProgressDialog pd = ProgressDialog.show(this.employee_activity,"Updating Tickets","Please Wait...",true,false);
-            pd.show();
-            ListView lv = (ListView) rootView.findViewById(R.id.mobile_tickets_lv);
-            //make call to firebase
-            FirebaseDatabase db = FirebaseDatabase.getInstance();
-            db.getReference().orderByChild("store_number").addListenerForSingleValueEvent(new ValueEventListener() {
+        private void fragmentStoreList(View rootView) {
+           final ListView lv = (ListView) rootView.findViewById(R.id.store_ticketlist_lv);
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("tickets/"+ea.firebaseEmployee.getStore_number());
+            ref.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    for(DataSnapshot ds : dataSnapshot.getChildren()){
-                        Store s = ds.getValue(Store.class);
-                        if(s.getPhone().equalsIgnoreCase(employee_activity.getStoreID()) && s.getStylistHashMap().containsKey(employee_activity.getStylistID())){
-                          employee_activity.setStore(s);
-                            //LIST ADAPTER FOR TICKETS
-                            displayTickets(employee_activity,pd);
-                            return;
+                    lv.setAdapter(null);
+                    GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
+                    List<Ticket> list = dataSnapshot.getValue(gti);
+                    EmployeeStoreTicketAdapter a = new EmployeeStoreTicketAdapter(ea,0,list);
+                    lv.setAdapter(a);
+                    lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> adapterView, View view, int pos, long l) {
+                           Ticket t = (Ticket) adapterView.getItemAtPosition(pos);
+                           // Toast.makeText(ea,"Are you sure want to delete this ticket_number #"+t.unique_id+"#? Action cannot be undone.",Toast.LENGTH_LONG).show();
+                                showAlert(t);
                         }
-                    }
+                    });
                 }
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                        databaseError.toException().printStackTrace();
+
                 }
-            });
+            });//listener
+
         }
 
-        /**
-         * This method gets called after it queries firebase..
-         * @param employee_activity
-         */
-        private void displayTickets(final EmployeeActivity employee_activity, final ProgressDialog pd) {
-            ArrayList<Ticket> list = new ArrayList<>(employee_activity.getStore().getTickets());
-            //Log.e("DISPLAYING TICKETS: ", list.toString());
-            this.employee_activity =employee_activity;
-            ListView lv = (ListView)this.employee_activity.findViewById(R.id.mobile_tickets_lv);
-            ListViewTicketAdapter la = new ListViewTicketAdapter(this.employee_activity,list);
-            lv.setAdapter(la);
-            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
-                    Ticket t = (Ticket) adapterView.getAdapter().getItem(pos);//((ListViewTicketAdapter)lv.getAdapter()).getItem(pos);
-                    Toast.makeText(employee_activity,t.getUnique_id()+" selected",Toast.LENGTH_LONG).show();
-                    showAlertDialog(t);
-                }
-            });
-            pd.dismiss();
-        }
-
-        private void showAlertDialog(final Ticket t) {
-            new AlertDialog.Builder(this.employee_activity).setTitle("Remove Ticket #"+t.getUnique_id()).setMessage("Are you sure you want to delete " +
-                    "Ticket:[#"+t.getUnique_id()+" name: "+t.getName()+"] ?").setIcon(this.employee_activity.getResources().getDrawable(android.R.drawable.ic_dialog_alert))
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            deleteTicket(t);
-                        }
-                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        private void showAlert(final Ticket t) {
+            new AlertDialog.Builder(ea).setTitle("Delete Ticket #"+t.unique_id+"?").setMessage("This action cannot be undone").setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
 
+                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("tickets/"+ea.firebaseEmployee.getStore_number());
+                    ref.runTransaction(new Transaction.Handler() {
+                        @Override
+                        public Transaction.Result doTransaction(MutableData mutableData) {
+
+                            if(mutableData.getValue() == null){
+                                return Transaction.success(mutableData);
+                            }
+                            GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
+                            List<Ticket> list = mutableData.getValue(gti);
+                           // Log.e("list size!:: ","sizeee "+list.size()+"list:: "+list+" con::"+list.contains(t));
+                            if(list.contains(t)){
+                             //   Log.e("in contains!:: ","true comtainsd..");
+                                list.remove(t);
+                            }
+                            //Log.e("after size!:: ",""+list.size());
+                            mutableData.setValue(list);
+                            return Transaction.success(mutableData);
+                        }
+
+                        @Override
+                        public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+
+                            Log.e("on complete delete ...","on complete");
+                        }
+                    });
+                }
+            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    //nothing
                 }
             }).show();
         }
 
-        /**
-         * Make a transaction to delete Ticket
-         * @param t
-         */
-        private void deleteTicket(final Ticket t){
-            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(String.valueOf(this.employee_activity.store.getStore_number())).child("tickets");
-            ref.runTransaction(new Transaction.Handler() {
-                @Override
-                public Transaction.Result doTransaction(MutableData mutableData) {
-                    if(mutableData.getValue() == null){
-                      return Transaction.success(mutableData);
+        private void fragmentView2(final View rootView) {
+            if (ea.firebaseEmployee != null) {
+                StorageReference sr = FirebaseStorage.getInstance().getReference().child(ea.firebaseEmployee.getStore_phone() + "/images/stylists/" + ea.firebaseEmployee.getId());
+                sr.getBytes(1024 * 1024 * 10).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    @Override
+                    public void onSuccess(byte[] bytes) {
+                         EmployeeActivity.empBitmap = Utils.convertBytesToBitmap(bytes);
+                        ImageView iv = (ImageView) rootView.findViewById(R.id.imageView_employee_activity);
+                        iv.setImageBitmap(EmployeeActivity.empBitmap);
                     }
-                    GenericTypeIndicator<List<Ticket>>gti = new GenericTypeIndicator<List<Ticket>>() {};
-                    List<Ticket> list = mutableData.getValue(gti);
-                    list.remove(t);
-                    mutableData.setValue(list);
-                    return Transaction.success(mutableData);
-                }
+                });
+            }
 
-                @Override
-                public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                        Toast.makeText(employee_activity,"Ticket successfully deleted!",Toast.LENGTH_SHORT).show();
-                }
-            });
-           ref.addValueEventListener(new ValueEventListener() {
-
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.getValue()==null)return;
-                    Log.e("DATASNAP: ",dataSnapshot.toString());
-                    GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
-                    List<Ticket> list = dataSnapshot.getValue(gti);
-                    ArrayList<Ticket> tickets = new ArrayList<Ticket>(list);
-                    ListView lv = (ListView)employee_activity.findViewById(R.id.mobile_tickets_lv);
-                    lv.setAdapter(null);
-                    ListViewTicketAdapter la = new ListViewTicketAdapter(employee_activity,tickets);
-                    lv.setAdapter(la);
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                        databaseError.toException().printStackTrace();
-                }
-            });
-
-        }
-
-
-       /* private void fragmentView2(View rootView) {
-            ImageView iv=(ImageView) rootView.findViewById(R.id.imageView_employee_activity);
-            iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(stylist.getImage_bytes())));
-            TextView tv=(TextView) rootView.findViewById(R.id.textView_tab3_employee_activity);
-            tv.setText(tv.getText() + stylist.getName().toUpperCase());
-            Button b=(Button) rootView.findViewById(R.id.button_upload_profile_pic);
+            TextView tv = (TextView) rootView.findViewById(R.id.textView_tab3_employee_activity);
+            tv.setText(tv.getText() + ea.firebaseEmployee.getName().toUpperCase());
+            Button b = (Button) rootView.findViewById(R.id.button_upload_profile_pic);
             b.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     openImageGallery();
                 }
             });
-        }*/
+        }
 
-        private void fragmentView0(View rootView) {
+        @Override
+        public void setEmployeeActivity(EmployeeActivity ea) {
+            this.ea = ea;
+        }
+
+        @Override
+        public EmployeeActivity getEmployeeActivity() {
+            return this.ea;
+        }
+
+        /*private void fragmentView0(View rootView) {
             TextView tv=(TextView) rootView.findViewById(R.id.textView_stylist_today_upcoming_header);
             SimpleDateFormat sdf=new SimpleDateFormat("MMM/dd/yyyy");
             tv.setText(tv.getText().toString() + sdf.format(new Date()));
@@ -407,153 +347,157 @@ public Store getStore(){
                 pb.setVisibility(View.GONE);
                 lv.setAdapter(lva);
             } else {
-                StylistWebTaskAppointments swt=new StylistWebTaskAppointments(this.employee_activity,rootView, lv);
+                StylistWebTaskAppointments swt=new StylistWebTaskAppointments(rootView, lv);
                 swt.execute();
+            }
+        }*/
+        @Override
+        public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+            Log.e("On Request Permission", "RequestCode: " + requestCode);
+            switch (requestCode) {
+                case 1: {
+                    // If request is cancelled, the result arrays are empty.
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        galleryIntent();
+                    } else {
+                        // permission denied, boo! Disable the
+                        // functionality that depends on this permission.
+                    }
+                    return;
+                }
+                // other 'case' lines to check for other
+                // permissions this app might request
             }
         }
 
-        @Override
-        public void setEmployeeActivityData(EmployeeActivity ea) {
-            this.employee_activity = ea;
+        public void openImageGallery() {
+            galleryIntent();
+            if (Build.VERSION.SDK_INT >= 23) {
+                // Here, thisActivity is the current activity
+                if (ContextCompat.checkSelfPermission(this.ea.getApplicationContext(),
+                        Manifest.permission.READ_EXTERNAL_STORAGE)
+                            != PackageManager.PERMISSION_GRANTED) {
+                    // Should we show an explanation?
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(ea,
+                            Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                        showReason();
+                    } else {
+                        ActivityCompat.requestPermissions(ea,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                1);
+                    }
+                } else {
+                    galleryIntent();
+                }
+            } else {
+                galleryIntent();
+            }
         }
 
-        public EmployeeActivity getEmployee_activity() {
-            return this.employee_activity;
-        }
-    }
+        private void galleryIntent() {
+            Intent intent = new Intent();
+// Show only images, no videos or anything else
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+// Always show the chooser (if there are multiple options available)
+            ea.startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
 
-    private void setStore(Store s) {
-        this.store = s;
-    }
+        }
+
+        private void showReason() {
+            AlertDialog.Builder alertBuilder = new AlertDialog.Builder(ea);
+            alertBuilder.setCancelable(true);
+            alertBuilder.setTitle("Permission necessary");
+            alertBuilder.setMessage("Needed to upload profile picture.");
+            alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    ActivityCompat.requestPermissions(ea, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+                }
+            });
+            AlertDialog alert = alertBuilder.create();
+            alert.show();
+        }
+    }//end placeholder
 
     /**
      * A {@link SectionsPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter  {
-      //  private final Bundle data;
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
         private EmployeeActivity ea;
-        public SectionsPagerAdapter(FragmentManager fragmentManager,EmployeeActivity ea){// Bundle data) {
+
+      private   SparseArray<Fragment> registeredFragments ;
+        public SectionsPagerAdapter(FragmentManager fragmentManager, EmployeeActivity emp) {
             super(fragmentManager);
-            map = new HashMap<>();
-            this.ea = ea;
-           // this.data = data;
+            this.ea = emp;
+            this.registeredFragments = new SparseArray<Fragment>();
+
         }
-        public HashMap<Integer,PlaceholderFragment> map;
+//////////////
+        public Fragment getRegisteredFragment(int position) {
+           // Log.e("is registerrrrr null?", String.valueOf(registeredFragments==null)+" size: "+registeredFragments.size());
+            return registeredFragments.get(position);
+        }
+
+        //////
         @Override
         public Fragment getItem(int position) {
-
-            switch (position){
-                case 0:
-                    PlaceholderFragment f = PlaceholderFragment.newInstance(position+1);
-                    f.setEmployeeActivityData(ea);
-                    //f.setArguments(data);
-                    map.put(position,f);
-                    return f;
-                case  1:
-                    PlaceholderFragment f2 = PlaceholderFragment.newInstance(position+1);
-                    f2.setEmployeeActivityData(ea);
-                    //f2.setArguments(data);
-                    map.put(position,f2);
-                    return f2;
-                default:return null;
-            }
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-           // return PlaceholderFragment.newInstance(position + 1);
+            PlaceholderFragment pf = PlaceholderFragment.newInstance(position + 1);
+            pf.setEmployeeActivity(ea);
+            return pf;
+        }
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment fragment = (Fragment) super.instantiateItem(container, position);
+            registeredFragments.put(position, fragment);
+            return fragment;
         }
 
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            registeredFragments.remove(position);
+            super.destroyItem(container, position, object);
+        }
         @Override
         public int getCount() {
             // Show 2 total pages.
-           // return 3;
             return 2;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            switch(position) {
-                /*case 0:
-                    return "Today's Appointments";
-                case 1:
-                    return "Upcoming Appointments";
-                case 2:
-                    return "User Settings";*/
+            switch (position) {
                 case 0:
-                    return "Current Tickets";
+                    return "Current Tickets";//"Today's Appointments";
                 case 1:
-                    return "User Settings";
+                    return "User Settings";//"Upcoming Appointments";
+                /*case 2:
+                    return "User Settings";*/
             }
             return null;
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        Log.e("On Request Permission","RequestCode: "+requestCode);
-        switch (requestCode) {
-            case 1: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0&& grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        galleryIntent();
-                } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
-                return;
-            }
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
+    public void onBackPressed() {
+        return;
     }
 
-    public  void openImageGallery() {
-        galleryIntent();
-        if(Build.VERSION.SDK_INT >= 23) {
-            // Here, thisActivity is the current activity
-            if(ContextCompat.checkSelfPermission(EmployeeActivity.this.getApplicationContext(),
-                    Manifest.permission.READ_EXTERNAL_STORAGE)
-                       != PackageManager.PERMISSION_GRANTED) {
-                // Should we show an explanation?
-                if(ActivityCompat.shouldShowRequestPermissionRationale(EmployeeActivity.this,
-                        Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    showReason();
-                } else {
-                    ActivityCompat.requestPermissions(EmployeeActivity.this,
-                            new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                            1);
-                }
-            }else{
-                galleryIntent();
-            }
-        } else {
-            galleryIntent();
-        }
-    }
+    public interface EmployeeData {
+        void setEmployeeActivity(EmployeeActivity ea);
 
-    private  void galleryIntent() {
-        Intent intent=new Intent();
-// Show only images, no videos or anything else
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-// Always show the chooser (if there are multiple options available)
-        EmployeeActivity.this.startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
+        EmployeeActivity getEmployeeActivity();
 
     }
 
-    private  void showReason() {
-        AlertDialog.Builder alertBuilder=new AlertDialog.Builder(EmployeeActivity.this);
-        alertBuilder.setCancelable(true);
-        alertBuilder.setTitle("Permission necessary");
-        alertBuilder.setMessage("Needed to upload profile picture.");
-        alertBuilder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                ActivityCompat.requestPermissions(EmployeeActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-            }
-        });
-        AlertDialog alert=alertBuilder.create();
-        alert.show();
-    }
+    /**
+     * Uploads new pic from device to firebase storeage...
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -564,63 +508,70 @@ public Store getStore(){
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 // Log.d(TAG, String.valueOf(bitmap));
-                ImageView imageView = (ImageView) EmployeeActivity.this.findViewById(R.id.imageView_employee_activity);
-                imageView.setImageBitmap(bitmap);
-                UploadImageWebTask u = new UploadImageWebTask(EmployeeActivity.this,bitmap);
-                u.execute();
-               // stylist.setBitmap(bitmap);
-               // stylist.setImage_bytes(Utils.convertToString(Utils.convertBitmapToByteArray(bitmap)));
+                  Fragment pf = this.mCustomFragPageAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+               // Log.e("pageeee: ## ", String.valueOf(pf==null));
+                 ImageView imageView = (ImageView) pf.getView().findViewById(R.id.imageView_employee_activity);
+                  imageView.setImageBitmap(bitmap);
+                StorageReference sr = FirebaseStorage.getInstance().getReference().child(this.firebaseEmployee.getStore_phone()+"/images/stylists/"+this.firebaseEmployee.getId());
+                // Get the data from an ImageView as bytes
+                imageView.setDrawingCacheEnabled(true);
+                imageView.buildDrawingCache();
+                 bitmap = imageView.getDrawingCache();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                byte[] bytes = baos.toByteArray();
+
+                UploadTask uploadTask = sr.putBytes(bytes);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Toast.makeText(EmployeeActivity.this,"Something went wrong... :(",Toast.LENGTH_LONG).show();    // Handle unsuccessful uploads
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                       // Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        Toast.makeText(EmployeeActivity.this,"Picture uploaded!",Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
+
+                //   UploadImageWebTask u = new UploadImageWebTask(bitmap);
+                //  u.execute();
+                //stylist.setBitmap(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-    @Override
-    public  void onBackPressed(){
-        return;
-    }
 
-    // Make Http call to upload Image to Php server
-    public void makeHTTPCall() {
+    static class EmployeeStoreTicketAdapter extends ArrayAdapter<Ticket> {
+        private List<Ticket> list;
 
-
-    }
-    public String getStoreID(){
-        return this.store_id;
-    }
-    public String getStylistID(){
-        return this.stylist_id;
-    }
-public interface EmployeeActivityData{
-    void setEmployeeActivityData(EmployeeActivity ea);
-    EmployeeActivity getEmployee_activity();
-}
-    public static class ListViewTicketAdapter extends ArrayAdapter<Ticket> {
-        private ArrayList<Ticket> list;
-        public ListViewTicketAdapter(Context c, ArrayList<Ticket> values) {
-            super(c, R.layout.mobile_ticket_employee_layout, values);
-            this.list = values;
+        public EmployeeStoreTicketAdapter(Context context, int resource, List<Ticket> t) {
+            super(context, resource, t);
+            this.list = t;
         }
-
         @Override
-        public int getCount(){
+        public  int getCount(){
             return this.list.size();
         }
-        /**
-         * Implement getView method for customizing row of list view.
-         * this method creates store_list single view that correponds to the data being passed in.
-         * get the STORE data by getItem(position)
-         */
-        public View getView(final int position_item, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
-            View rowView = inflater.inflate(R.layout.mobile_ticket_employee_layout, parent, false);
-            Ticket t = this.getItem(position_item);
-            TextView name = (TextView)rowView.findViewById(R.id.cust_name_tv);
-            name.setText(t.getName());
-            TextView tn = (TextView)rowView.findViewById(R.id.ticket_number_tv);
-            tn.setText(String.valueOf(t.getUnique_id()));
-            return rowView;
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            Ticket t = getItem(position);
+            //get the inflater and inflate the XML layout for each item
+            LayoutInflater inflater = (LayoutInflater) this.getContext().getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+            View view = inflater.inflate(R.layout.store_ticket_lv_layout, null);
+            TextView tv = (TextView) view.findViewById(R.id.ticketNumber_tv);
+            tv.setText(t.unique_id+"");
+            TextView pref = (TextView) view.findViewById(R.id.stylist_pref_tv);
+            pref.setText(t.stylist.toUpperCase());
+            TextView name = (TextView) view.findViewById(R.id.client_name_tv);
+            name.setText(t.getName().toUpperCase());
+
+            return view;
         }
     }
-
 }

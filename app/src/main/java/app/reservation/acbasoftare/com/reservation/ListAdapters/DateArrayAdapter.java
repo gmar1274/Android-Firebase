@@ -1,6 +1,5 @@
 package app.reservation.acbasoftare.com.reservation.ListAdapters;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
@@ -9,9 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.DateViewerActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.EmployeeActivity;

@@ -1,10 +1,6 @@
 package app.reservation.acbasoftare.com.reservation.WebTasks;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.ListView;
@@ -49,8 +45,8 @@ public class StylistWebTaskAppointments extends AsyncTask<String, Void, String> 
         private  ExpandableListView lv;
     private EmployeeActivity ea;
         public StylistWebTaskAppointments(EmployeeActivity ea,View rootView, ExpandableListView lv) {
-            store_id =ea.getStoreID();
-            stylist_id=ea.getStylistID();
+          //  store_id =ea.getStoreID();
+            //stylist_id=ea.getStylistID();
             this.rootView= rootView;
             this.ea = ea;
         }
@@ -126,8 +122,8 @@ public class StylistWebTaskAppointments extends AsyncTask<String, Void, String> 
                   //  Bitmap bmp = BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length);//Utils.resize(BitmapFactory.decodeByteArray(qrimageBytes, 0,qrimageBytes.length),100,100);
                     String phone = jobj.getString("phone");
                     // Bitmap myBitmap = jobj.getby
-                    Stylist s = new Stylist(stylist_id,fname,mname,lname,available,qrimage,phone,ea.getStoreID());
-                    stylist = s;
+                    //Stylist s = new Stylist(stylist_id,fname,mname,lname,available,qrimage,phone,ea.getStoreID());
+                    //stylist = s;
                 }
                 ///////////////////////read stylist
                 Reservation res = new Reservation(stylist);
@@ -166,19 +162,19 @@ public class StylistWebTaskAppointments extends AsyncTask<String, Void, String> 
                         e.printStackTrace();
                     }
                 }//end for
-                EmployeeActivity.reservation = null;
-                EmployeeActivity.reservation = res;
+               // EmployeeActivity.reservation = null;
+               // EmployeeActivity.reservation = res;
 
             } catch (JSONException e1) {
                 e1.printStackTrace();
                 return;
             }
-            ArrayList<TimeSet> headers = EmployeeActivity.reservation.getDayTimes(new Date());
-            HashMap<TimeSet,ReservationDetails> child = EmployeeActivity.reservation.getReservationDetailsHashMap();
-            ExpandableListViewAdapter lva = new ExpandableListViewAdapter(ea,headers,child);
-            EmployeeActivity.lva=lva;
-            lv = (ExpandableListView)rootView.findViewById(R.id.expandable_List_view);
-            lv.setAdapter(lva);
-            showProgressBar(false, this.rootView);
+//            ArrayList<TimeSet> headers = EmployeeActivity.reservation.getDayTimes(new Date());
+//            HashMap<TimeSet,ReservationDetails> child = EmployeeActivity.reservation.getReservationDetailsHashMap();
+//            ExpandableListViewAdapter lva = new ExpandableListViewAdapter(ea,headers,child);
+//            EmployeeActivity.lva=lva;
+//            lv = (ExpandableListView)rootView.findViewById(R.id.expandable_List_view);
+//            lv.setAdapter(lva);
+//            showProgressBar(false, this.rootView);
         }
     }

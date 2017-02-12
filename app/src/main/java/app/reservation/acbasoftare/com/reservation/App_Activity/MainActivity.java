@@ -83,36 +83,36 @@ import app.reservation.acbasoftare.com.reservation.WebTasks.SalonServiceWebTask;
 //import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AppCompatActivity {
-    //public static int ticket_number;///is the potential ticket number
-    public static ArrayList<Store> store_list = null;
-    public static ArrayList<Stylist> stylists_list = null;
+    //public static int ticket_number;///is the potential ticket_number number
+    public  ArrayList<FirebaseStore> store_list = null;
+    public  ArrayList<Stylist> stylists_list = null;
    // public static ListView lv = null;
    // public static ListAdapter la = null;
-    public static View rootView = null, mainView = null;
-    public static int stylist_position = 0;
-    public static Activity a;
-    public static TabLayout tabLayout;
-    public static Location user_loc;
-    public static int miles = 10;
-    public static GoogleMap gm;
-    public static MapView mv;
-    public static int selectedPosition;
+    //public static View rootView = null, mainView = null;
+    public  int stylist_position = 0;
+  //  public static Activity a;
+    public  TabLayout tabLayout;
+    public  Location user_loc;
+    public  int miles = 10;
+    public  GoogleMap gm;
+    public  MapView mv;
+    public  int selectedPosition;
     //public static Ticket TICKET;
-    public static String phone;//user phone number
-    public static boolean isSuccess;//success payment ticket register
-    public static boolean STYLIST_BITMAPS_LOADED;
-    public static View rootView_LiveTab, rootView_Reservation;
+    public  String phone;//user phone number
+    public  boolean isSuccess;//success payment ticket_number register
+    public  boolean STYLIST_BITMAPS_LOADED;
+  //  public static View rootView_LiveTab, rootView_Reservation;
     // public static Appointment appointment;//used to hold data in third tab...
     //public static SwipeRefreshLayout srl;
     public static Profile user_fb_profile;
-    public static MyIntent myIntent;
-    public static RecyclerView recyclerView_stylists;
-    public static boolean noStaff;
+   // public static MyIntent myIntent;
+   // public static RecyclerView recyclerView_stylists;
+   // public boolean noStaff;
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private static AlphaAnimation inAnimation;
-    private static RecyclerView recyclerView_services;
+  //  private static RecyclerView recyclerView_services;
     /**
      * The {@link } that will provide
      * fragments for each of the sections. We use store_list
@@ -123,12 +123,12 @@ public class MainActivity extends AppCompatActivity {
      */
     public CustomFragPageAdapter mCustomFragPageAdapter;
     public ViewPager mViewPager;
-    public static FirebaseDatabase db;
+    //public static FirebaseDatabase db;
     public DatabaseReference db_ref;
     public static ArrayList<Bitmap> stylist_bitmaps;
-    public static ArrayList<Ticket> ticket_history;
+    public  ArrayList<Ticket> ticket_history;
 
-    public static void showGoogleMaps(final View rootView, final ArrayList<Store> store_list) {
+    public  void showGoogleMaps(final View rootView, final ArrayList<Store> store_list) {
 
         if(mv==null)
         mv = (MapView) rootView.findViewById(R.id.mapView);
@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
      * This method doesnt need to check null states of lists because this function will only get called when list>0 and not null
      * Update Calendar with appointments
      */
-    public static void updateRVServices(final Store s) {
+   /* public static void updateRVServices(final Store s) {
         //fill out the
         //Store s=store_list.get(selectedPosition);////get the store
         final RVAdapter<Stylist> stylist_adapter = (RVAdapter<Stylist>) recyclerView_stylists.getAdapter();
@@ -217,12 +217,12 @@ public class MainActivity extends AppCompatActivity {
                 stylist_adapter.customeNotifyDataSetChanged();
                 if (d.before(new Date()) || noStaff) return;
                 startReservationActivity(d, s, stylist_adapter.getStylist(), ss_adapter.getSalonService());
-                /**MainActivity.a.setContentView(R.layout.fragment_reservation);//////////////update view to fragment
+                *//**MainActivity.a.setContentView(R.layout.fragment_reservation);//////////////update view to fragment
                  ReservationFragment newFragment = new ReservationFragment();
                  newFragment.init(d,stylist_adapter.getStylist(),s,ss_adapter.getSalonService());
                  FragmentTransaction transaction = a.getFragmentManager().beginTransaction();
                  transaction.add(newFragment,null).commit();
-                 *///////////////////////////////////////////
+                 *//*//////////////////////////////////////////
 
                 // transaction.commit();//activates oncreate() from testing ive done...
             }//met
@@ -230,14 +230,14 @@ public class MainActivity extends AppCompatActivity {
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView_services.getContext(), lll.getOrientation());
         recyclerView_services.addItemDecoration(dividerItemDecoration);
 
-    }/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////tab 3
+    }//*////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////tab 3
 
     /**
      * Starts a new activity for a given stylist and their available time with a specified service
      *
      * @param store - Stylist and SalonService
      */
-    private static void startReservationActivity(Date date, Store store, Stylist s, SalonService ss) {
+   /* private static void startReservationActivity(Date date, Store store, Stylist s, SalonService ss) {
         myIntent = null;
         myIntent = new MyIntent(date, store, s, ss);
         Intent intent = new Intent(MainActivity.a, ReservationActivity.class);
@@ -246,13 +246,13 @@ public class MainActivity extends AppCompatActivity {
         // intent.putExtra("service",ss);
         MainActivity.a.startActivity(intent);
     }
-
-    private static void showCreditCard() {
-        if (MainActivity.stylists_list == null || MainActivity.store_list == null || MainActivity.store_list.size() == 0)
+*/
+    private  void showCreditCard() {
+        if (stylists_list == null || store_list == null || store_list.size() == 0)
             return;
        // LockDBPreserveSpot db = new LockDBPreserveSpot();
         //db.execute(store_list.get(selectedPosition).getPhone());
-        CreditCardDialog ccd = new CreditCardDialog(MainActivity.selectedPosition, MainActivity.stylist_position, phone);
+        CreditCardDialog ccd = new CreditCardDialog(selectedPosition,stylist_position, phone);
         ccd.showCreditCardDialog();
     }
 
@@ -281,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         outState.putInt("selected", selectedPosition);
         outState.putParcelableArrayList("store_list", store_list);
-      //  outState.putParcelable("ticket", TICKET); // mv.onSaveInstanceState(outState);
+      //  outState.putParcelable("ticket_number", TICKET); // mv.onSaveInstanceState(outState);
         //outState.putInt("ticket_number", ticket_number);
         outState.putParcelableArrayList("ticket_history",ticket_history);
         outState.putBoolean("issSuccess", isSuccess);
@@ -303,7 +303,7 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             selectedPosition = savedInstanceState.getInt("selected");
             store_list = savedInstanceState.getParcelableArrayList("store_list");
-            //TICKET = savedInstanceState.getParcelable("ticket");
+            //TICKET = savedInstanceState.getParcelable("ticket_number");
             //ticket_number = savedInstanceState.getInt("ticket_number");
             isSuccess = savedInstanceState.getBoolean("isSuccess");
             stylist_bitmaps = savedInstanceState.getParcelableArrayList("stylist_bitmaps");
@@ -328,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
-        mCustomFragPageAdapter = new CustomFragPageAdapter(getSupportFragmentManager());
+        mCustomFragPageAdapter = new CustomFragPageAdapter(getSupportFragmentManager(),this);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
@@ -525,9 +525,9 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         //need to update the DAte value check wheteher is old or current for user
        // if (ticket_number >= 0 && isSuccess == false) {///if the user goes to credit card dialog then shuts the app off
-            //need to revoke his ticket
+            //need to revoke his ticket_number
            // LockDBPreserveSpot delete = new LockDBPreserveSpot();
-            //delete.execute(store_list.get(selectedPosition).getPhone(), ticket_number + "");///remove ticket
+            //delete.execute(store_list.get(selectedPosition).getPhone(), ticket_number + "");///remove ticket_number
             //takes only 2 params, store and ticketnumber
         //}
         if (mv != null) mv.onPause();
@@ -600,7 +600,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static void sendTicket(final Store store, Stylist sty, String cust_name, String phone,final ProgressDialog pd) {
 
-        final  Ticket t = new Ticket(store.getCurrent_ticket(),(sty.getWait()+1)+"",cust_name,sty.getId(), sty.getName(),phone);//create the ticket
+        final  Ticket t = new Ticket(store.getCurrent_ticket(),(sty.getWait()+1)+"",cust_name,sty.getId(), sty.getName(),phone);//create the ticket_number
         DatabaseReference ref =  db.getReference().child(String.valueOf(store.getStore_number())).child("tickets");
         /**Listen to firebase data changes and update new values..
          * */
@@ -613,9 +613,9 @@ public class MainActivity extends AppCompatActivity {
                 long curr_ticket = list!=null && list.size()>0 ? list.get(0).unique_id : 1;
                 store.setCurrentStoreTicket(curr_ticket);
                 for(Ticket t : list){//linear runtime
-                    Stylist sty = store.getStylistHashMap().get(t.getStylist_id());//get the stylist of ticket
+                    Stylist sty = store.getStylistHashMap().get(t.getStylist_id());//get the stylist of ticket_number
                     if(sty != null) {
-                        sty.setWait(Integer.valueOf(t.getTicket()));//assume the last known record is the current max
+                        sty.setWait(Integer.valueOf(t.getTicket_number()));//assume the last known record is the current max
                         store.updateStylist(sty);//update stylist
                         int pos = MainActivity.stylists_list.indexOf(sty);//old to new
                         MainActivity.stylists_list.remove(pos);
@@ -644,8 +644,8 @@ public class MainActivity extends AppCompatActivity {
                         List<Ticket> curr_values = mutableData.getValue(gti);//get all the entries that are in this url_path
                         t.unique_id = curr_values.size()+1;
                         if (curr_values.contains(t)) {
-                            t.unique_id += 1;//increment the store ticket
-                            t.ticket = String.valueOf(Long.valueOf(t.ticket) + 1);//increment the next ticket waiting in line for stylist
+                            t.unique_id += 1;//increment the store ticket_number
+                            t.ticket_number = String.valueOf(Long.valueOf(t.ticket_number) + 1);//increment the next ticket_number waiting in line for stylist
                         }
                         curr_values.add(t);
                         store.setCurrentStoreTicket(t.unique_id);
@@ -653,7 +653,7 @@ public class MainActivity extends AppCompatActivity {
                         mutableData.setValue(curr_values);
                     }else{//there was no entries in the url so create new List<Ticket> with the first entry
                         t.unique_id = 1;///first entry
-                        t.ticket="1";
+                        t.ticket_number ="1";
                         List<Ticket> l = new ArrayList<Ticket>();
                         l.add(t);
                         mutableData.setValue(l);
@@ -664,7 +664,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
                     pd.dismiss();
-                    Toast.makeText(MainActivity.a,"Your ticket is #"+t.unique_id,Toast.LENGTH_LONG).show(); //resetStylistChoice();//deselect radio button
+                    Toast.makeText(MainActivity.a,"Your ticket_number is #"+t.unique_id,Toast.LENGTH_LONG).show(); //resetStylistChoice();//deselect radio button
                      ticket_history.add(t);
                     DatabaseReference hm = db.getReference().child(String.valueOf(store.getStore_number())).child("stylistHashMap");
                     hm.setValue(store.getStylistHashMap());

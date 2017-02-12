@@ -98,7 +98,7 @@
         android:textAlignment="center"/>
 
     <Button
-        android:text="Grab a ticket"
+        android:text="Grab a ticket_number"
         android:layout_width="332dp"
         android:layout_height="63dp"
         android:id="@+id/ticketBTN"

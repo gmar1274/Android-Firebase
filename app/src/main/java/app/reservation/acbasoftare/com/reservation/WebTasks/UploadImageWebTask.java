@@ -4,39 +4,20 @@ import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.maps.model.LatLng;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.EmployeeActivity;
-import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
-import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
-import app.reservation.acbasoftare.com.reservation.R;
 
-import static android.R.attr.activityCloseEnterAnimation;
-import static android.R.attr.data;
 import static android.util.Base64.encode;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.miles;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.rootView;
 
 /**
  * Created by user on 12/17/16.
@@ -59,9 +40,9 @@ public class UploadImageWebTask extends AsyncTask<String, Void, String> {
             String img =Base64.encodeToString(i,Base64.DEFAULT);
             Log.e("pic::",img);
             String data = URLEncoder.encode("code", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbaimageacba"), "UTF-8");
-            data += "&" + URLEncoder.encode("stylist_id", "UTF-8") + "=" + URLEncoder.encode(ea.getStylistID(), "UTF-8");
+           // data += "&" + URLEncoder.encode("stylist_id", "UTF-8") + "=" + URLEncoder.encode(ea.getStylistID(), "UTF-8");
             data += "&" + URLEncoder.encode("image", "UTF-8") + "=" + URLEncoder.encode(img, "UTF-8");
-            data += "&" + URLEncoder.encode("store_id", "UTF-8") + "=" + URLEncoder.encode(ea.store_id, "UTF-8");//meters
+          //  data += "&" + URLEncoder.encode("store_id", "UTF-8") + "=" + URLEncoder.encode(ea.store_id, "UTF-8");//meters
 
             URL url = new URL(link);
             URLConnection conn = url.openConnection();

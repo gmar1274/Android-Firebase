@@ -74,7 +74,7 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
         ticket.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sendTicket();        //send a new entry to firebase url: root/ticket/store_id/TICKET{JSON}
+                sendTicket();        //send a new entry to firebase url: root/ticket_number/store_id/TICKET{JSON}
             }
         });
 
@@ -117,7 +117,7 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
 
     /**
      * FIREBASE URL: firebase-url-xxx/STORE_number/STORE_POJO_TO_JSON
-     * Send ticket firebase
+     * Send ticket_number firebase
      * Update thhe current_ticket property in Store object in Firebase..
      * Update the tickets in firebase used for populating the the list view for android store app
      * Update the hashmap from the store property
@@ -145,8 +145,8 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
         String cust_name = this.cust_name_textview.getText().toString();//can optimize by creating Customer object....
         cust_name = cust_name.length()==0 ? "N/A":cust_name;
         String cust_phone = this.phone_textview.getText().toString();
-        //Create the ticket with Absolute Ticket#, Relative ticket#, cust_name, sty_id, sty_name, cust_phone...
-      final  Ticket t = new Ticket(store.getCurrent_ticket(),(s.getWait())+"",cust_name,s.getId(), s.getName(),cust_phone);//create the ticket
+        //Create the ticket_number with Absolute Ticket#, Relative ticket_number#, cust_name, sty_id, sty_name, cust_phone...
+      final  Ticket t = new Ticket(store.getCurrent_ticket(),(s.getWait())+"",cust_name,s.getId(), s.getName(),cust_phone);//create the ticket_number
         //to be stored---- ********NOTE****** store.getCurrent_ticket is invalid will be changed in transaction handler...
        // tickets.add(t);//add
        // store.addTicket(t);
@@ -159,8 +159,8 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
                    List<Ticket> curr_values = mutableData.getValue(gti);//get all the entries that are in this url_path
                    t.unique_id = curr_values.size()+1;
                    if (curr_values.contains(t)) {
-                       t.unique_id += 1;//increment the store ticket
-                       t.ticket = String.valueOf(Long.valueOf(t.ticket) + 1);//increment the next ticket waiting in line for stylist
+                       t.unique_id += 1;//increment the store ticket_number
+                       t.ticket_number = String.valueOf(Long.valueOf(t.ticket_number) + 1);//increment the next ticket_number waiting in line for stylist
                    }
                    curr_values.add(t);
                    store.setCurrentStoreTicket(t.unique_id);
@@ -184,7 +184,7 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
         if(ref2!=null) {//update stylist hashmap
          //   ref2.setValue(s.getWait());
         }
-        DatabaseReference ref3 = FirebaseDatabase.getInstance().getReference().child(store.getStore_number()+"").child("current_ticket");//update current ticket
+        DatabaseReference ref3 = FirebaseDatabase.getInstance().getReference().child(store.getStore_number()+"").child("current_ticket");//update current ticket_number
         if(ref3 != null){
            // ref3.setValue(Long.valueOf(store.getCurrent_ticket()));
         }

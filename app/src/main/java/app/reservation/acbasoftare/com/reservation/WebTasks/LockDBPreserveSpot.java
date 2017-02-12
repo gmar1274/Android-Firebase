@@ -43,7 +43,7 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
         String data="";
         data = URLEncoder.encode("store_id", "UTF-8") + "=" + URLEncoder.encode(store_id, "UTF-8");
         data += "&" + URLEncoder.encode("lock", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbalockacba"), "UTF-8");
-        data += "&" + URLEncoder.encode("ticket", "UTF-8") + "=" + URLEncoder.encode(ticket, "UTF-8");
+        data += "&" + URLEncoder.encode("ticket_number", "UTF-8") + "=" + URLEncoder.encode(ticket, "UTF-8");
         data += "&" + URLEncoder.encode("name", "UTF-8") + "=" + URLEncoder.encode(name, "UTF-8");
         data += "&" + URLEncoder.encode("stylist", "UTF-8") + "=" + URLEncoder.encode(stylist, "UTF-8");
         data += "&" + URLEncoder.encode("update", "UTF-8") + "=" + URLEncoder.encode("true", "UTF-8");
@@ -55,21 +55,21 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
     /****
      *
      * @param arg0 - is the store id
-     *             there can be multiple params, store_id,ticket number, name, stylist id
+     *             there can be multiple params, store_id,ticket_number number, name, stylist id
      *             This method will either insert a new record, then either update or delete this new record
      *             if param arg0 length is 1 then insert new
-     *             if param arg0 is 2 length then delete ticket
-     *             else update that ticket
+     *             if param arg0 is 2 length then delete ticket_number
+     *             else update that ticket_number
      * @return
      */
         @Override
         protected String doInBackground(String... arg0) {
-            try {//insert new ticket blank just ticket number and istore_id
+            try {//insert new ticket_number blank just ticket_number number and istore_id
                 String store_id=arg0[0];
                 String link = this.site;
                 String data="";
                 final Stylist stylist_obj=  MainActivity.stylists_list.get(MainActivity.stylist_position);
-                if(arg0.length==1) {//////////case 1: only 1 param. Make a arbritarty insert ticket
+                if(arg0.length==1) {//////////case 1: only 1 param. Make a arbritarty insert ticket_number
                     //no need to specify stylist id
                     INSERT=true;
                     this.store_id=store_id;
@@ -80,11 +80,11 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
                     data += "&" + URLEncoder.encode("date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");
                     data += "&" + URLEncoder.encode("stylist", "UTF-8") + "=" + URLEncoder.encode(stylist_obj.getId(), "UTF-8");//get selected stylisy
 
-                }else if(arg0.length==2){//case 2: delete the ticket. 2 params, store and ticket_number
+                }else if(arg0.length==2){//case 2: delete the ticket_number. 2 params, store and ticket_number
                     DELETE=true;
                     data = deleteTicket(arg0);
                 }
-                else {//case 3: ticket was paid for. Update the correct stylist
+                else {//case 3: ticket_number was paid for. Update the correct stylist
                     UPDATE=true;
                     data=updateTicket(arg0);
                 }
@@ -120,7 +120,7 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
         String data="";
         data = URLEncoder.encode("store_id", "UTF-8") + "=" + URLEncoder.encode(store_id, "UTF-8");
         data += "&" + URLEncoder.encode("lock", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbalockacba"), "UTF-8");
-        data += "&" + URLEncoder.encode("ticket", "UTF-8") + "=" + URLEncoder.encode(ticket, "UTF-8");
+        data += "&" + URLEncoder.encode("ticket_number", "UTF-8") + "=" + URLEncoder.encode(ticket, "UTF-8");
         data += "&" + URLEncoder.encode("delete", "UTF-8") + "=" + URLEncoder.encode("true", "UTF-8");
 
         return data;
@@ -132,15 +132,15 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
                     try {
 
                        JSONObject obj = new JSONObject(result);
-                      // MainActivity.ticket_number=obj.getInt("ticket");//saves the potential
+                      // MainActivity.ticket_number=obj.getInt("ticket_number");//saves the potential
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                }else if(DELETE){//delete the remebred ticket
+                }else if(DELETE){//delete the remebred ticket_number
                    // MainActivity.ticket_number=-1;
                     //MainActivity.TICKET=null;
                 }else{//TICKET was a success
-                  //  MainActivity.TICKET= new Ticket(0,store_id,ticket,name,stylist,phone);
+                  //  MainActivity.TICKET= new Ticket(0,store_id,ticket_number,name,stylist,phone);
                 }
         }
 

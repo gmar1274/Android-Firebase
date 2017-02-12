@@ -406,7 +406,7 @@ private void webCallMakeCharge(Token token,ProgressDialog pd){
 }
 
     /**
-     * Calls firebase to add ticket
+     * Calls firebase to add ticket_number
      */
     private void firebaseAddTicket(Store s, Stylist sty, String cust_name,String phone,ProgressDialog pd) {
         MainActivity.sendTicket(s,sty,cust_name,phone,pd);

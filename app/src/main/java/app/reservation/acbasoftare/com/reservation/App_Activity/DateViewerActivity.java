@@ -31,11 +31,11 @@ public class DateViewerActivity extends AppCompatActivity {
             Date date = sdf.parse(getIntent().getStringExtra("date"));
             TextView tv = (TextView)findViewById(R.id.textView_stylist_today_upcoming_header);
             tv.setText(tv.getText()+sdf.format(date));
-            ArrayList<TimeSet> headers = EmployeeActivity.reservation.getDayTimes(date);
-            HashMap<TimeSet,ReservationDetails> child = EmployeeActivity.reservation.getReservationDetailsHashMap();
-            ExpandableListViewAdapter lva = new ExpandableListViewAdapter(this,headers,child);
+            //ArrayList<TimeSet> headers = EmployeeActivity.reservation.getDayTimes(date);
+            //HashMap<TimeSet,ReservationDetails> child = EmployeeActivity.reservation.getReservationDetailsHashMap();
+            //ExpandableListViewAdapter lva = new ExpandableListViewAdapter(this,headers,child);
             ExpandableListView lv = (ExpandableListView)findViewById(R.id.expandable_List_view);
-            lv.setAdapter(lva);
+            //lv.setAdapter(lva);
         } catch(ParseException e) {
             e.printStackTrace();
         }

@@ -1,19 +1,12 @@
 package app.reservation.acbasoftare.com.reservation.WebTasks;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.util.Log;
-import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -29,9 +22,6 @@ import app.reservation.acbasoftare.com.reservation.App_Activity.EmployeeActivity
 import app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
-import app.reservation.acbasoftare.com.reservation.R;
-
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 
 public class Login extends AsyncTask<String, Void, String> {
     private Activity a;

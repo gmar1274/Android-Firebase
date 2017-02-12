@@ -34,10 +34,12 @@ import java.util.HashMap;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
-import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
+
+import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_bitmaps;
 
 /**
  * Created by user on 2016-08-06.
@@ -46,16 +48,17 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
     private ArrayList<Stylist> stylist_ticket_list;
     private ProgressBar progressBar;
     private HashMap<String, Stylist> stylist_hash;
-    private Store store;
+    private FirebaseStore store;
     private View rootView;
 
     private final String link = "http://acbasoftware.com/pos/stylist.php";
     private ListView lvv;
-
-    public StylistWebTask(View rv) {
+    private MainActivity ma;
+    public StylistWebTask(MainActivity ma, View rv) {
+        this.ma = ma;
         stylist_ticket_list = new ArrayList<Stylist>();
         stylist_hash = new HashMap<String, Stylist>();
-        store = MainActivity.store_list.get(MainActivity.selectedPosition);
+        store = ma.store_list.get(ma.selectedPosition);
         //  final LayoutInflater factory = MainActivity.a.getLayoutInflater();
         rootView= rv;//factory.inflate(R.layout.fragment_layout_live_feed, null);
 
@@ -189,22 +192,22 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
         });
         showProgressBar(false, this.rootView);
 
-        MainActivity.stylists_list=this.stylist_ticket_list;
-        store.setStylistHashMap(this.stylist_hash);
-        MainActivity.store_list.remove(MainActivity.selectedPosition);///remove
-        MainActivity.store_list.add(MainActivity.selectedPosition,store);//hopefully overloads the object
+        ma.stylists_list=this.stylist_ticket_list;
+        //store.setStylistHashMap(this.stylist_hash);
+        ma.store_list.remove(ma.selectedPosition);///remove
+        ma.store_list.add(ma.selectedPosition,store);//hopefully overloads the object
        initListView();
        // rootView.setVisibility(View.VISIBLE);
-        MainActivity.noStaff=false;
+        ma.noStaff=false;
         //MainActivity.rootView_Reservation.setVisibility(View.VISIBLE);
     }
 
     private void initListView() {
-        if(MainActivity.stylists_list==null){
+        if(ma.stylists_list==null){
             lvv=(ListView) rootView.findViewById(R.id.fragment_livefeed_listview);
             lvv.setAdapter(null);
         }else {
-            ListAdapter la=new ListViewAdpaterStylist(rootView.getContext(), R.layout.list_view_live_feed, MainActivity.stylists_list);
+            ListAdapter la=new ListViewAdpaterStylist(rootView.getContext(), R.layout.list_view_live_feed, ma.stylists_list);
             lvv=(ListView) rootView.findViewById(R.id.fragment_livefeed_listview);
             lvv.setAdapter(la);
         }
@@ -214,12 +217,12 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
         showProgressBar(false,rootView);
         final TextView tvv = (TextView)rootView.findViewById(R.id.ta2_tv_error);
         tvv.setText("No staff to display.");
-        MainActivity.stylists_list=null;
+        ma.stylists_list=null;
         initListView();
         //rootView.setVisibility(View.GONE);
         // MainActivity.rootView_Reservation.setVisibility(View.GONE);
-        MainActivity.updateTab3();
-        MainActivity.noStaff=true;
+        ma.updateTab3();
+        ma.noStaff=true;
     }
 
     public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> {
@@ -238,45 +241,49 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
 
             RadioButton r = (RadioButton) convertView.findViewById(R.id.live_feed_radiobtn);
             //r.setText("Stylist: " + s.getName() + "\n" + "Waiting: " + s.getWait()+"\nApprox. Wait: "+Utils.calculateWait(s.getWait())+"\nEstimated Time: "+ Utils.calculateTimeReady(s.getWait()));
-            r.setChecked(position ==  MainActivity.stylist_position);
+            r.setChecked(position ==  ma.stylist_position);
             r.setTag(position);
             r.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MainActivity.stylist_position = (Integer) view.getTag();
+                    ma.stylist_position = (Integer) view.getTag();
                     notifyDataSetChanged();
                     //Toast.makeText(getContext(), getItem(position) + " selected", Toast.LENGTH_LONG).show();
                 }
             });
             TextView tv_stylist=(TextView)convertView.findViewById(R.id.textView_stylist_lv);
             tv_stylist.setText(s.getName().toUpperCase());
-            setListener(tv_stylist,r);
+            //setListener(tv_stylist,r);
             TextView tv_waiting=(TextView)convertView.findViewById(R.id.tv_waiting_lv);
             tv_waiting.setText(""+s.getWait());
-            setListener(tv_waiting,r);
+            //setListener(tv_waiting,r);
             TextView tv_approx_wait=(TextView)convertView.findViewById(R.id.textView_aprox_wait_lv);
             tv_approx_wait.setText(Utils.calculateWait(s.getWait()));
-            setListener(tv_approx_wait,r);
+            //setListener(tv_approx_wait,r);
             TextView tv_readyby=(TextView)convertView.findViewById(R.id.textView_readyby_lv);
             tv_readyby.setText(Utils.calculateTimeReady(s.getWait()));
-            setListener(tv_readyby,r);
+            //setListener(tv_readyby,r);
             ///////
             TextView tv3=(TextView)convertView.findViewById(R.id.textView3);
-            setListener(tv3,r);
+            //setListener(tv3,r);
             TextView tv4=(TextView)convertView.findViewById(R.id.textView4);
-            setListener(tv4,r);
+            //setListener(tv4,r);
             TextView tv5=(TextView)convertView.findViewById(R.id.textView5);
-            setListener(tv5,r);
+           // setListener(tv5,r);
             TextView tv6=(TextView)convertView.findViewById(R.id.textView6);
-            setListener(tv6,r);
+           // setListener(tv6,r);
             //Bitmap myBitmap = BitmapFactory.decodeFile("\\res\\drawable\\logo.png");
             QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.quickContactBadge);
-            if(s.getImage_bytes() == null){
-                //iv.setImageDrawable(R.drawable.acba);//Utils.resize(rootView.getContext(),rootView.getResources().getDrawable(R.drawable.acba),50,50));
-            }else {
-                iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
+
+            if(stylist_bitmaps!=null && stylist_bitmaps.size()>= position+1) {
+                iv.setImageBitmap(stylist_bitmaps.get(position));//Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
+               if(position==0) {
+                   iv.assignContactFromPhone(ma.store_list.get(ma.selectedPosition).getPhone(), true);
+               }else{
+                   iv.assignContactFromPhone(s.getPhone(),true);
+               }
             }
-            iv.assignContactFromPhone(s.getPhone(),true);
+
             iv.setMode(ContactsContract.QuickContact.MODE_LARGE);
             // iv.setVisibility(View.VISIBLE);
                 /*r.setOnClickListener(new View.OnClickListener() {
@@ -289,17 +296,17 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
                 });*/
             return convertView;
         }
-        private void setListener(TextView tv, final RadioButton rb){
+        /*private void setListener(TextView tv, final RadioButton rb){
             tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    MainActivity.stylist_position = (Integer) rb.getTag();
+                    ma.stylist_position = (Integer) rb.getTag();
                     rb.setChecked(true);
                     notifyDataSetChanged();
 
                 }
             });
-        }
+        }*/
 
     }
 }

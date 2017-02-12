@@ -18,9 +18,7 @@ import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.EmployeeActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Customer;
@@ -29,9 +27,7 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Reservation;
 import app.reservation.acbasoftare.com.reservation.App_Objects.ReservationDetails;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
-import app.reservation.acbasoftare.com.reservation.ExpandableListView.ExpandableListViewAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
-
 
 /**
  * Created by user on 12/13/16.
@@ -44,7 +40,7 @@ public class StylistWebTaskAppointments extends AsyncTask<String, Void, String> 
         private ListView lvv;
         private  ExpandableListView lv;
     private EmployeeActivity ea;
-        public StylistWebTaskAppointments(EmployeeActivity ea,View rootView, ExpandableListView lv) {
+        public StylistWebTaskAppointments(EmployeeActivity ea, View rootView, ExpandableListView lv) {
           //  store_id =ea.getStoreID();
             //stylist_id=ea.getStylistID();
             this.rootView= rootView;

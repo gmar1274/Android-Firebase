@@ -16,10 +16,6 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
-import app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity;
-import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
-
 /**
  * Created by user on 2016-11-07.
  */
@@ -39,7 +35,7 @@ public class GPSLocation extends Service implements LocationListener {
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
     // Declaring a Location Manager
     protected LocationManager locationManager;
-private Activity activity;
+    private Activity activity;
     private boolean error;
 
     public GPSLocation(Activity a) {
@@ -48,7 +44,7 @@ private Activity activity;
         getLocation();
 
     }
-public boolean isPermissionError(){return  this.error;}
+    public boolean isPermissionError(){return  this.error;}
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 1: {
@@ -59,7 +55,7 @@ public boolean isPermissionError(){return  this.error;}
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
 
-                   activity.finish();
+                    activity.finish();
                 }
                 return;
             }
@@ -93,46 +89,46 @@ public boolean isPermissionError(){return  this.error;}
             }
 
 
-                this.canGetLocation = true;
+            this.canGetLocation = true;
 
-                // First get location from Network Provider
-                if (isNetworkEnabled) {
+            // First get location from Network Provider
+            if (isNetworkEnabled) {
 
-                    Log.e("Network", "Network");
+                Log.e("Network", "Network");
 
+                if (locationManager != null) {
+
+
+                    locationManager.requestLocationUpdates(
+                            LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES,
+                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                    location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+                    if (location != null) {
+                        latitude = location.getLatitude();
+                        longitude = location.getLongitude();
+                    }
+                }
+            }
+            // if GPS Enabled get lat/long using GPS Services
+            if (isGPSEnabled) {
+                if (location == null) {
+                    locationManager.requestLocationUpdates(
+                            LocationManager.GPS_PROVIDER,
+                            MIN_TIME_BW_UPDATES,
+                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                    Log.e("GPS Enabled", "GPS Enabled");
                     if (locationManager != null) {
-
-
-                            locationManager.requestLocationUpdates(
-                                    LocationManager.NETWORK_PROVIDER,
-                                    MIN_TIME_BW_UPDATES,
-                                    MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                            location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-
-                            if (location != null) {
+                        location = locationManager
+                                           .getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                        if (location != null) {
                             latitude = location.getLatitude();
                             longitude = location.getLongitude();
                         }
                     }
                 }
-                // if GPS Enabled get lat/long using GPS Services
-                if (isGPSEnabled) {
-                    if (location == null) {
-                        locationManager.requestLocationUpdates(
-                                LocationManager.GPS_PROVIDER,
-                                MIN_TIME_BW_UPDATES,
-                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                        Log.e("GPS Enabled", "GPS Enabled");
-                        if (locationManager != null) {
-                            location = locationManager
-                                               .getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                            if (location != null) {
-                                latitude = location.getLatitude();
-                                longitude = location.getLongitude();
-                            }
-                        }
-                    }
-                }
+            }
 
 
         } catch (Exception e) {
@@ -179,10 +175,10 @@ public boolean isPermissionError(){return  this.error;}
         }
         if(this.location.getLatitude()==loc.getLatitude() && this.location.getLongitude()==loc.getLongitude())return;///equal so dismiss
         this.location = loc;//might need to update google maps
-        if(MainActivity.mv != null && MainActivity.mainView!=null){//update map
-            MainActivity.user_loc = this.location;
+        /*if(ma.mv != null && ma.mainView!=null){//update map
+            ma.user_loc = this.location;
             //MainActivity.showGoogleMaps(MainActivity.mainView,MainActivity.store_list);
-        }
+        }*/
     }
 
     @Override
@@ -225,4 +221,5 @@ public boolean isPermissionError(){return  this.error;}
             locationManager.removeUpdates(GPSLocation.this);
         }
     }
+
 }

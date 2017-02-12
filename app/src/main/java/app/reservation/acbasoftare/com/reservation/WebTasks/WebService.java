@@ -1,7 +1,5 @@
 package app.reservation.acbasoftare.com.reservation.WebTasks;
 
-import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -15,8 +13,6 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.ParamPair;
-
-import static android.R.attr.data;
 
 /**
  * Created by user on 1/9/17.

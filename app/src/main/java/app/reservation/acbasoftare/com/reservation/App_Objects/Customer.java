@@ -1,16 +1,16 @@
 package app.reservation.acbasoftare.com.reservation.App_Objects;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
+import app.reservation.acbasoftare.com.reservation.App_Activity.ReservationActivity;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.phone;
 /**
  * Created by user on 12/12/16.
  */
 public class Customer {
     private String name,id,phone,email;
-    public Customer(){
+    public Customer(MainActivity ma){
         this.name=null;
-        this.id=MainActivity.user_fb_profile == null? "-1":MainActivity.user_fb_profile.getId();
+        this.id=ma.user_fb_profile == null? "-1":ma.user_fb_profile.getId();
     }
     public Customer(String name ,String phone,String email){
         this.name=name;
@@ -20,6 +20,11 @@ public class Customer {
     public Customer(String name){
         this.name=name;
     }
+
+    public Customer(ReservationActivity reservationActivity) {
+
+    }
+
     public void setPhone(String phone){
         this.phone=phone;
     }

@@ -6,6 +6,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
@@ -16,8 +17,6 @@ import java.net.URLEncoder;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.EmployeeActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
-
-import static android.util.Base64.encode;
 
 /**
  * Created by user on 12/17/16.

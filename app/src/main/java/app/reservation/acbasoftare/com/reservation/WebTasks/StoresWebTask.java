@@ -22,7 +22,7 @@ import java.util.ArrayList;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
-import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.R;
 
 /**
@@ -33,13 +33,14 @@ public class StoresWebTask extends AsyncTask<String, Void, String> {
     private View rootView;
     //private MapView mv = MainActivity.mv;//static use for on create aka when screen oriteation is changed
     //private GoogleMap gm = MainActivity.gm;
-
-    public StoresWebTask(View root) {
+private MainActivity ma;
+    public StoresWebTask(MainActivity ma, View root) {
         this.rootView = root;
-        MainActivity.mainView = this.rootView;
+       // ma.mainView = this.rootView;
+        this.ma =ma;
 
-        if (MainActivity.store_list == null) {//connect to database
-            MainActivity.store_list = new ArrayList<Store>();
+        if (ma.store_list == null) {//connect to database
+            ma.store_list = new ArrayList<FirebaseStore>();
         }
 
     }
@@ -64,11 +65,11 @@ public class StoresWebTask extends AsyncTask<String, Void, String> {
 
         try {
             int miles = Integer.parseInt(arg0[0])+1;
-            MainActivity.miles=miles;
+            ma.miles=miles;
             String link = "http://acbasoftware.com/pos/store.php";
             String data = URLEncoder.encode("store", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbastorelistacba"), "UTF-8");
-            data += "&" + URLEncoder.encode("lat", "UTF-8") + "=" + URLEncoder.encode(MainActivity.user_loc.getLatitude() + "", "UTF-8");
-            data += "&" + URLEncoder.encode("lon", "UTF-8") + "=" + URLEncoder.encode(MainActivity.user_loc.getLongitude() + "", "UTF-8");
+            data += "&" + URLEncoder.encode("lat", "UTF-8") + "=" + URLEncoder.encode(ma.user_loc.getLatitude() + "", "UTF-8");
+            data += "&" + URLEncoder.encode("lon", "UTF-8") + "=" + URLEncoder.encode(ma.user_loc.getLongitude() + "", "UTF-8");
             data += "&" + URLEncoder.encode("radius", "UTF-8") + "=" + URLEncoder.encode(miles + "", "UTF-8");//meters
 
             URL url = new URL(link);
@@ -123,7 +124,7 @@ public class StoresWebTask extends AsyncTask<String, Void, String> {
                     String open = oneObject.getString("open_time");
                     String close = oneObject.getString("close_time");
                     double cprice = (oneObject.getDouble("reservation_price"));
-                    MainActivity.store_list.add(new Store(name, addr, citystate, phone, lat, lon,i,miles_away,ticket_price,open,close,cprice));
+                  //  ma.store_list.add(new FirebaseStore(name, addr, citystate, phone, lat, lon,i,miles_away,ticket_price,open,close,cprice));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -135,12 +136,12 @@ public class StoresWebTask extends AsyncTask<String, Void, String> {
                 ListView lv = (ListView) rootView.findViewById(R.id.fragment_listview);
             //}
            // if (MainActivity.la == null) {
-             MainActivity.ListViewAdapter la = new MainActivity.ListViewAdapter(rootView.getContext(), MainActivity.store_list);
+             MainActivity.ListViewAdapter la = new MainActivity.ListViewAdapter(ma, ma.store_list);
                lv.setAdapter(la);
             //}
             showProgressBar(false, this.rootView);
 
-            MainActivity.showGoogleMaps(rootView, MainActivity.store_list);
+            ma.showGoogleMaps(rootView, ma.store_list);
             //if (MainActivity.srl.isRefreshing()) MainActivity.srl.setRefreshing(false);
         } catch (JSONException e) {
             TextView tv = (TextView) rootView.findViewById(R.id.fragment_text_view);

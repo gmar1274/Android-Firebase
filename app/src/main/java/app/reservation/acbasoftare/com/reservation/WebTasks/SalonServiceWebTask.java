@@ -1,7 +1,6 @@
 package app.reservation.acbasoftare.com.reservation.WebTasks;
 
 import android.os.AsyncTask;
-import android.util.Log;
 import android.view.View;
 
 import org.json.JSONArray;
@@ -11,12 +10,10 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
@@ -35,9 +32,11 @@ public class SalonServiceWebTask extends AsyncTask<String,Void,String> {
     private Store store;
     private final String link = "http://acbasoftware.com/pos/services.php";
     private int pos;
-    public SalonServiceWebTask(View rv,Store store,final int pos){
+    private MainActivity ma;
+    public SalonServiceWebTask(MainActivity ma, View rv, Store store, final int pos){
         this.rootView = rv;this.store=store;
         this.pos = pos;
+        this.ma = ma;
     }
     @Override
     protected String doInBackground(String... arg0) {
@@ -118,9 +117,9 @@ public class SalonServiceWebTask extends AsyncTask<String,Void,String> {
                 }
             }///////end for
 
-            MainActivity.store_list.remove(MainActivity.selectedPosition);
-            MainActivity.store_list.add(pos,store);
-            MainActivity.updateRVServices(store);//update GUI for services...because I had the arraylist for stylist but need services
+            ma.store_list.remove(ma.selectedPosition);
+            //ma.store_list.add(pos,store);
+            ma.updateRVServices(store);//update GUI for services...because I had the arraylist for stylist but need services
             //update Calendar
         } catch (JSONException e) {
             e.printStackTrace();

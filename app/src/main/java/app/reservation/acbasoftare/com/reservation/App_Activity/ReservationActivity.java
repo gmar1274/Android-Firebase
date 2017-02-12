@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.HashMap;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Customer;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
+import app.reservation.acbasoftare.com.reservation.App_Objects.MyIntent;
 import app.reservation.acbasoftare.com.reservation.App_Objects.ReservationTicket;
 import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
@@ -26,11 +28,10 @@ import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.selectedPosition;
 
 public class ReservationActivity extends AppCompatActivity {
     public static boolean isSuccessful;//thought for signaling whether payment was succesful& reserved
-    private Store store;
+    private FirebaseStore store;
     private Stylist stylist;
     private SalonService salon_service;
     private HashMap<Date, Date> reserved_appointments;//global reservations for all dates
@@ -40,8 +41,9 @@ public class ReservationActivity extends AppCompatActivity {
     private EditText comments;
     private ReservationTicket reservationTicket;
     private ArrayList<String> list_formatted;
+    private int selectedPosition;
 
-    public Store getStore(){
+    public FirebaseStore getStore(){
         return store;
     }
     public Date getReserveDate(){
@@ -61,14 +63,16 @@ public class ReservationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reservation);
         this.reservationTicket = new ReservationTicket();
-        customer=new Customer();
-        today = MainActivity.myIntent.date;
+        customer=new Customer(this);
+        MyIntent myIntent = this.getIntent().getParcelableExtra("myIntent");
+        today =   myIntent.date; // MainActivity.myIntent.date;
         isSuccessful = false;
-        store = MainActivity.myIntent.store;
-        stylist = MainActivity.myIntent.stylist;
-        salon_service = MainActivity.myIntent.salonService;
+        //store =  myIntent.store;
+        stylist = myIntent.stylist;
+        salon_service = myIntent.salonService;
+        selectedPosition = myIntent.selectedPosition;
         setUpGUI();
-        reserved_appointments = store.getReservation().getAppointments(stylist);//"Store: " + store + " Stylist: " + stylist + " ss: " + salon_service
+        // reserved_appointments = store.getReservation().getAppointments(stylist);//"Store: " + store + " Stylist: " + stylist + " ss: " + salon_service
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -100,7 +104,7 @@ public class ReservationActivity extends AppCompatActivity {
         tv_sty.setText("Stylist: " + stylist.getName().toUpperCase());
         TextView tv_service = (TextView) findViewById(R.id.textView_service_resactivity);
         tv_service.setText("Service: " + salon_service.getName().toUpperCase() + "\nPrice: " + salon_service.getFormattedPrice() + "\nDuration: " + salon_service.getDuration());
-         s = (Spinner) findViewById(R.id.spinner_times);
+        s = (Spinner) findViewById(R.id.spinner_times);
         comments = (EditText) findViewById(R.id.EditText_comment);
 
 
@@ -110,9 +114,9 @@ public class ReservationActivity extends AppCompatActivity {
         outState.putInt("selected", selectedPosition);
 
     }
-public String getCommentSection(){
-    return this.comments.getText().toString();
-}
+    public String getCommentSection(){
+        return this.comments.getText().toString();
+    }
     private void reserve() {
         CreditCardDialog ccd = new CreditCardDialog(this,store,stylist,salon_service, new TimeSet(today,s.getSelectedItem().toString()));
         ccd.showCreditCardDialogForReservationCalendar();
@@ -160,7 +164,7 @@ public String getCommentSection(){
     }
 
     private void goBack() {
-        MainActivity.myIntent = null;//reset to gc
+        // MainActivity.myIntent = null;//reset to gc
         finish();
     }
 
@@ -174,13 +178,13 @@ public String getCommentSection(){
         String selected = s.getSelectedItem().toString();
         TimeSet ts = new TimeSet(today,selected);
 
-        Store s = MainActivity.store_list.get(MainActivity.selectedPosition);//get store
+        //  Store s = ma.store_list.get(selectedPosition);//get store
         //Log.d("BEFORE:: ",(s.getReservations().getAppointments(stylist).get(ts.getLowerBound())==null)+"");
 
-        s.getReservation().removeReservationDate(stylist,ts.getLowerBound());
-        MainActivity.store_list.remove(MainActivity.selectedPosition);
-        MainActivity.store_list.add(MainActivity.selectedPosition,s);
-       // Log.d("AFTER:: ",(s.getReservations().getAppointments(stylist).get(ts.getLowerBound())==null)+"");
+        //s.getReservation().removeReservationDate(stylist,ts.getLowerBound());
+        //ma.store_list.remove(selectedPosition);
+        //ma.store_list.add(selectedPosition,s);
+        // Log.d("AFTER:: ",(s.getReservations().getAppointments(stylist).get(ts.getLowerBound())==null)+"");
 
         this.list_formatted.remove(this.s.getSelectedItem());
         ((ArrayAdapter<String>)this.s.getAdapter()).notifyDataSetChanged();

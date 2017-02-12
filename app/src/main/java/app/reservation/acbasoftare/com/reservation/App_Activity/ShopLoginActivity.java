@@ -11,7 +11,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,7 +22,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -281,7 +279,7 @@ public class ShopLoginActivity extends Activity  {
                 ArrayList<ParamPair> l = new ArrayList<>();
                 l.add(new ParamPair("store_login", Encryption.encryptPassword("acbastore_loginacba")));
                 l.add(new ParamPair("username",mEmail));
-                l.add(new ParamPair("password",Encryption.encryptPassword(mPassword)));
+                l.add(new ParamPair("password", Encryption.encryptPassword(mPassword)));
                 JSONObject obj = new WebService().makeHttpRequest(WebService.storeLoginURL,l);
                 JSONArray arr = obj.getJSONArray("status");
                 String succ = arr.getJSONObject(0).getString("success");

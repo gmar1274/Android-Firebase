@@ -15,16 +15,20 @@ public class MyIntent {
     public Stylist stylist;
     public  SalonService salonService;
     public Date date;
-    public MyIntent(Date date, Store s , Stylist ss , SalonService sss){
+    public int selectedPosition;
+
+    public MyIntent(Date date, Store s , Stylist ss , SalonService sss, int selectedPos){
         this.store=s;
         this.stylist=ss;
         this.salonService=sss;
         this.date=date;
+        this.selectedPosition = selectedPos;
     }
     public void reset(){
         stylist=null;
         store=null;
         salonService=null;
         this.date=null;
+        this.selectedPosition = 0;
     }
 }

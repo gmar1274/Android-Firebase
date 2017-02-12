@@ -2,9 +2,11 @@ package app.reservation.acbasoftare.com.reservation.App_Activity;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,18 +30,16 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
 import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.bitmaps;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.myRef;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.stylist_list;
-
 
 public class InStoreTicketReservationActivity extends AppCompatActivity {
     private ListView lv;
@@ -48,6 +48,10 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
     //private ArrayList<Stylist> stylist_list;
     //private ArrayList<Ticket> tickets;
     private int stylist_position;
+    private ArrayList<Stylist> stylist_list;
+    private FirebaseStore store;
+    private HashMap<String,Stylist>sty_hm;
+    private long current_ticket;
     //private Store store;
 
 
@@ -56,12 +60,15 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_in_store_ticket_reservation);
        // FirebaseIntent fi = this.getIntent().getParcelableExtra("FirebaseIntent");
-
-       // this.stylist_list = this.getIntent().getParcelableArrayListExtra("stylist_list");
+        Bundle b = this.getIntent().getExtras();
+        this.stylist_list = b.getParcelableArrayList("stylist_list");
         // this.bitmaps = fi.getBitmaps() ;//this.getIntent().getParcelableArrayListExtra("bitmaps");
         //this.tickets = this.getIntent().getParcelableArrayListExtra("tickets");
-        //store = this.getIntent().getParcelableExtra("store");
-        this.stylist_position = this.getIntent().getIntExtra("stylist_position",-1);
+        this.store =b.getParcelable("store");
+        this.stylist_position = b.getInt("stylist_position");
+        this.sty_hm = (HashMap<String, Stylist>) b.getSerializable("sty_hm");
+        this.current_ticket = b.getLong("current_ticket");
+
 
         Button cancel = (Button) this.findViewById(R.id.cancelBTN);
         cancel.setOnClickListener(new View.OnClickListener() {
@@ -132,25 +139,29 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
             return;
         }
 
-        final Store store = TicketScreenActivity.store;
-        Stylist s = stylist_list.get(pos);//get the selected stylist
-        store.updateStylistWait(s.getId());//increment wait of the selected stylist
-        s = store.getStylistHashMap().get(s.getId());
+        final FirebaseStore store = this.store;
+        final Stylist s = stylist_list.get(pos);//get the selected stylist
+        s.incrementWait();
+       // store.updateStylistWait(s.getId());//increment wait of the selected stylist
+        sty_hm.put(s.getId(),s);
         stylist_list.remove(pos);
         stylist_list.add(pos,s);//update the list with the current data for listview
-        store.setStylistList(stylist_list);//update the current within the store object
-
         Toast.makeText(this,"Ticket received. Thank you!",Toast.LENGTH_SHORT).show();
-        store.incrementCurrentTicket();//update the CURRENT STORE TICKET
+        //store.incrementCurrentTicket();//update the CURRENT STORE TICKET
         String cust_name = this.cust_name_textview.getText().toString();//can optimize by creating Customer object....
         cust_name = cust_name.length()==0 ? "N/A":cust_name;
         String cust_phone = this.phone_textview.getText().toString();
-        //Create the ticket_number with Absolute Ticket#, Relative ticket_number#, cust_name, sty_id, sty_name, cust_phone...
-      final  Ticket t = new Ticket(store.getCurrent_ticket(),(s.getWait())+"",cust_name,s.getId(), s.getName(),cust_phone);//create the ticket_number
+
+        //Create the ticket with Absolute Ticket#, Relative ticket#, cust_name, sty_id, sty_name, cust_phone...
+      final Ticket t = new Ticket(current_ticket,(s.getWait())+"",cust_name,s.getId(), s.getName(),cust_phone);//create the ticket
+
+      /*  //Create the ticket_number with Absolute Ticket#, Relative ticket_number#, cust_name, sty_id, sty_name, cust_phone...
+      final Ticket t = new Ticket(store.getCurrent_ticket(),(s.getWait())+"",cust_name,s.getId(), s.getName(),cust_phone);//create the ticket_number
+*/
         //to be stored---- ********NOTE****** store.getCurrent_ticket is invalid will be changed in transaction handler...
        // tickets.add(t);//add
        // store.addTicket(t);
-        DatabaseReference ref = myRef;//should be the correct store number path
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("tickets").child(String.valueOf(store.getStore_number()));//should be the correct store number path
         ref.runTransaction(new Transaction.Handler(){
             @Override
             public Transaction.Result doTransaction(MutableData mutableData) {
@@ -163,10 +174,11 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
                        t.ticket_number = String.valueOf(Long.valueOf(t.ticket_number) + 1);//increment the next ticket_number waiting in line for stylist
                    }
                    curr_values.add(t);
-                   store.setCurrentStoreTicket(t.unique_id);
+                  //current_ticket = (t.unique_id);
                    mutableData.setValue(curr_values);
                }else{//there was no entries in the url so create new List<Ticket> with the first entry
                    t.unique_id = 1;///first entry
+                   t.ticket_number = "1";
                    List<Ticket> l = new ArrayList<Ticket>();
                    l.add(t);
                    mutableData.setValue(l);
@@ -176,7 +188,8 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                resetStylistChoice();//deselect radio button
+                 resetStylistChoice();//deselect radio button
+                updateHM(s,t);
             }
         });
 
@@ -189,9 +202,31 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
            // ref3.setValue(Long.valueOf(store.getCurrent_ticket()));
         }
 
-        this.finish();
+        this.goBack();
     }
+private void updateHM(final Stylist s, Ticket t){
+Log.e("Wait: ",s.getWait()+"");
+    DatabaseReference ref2 = FirebaseDatabase.getInstance().getReference().child("stylists").child(String.valueOf(store.getStore_number())).child(s.getId());//.child(s.getId()).child("wait");//ref:root/store_number/tickets
+    ref2.runTransaction(new Transaction.Handler() {
+        @Override
+        public Transaction.Result doTransaction(MutableData mutableData) {
+            if(mutableData.getValue() != null){
+               // Stylist ss = mutableData.getValue(Stylist.class);
+                //if(ss.getWait() > )
+                mutableData.setValue(s);
+            }else{
+                mutableData.setValue(s);
+            }
+            return Transaction.success(mutableData);
+        }
 
+        @Override
+        public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+            Log.e("ON UPDATE HM","updated...or at least in callback...");
+        }
+    });
+
+}
     private void resetStylistChoice() {
         stylist_position = -1;
     }
@@ -210,6 +245,14 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
     }
 
     private void goBack() {
+        Intent i = new Intent();
+        Bundle b = new Bundle();
+        b.putParcelable("store",store);
+        b.putParcelableArrayList("stylist_list",stylist_list);
+        b.putSerializable("sty_hm",sty_hm);
+        b.putLong("current_ticket",current_ticket);
+        i.putExtras(b);
+        this.setResult(1,i);
         this.finish();
     }
 
@@ -263,9 +306,9 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
             // setListener(tv6, r);
             //Bitmap myBitmap = BitmapFactory.decodeFile("\\res\\drawable\\logo.png");
             ImageView iv = (ImageView) convertView.findViewById(R.id.quickContactBadge);
-            if (s.getImage_bytes() == null) {
+         //   if (s.getImage_bytes() == null) {
                 //iv.setImageDrawable(R.drawable.acba);//Utils.resize(rootView.getContext(),rootView.getResources().getDrawable(R.drawable.acba),50,50));
-            } else {
+           // } else {
                 if (iv.getDrawable() == null) {
                     //Bitmap b = Utils.convertBytesToBitmap(s.getImageBytes());
                    /* if( position+1 > stylist_bitmaps.size()) {
@@ -273,7 +316,7 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
                         iv.setImageBitmap(b);
                         stylist_bitmaps.add(b);
                     }else{*/
-                       if(s.getImage_bytes() == null){}
+                      // if(s.getImage_bytes() == null){}
                        // else if(loaded){
                             if(bitmaps!=null && (position+1)<= bitmaps.size()) {
                                 iv.setImageBitmap(bitmaps.get(position));
@@ -286,7 +329,7 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
                       // }
 
                    // }
-                }
+                //}
             }
             // iv.assignContactFromPhone(s.getPhone(), true);
             //iv.setMode(ContactsContract.QuickContact.MODE_LARGE);

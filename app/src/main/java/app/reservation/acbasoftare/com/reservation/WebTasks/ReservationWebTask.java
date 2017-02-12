@@ -4,11 +4,7 @@ import android.os.AsyncTask;
 import android.widget.Toast;
 
 import com.stripe.android.TokenCallback;
-import com.stripe.android.exception.APIConnectionException;
-import com.stripe.android.exception.APIException;
 import com.stripe.android.exception.AuthenticationException;
-import com.stripe.android.exception.CardException;
-import com.stripe.android.exception.InvalidRequestException;
 import com.stripe.android.model.Card;
 import com.stripe.android.model.Token;
 

@@ -6,10 +6,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -21,8 +19,6 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
 import app.reservation.acbasoftare.com.reservation.R;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.T;
-
 public class RegisterShopActivity extends Activity {
     private final String registerURL= "http://www.acbasoftware.com/";
     private FirebaseAuth mAuth;
@@ -30,7 +26,7 @@ public class RegisterShopActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register_shop);
-        mAuth =FirebaseAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
        //WebView wv = (WebView) this.findViewById(R.id.webView);
        // wv.loadUrl(registerURL);
         Button reg = (Button)this.findViewById(R.id.newMemberBtn);
@@ -56,7 +52,7 @@ public class RegisterShopActivity extends Activity {
         EditText user = (EditText) this.findViewById(R.id.emailEditText);
         EditText pass = (EditText)this.findViewById(R.id.passwordEditText);
         final String email = user.getText().toString();
-        final String password =Encryption.encryptPassword(pass.getText().toString());
+        final String password = Encryption.encryptPassword(pass.getText().toString());
         mAuth.createUserWithEmailAndPassword(email,password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {

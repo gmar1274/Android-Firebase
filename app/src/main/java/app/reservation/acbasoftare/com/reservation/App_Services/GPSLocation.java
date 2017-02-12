@@ -2,10 +2,8 @@ package app.reservation.acbasoftare.com.reservation.App_Services;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -13,14 +11,14 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
+import app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity;
+import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 
 /**
  * Created by user on 2016-11-07.
@@ -175,6 +173,10 @@ public boolean isPermissionError(){return  this.error;}
 
     @Override
     public void onLocationChanged(Location loc) {
+        if(location==null){
+            this.location = this.getLocation();
+            return;
+        }
         if(this.location.getLatitude()==loc.getLatitude() && this.location.getLongitude()==loc.getLongitude())return;///equal so dismiss
         this.location = loc;//might need to update google maps
         if(MainActivity.mv != null && MainActivity.mainView!=null){//update map

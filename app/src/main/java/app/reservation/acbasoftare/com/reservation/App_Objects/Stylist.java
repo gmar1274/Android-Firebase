@@ -1,22 +1,55 @@
 package app.reservation.acbasoftare.com.reservation.App_Objects;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import java.io.Serializable;
 
 /**
  * Created by user on 2016-08-06.
  */
-public class Stylist implements Parcelable {
+public class Stylist implements Parcelable, Comparable<Stylist> {
     private String fname, mname, lname,id,phone;
     private int wait;
     private boolean available;
-    private Bitmap image;
+  //  private Bitmap image;
+    private String image_bytes;//Base64.encode(byte[]);
     private String store_id;
 
+    public String getFname() {
+        return fname;
+    }
+
+    public String getMname() {
+        return mname;
+    }
+
+    public String getLname() {
+        return lname;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getImage_bytes() {
+        return image_bytes;
+    }
+
+    public void setImage_bytes(String encodedByteArr) {
+        this.image_bytes = encodedByteArr;
+    }
+
+    public void setStore_id(String store_id) {
+        this.store_id = store_id;
+    }
+
+    public static Creator<Stylist> getCREATOR() {
+        return CREATOR;
+    }
+    @Override
+    public boolean equals(Object o){
+        Stylist s = (Stylist) o;
+        return this.id.equalsIgnoreCase(s.getId());
+    }
     /**
      * DEBUG TEST STYLIST
      * @param test
@@ -33,9 +66,14 @@ public Stylist(){
     this.fname="No Preference";
     this.mname="";
     this.lname="";
+    this.wait=0;
+    this.available=true;
+    this.image_bytes=null;
+    this.phone=null;
+    this.store_id="9091234567";
 }
 
-    public Stylist(String id,String fname, String mname, String lname, boolean avail,Bitmap pic,String phone,String store_id) {
+    public Stylist(String id,String fname, String mname, String lname, boolean avail,String pic_byte_arr,String phone,String store_id) {
         this.fname = fname;
         this.lname = lname;
         this.mname=mname;
@@ -46,10 +84,17 @@ public Stylist(){
             this.lname="";
         }
         this.available = avail;
-        this.image=pic;
+        //this.image=pic;
+        this.image_bytes = pic_byte_arr;
         this.wait=0;
         this.phone = phone;
         this.store_id=store_id;
+    }
+    public String getStore_id(){
+        return this.store_id;
+    }
+    public void incrementWait(){
+        this.wait += 1;
     }
     public String getStoreID(){
         return this.store_id;
@@ -58,9 +103,7 @@ public Stylist(){
     public void setPhone(String p){
         this.phone=p;
     }
-    public Bitmap getImage(){
-        return  this.image;
-    }
+    //public Bitmap getImage(){return  this.image;}
     public  void setAvailable(boolean available){
         this.available=available;
     }
@@ -68,27 +111,7 @@ public Stylist(){
     return this.available;
 }
 
-    public String getID() {
-        return this.id;
-    }
 
-    public void setID(String id) {
-        this.id = id;
-    }
-
-    public void setFname(String fn) {
-        this.fname = fn;
-    }
-
-    public void setMname(String mn) {
-        this.mname = mn;
-
-    }
-
-    public void setLname(String ln) {
-        this.lname = ln;
-
-    }
 public void setWait(int wait){
     this.wait=wait;
 }
@@ -120,7 +143,8 @@ public void setWait(int wait){
         dest.writeString(this.phone);
         dest.writeInt(this.wait);
         dest.writeByte(this.available ? (byte) 1 : (byte) 0);
-        dest.writeParcelable(this.image, flags);
+       // dest.writeParcelable(this.image, flags);
+        dest.writeString(image_bytes);
     }
 
     protected Stylist(Parcel in) {
@@ -131,7 +155,8 @@ public void setWait(int wait){
         this.phone = in.readString();
         this.wait = in.readInt();
         this.available = in.readByte() != 0;
-        this.image = in.readParcelable(Bitmap.class.getClassLoader());
+        //this.image = in.readParcelable(Bitmap.class.getClassLoader());
+      this.image_bytes = in.readString();
     }
 
     public static final Creator<Stylist> CREATOR = new Creator<Stylist>() {
@@ -146,7 +171,17 @@ public void setWait(int wait){
         }
     };
 
-    public void setBitmap(Bitmap bitmap) {
-        this.image=bitmap;
+    @Override
+    public int hashCode(){
+        return id.hashCode();
+    }
+
+    @Override
+    public int compareTo(Stylist stylist) {
+        int id = Integer.valueOf(this.id);
+        int id2 = Integer.valueOf(stylist.id);
+        if(id<id2)return  -1;
+        else if(id>id2)return 1;
+        return 0;
     }
 }

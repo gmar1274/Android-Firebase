@@ -72,13 +72,13 @@ public class RVAdapter<E> extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder.stylist) {
             Stylist s = (Stylist) list.get(position);
             rb.setText(s.getName().toUpperCase());
-            Drawable d = new BitmapDrawable(MainActivity.a.getResources(), Utils.resize(s.getImage(),80,80));
+            Drawable d = new BitmapDrawable(MainActivity.a.getResources(), Utils.resize(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())),80,80));
             rb.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
 
         } else {//do service
             DecimalFormat df = new DecimalFormat("$ ###,##0.00");
             SalonService s = (SalonService) list.get(position);
-            rb.setText("Service: " + s.getName() + "\n" + "Price: " + df.format(s.getPrice().doubleValue()) + "\nService Duration: " + s.getDuration());
+            rb.setText("Service: " + s.getName() + "\n" + "Price: " + df.format(s.getPrice()) + "\nService Duration: " + s.getDuration());
         }
     }
 

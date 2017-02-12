@@ -2,18 +2,23 @@ package app.reservation.acbasoftare.com.reservation.Utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.VisibleForTesting;
+import android.location.Location;
+import android.util.Base64;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
 
@@ -37,7 +42,7 @@ public class Utils {
     /*Should return the new time in advanced.
     * */
     public static String calculateWait(int waiting) {
-        int wait = Utils.minTomilliseconds(45) * waiting;//45 mins to milliseconds
+        int wait = 45 * waiting;//45 mins * #wait
         int hour= new Integer(""+wait/60);
         int min= new Integer(""+wait%60);
         if(hour>0)return hour+" hrs "+min+" mins";
@@ -233,5 +238,71 @@ public class Utils {
         start.setMinutes(0);
         start.setSeconds(0);
         return start;
+    }
+    public static Bitmap convertBytesToBitmap(byte[] pic){
+        BitmapFactory.Options options = new BitmapFactory.Options();
+         Bitmap b =  BitmapFactory.decodeByteArray(pic, 0,pic.length, options);
+        //options.inSampleSize = 8;
+        //int imgHeight = options.outHeight;
+        //int imgWidth= options.outWidth;
+        //String imageType = options.outMimeType;
+
+        return b;
+    }
+    public static String convertToString(byte[] arr){
+        return Base64.encodeToString(arr,Base64.DEFAULT);
+    }
+    public static byte[] convertToByteArray(String arr){
+        return Base64.decode(arr,Base64.DEFAULT);
+    }
+  /*  public static Bitmap decodeSampledBitmapFromArray(byte[]arr,int reqWidth,int reqHeight){
+        final BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds=true;
+        BitmapFactory.decodeByteArray(arr,0,arr.length,opt);
+        opt.inSampleSize = calculateInSampleSize(opt,reqWidth,reqHeight);
+        opt.inJustDecodeBounds = false;
+        return BitmapFactory.decodeByteArray(arr,0,arr.length,opt);
+    }
+    */
+    public static byte[] convertBitmapToByteArray(Bitmap b){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        b.compress(Bitmap.CompressFormat.PNG,0, stream);
+        return stream.toByteArray();
+    }
+    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight){
+        final int h = options.outHeight;
+        final int w = options.outWidth;
+        int inSampleSize = 1;
+        if(h > reqHeight || w > reqHeight){
+                final int halfHeight = h / 2;
+                final int halfWidth = h / 2;
+                while((halfHeight/inSampleSize)>= reqHeight && (halfWidth/inSampleSize)>= reqWidth){
+                    inSampleSize *= 2;
+                }
+        }
+        return inSampleSize;
+    }
+
+    /**
+     * This method  querys firebase stores stores all the stores in a list then calculates thhe distance from the user and
+     * determines whether the store is in bounds(in radius search)
+     * @param myLoc
+     * @param l
+     * @param radius
+     * @return
+     */
+    public static ArrayList<Store> calculateDistance(Location myLoc,  List<Store> l, int radius) {
+        ArrayList<Store> list = new ArrayList<>();
+        for(Store store : l){//search keySet
+
+            double dist = Distance.calculateDistance(myLoc.getLatitude(),myLoc.getLongitude(),store.getLocation().latitude,store.getLocation().longitude);
+            store.setDistanceAway(dist);
+            if(dist <= radius) {
+                list.add(store);
+            }
+        }
+        Collections.sort(list);
+        l.clear();
+        return list;
     }
 }

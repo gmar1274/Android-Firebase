@@ -2,20 +2,18 @@ package app.reservation.acbasoftare.com.reservation.App_Activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,7 +27,6 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.Profile;
-import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.ads.AdListener;
@@ -38,14 +35,19 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
 import com.google.android.gms.ads.doubleclick.PublisherInterstitialAd;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
-import app.reservation.acbasoftare.com.reservation.WebTasks.Login;
 import app.reservation.acbasoftare.com.reservation.R;
+import app.reservation.acbasoftare.com.reservation.WebTasks.Login;
+
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
 
 /**
  * A login screen that offers login via email/password.
@@ -68,6 +70,9 @@ public class LoginActivity extends AppCompatActivity  {
     private PublisherInterstitialAd mPublisherInterstitialAd;
     public static GPSLocation gps;
     private CallbackManager callbackManager;
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    private ProgressDialog pd;
 
     private void requestNewInterstitial() {
         PublisherAdRequest adRequest = new PublisherAdRequest.Builder()
@@ -83,11 +88,11 @@ public class LoginActivity extends AppCompatActivity  {
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
+        mAuth = FirebaseAuth.getInstance();
         super.onCreate(savedInstanceState);
 
         FacebookSdk.sdkInitialize(getApplicationContext());
-       AppEventsLogger.activateApp(this);
+        // AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_login);
          callbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = (LoginButton) findViewById(R.id.fb);
@@ -154,13 +159,12 @@ public class LoginActivity extends AppCompatActivity  {
         if (username != null && password != null) {
             Login login = new Login(this);
             login.execute(username, Encryption.encryptPassword(password));
-            this.setVisible(true);
             return;
         }
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         mPasswordView = (EditText) findViewById(R.id.password);
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
+        final Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -172,8 +176,26 @@ public class LoginActivity extends AppCompatActivity  {
         mGuestButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-                goToMainActivity();
+                FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            goToMainActivity();
+                        } else {
+                            Log.e("ON COMPLETE AUTH", "AUTH ERROR");
+                          if(pd!=null)  pd.dismiss();
+                        }
+                    }
+                }).addOnFailureListener(LoginActivity.this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        e.printStackTrace();
+                        if(pd!=null)pd.dismiss();
+                    }
+                });
             }
+
+
         });
         Button shop_owner = (Button) this.findViewById(R.id.storeLoginBtn);
         shop_owner.setOnClickListener(new OnClickListener() {
@@ -183,6 +205,24 @@ public class LoginActivity extends AppCompatActivity  {
             }
         });
 
+
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+               if(pd==null)return;
+                if(mEmailView==null || mPasswordView==null || mEmailView.getText().length() == 0 || mPasswordView.getText().length() == 0 ){return;}
+                Log.e("FIREBASE LISTENER:","HERE IN LISTENER");
+                pd.dismiss();
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if( user != null){
+                    goToMainActivity();
+                }else{
+                    errorWithSignIn();
+                }
+            }
+        };
+        mAuth.addAuthStateListener(mAuthListener);
     }
 
     private void goToShopLogin() {
@@ -209,8 +249,8 @@ public class LoginActivity extends AppCompatActivity  {
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String email = mEmailView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        final String email = mEmailView.getText().toString();
+        final String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -241,28 +281,57 @@ public class LoginActivity extends AppCompatActivity  {
             // form field with an error.
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            ///attempt to login here at this point
-            // showProgress(true);
-            // mAuthTask = new UserLoginTask(email, password);
+////////sign in listener for firebase
+            pd = ProgressDialog.show(this,"Authenticating","Please wait...",true,false);
+            pd.show();
+            mAuth.signInWithEmailAndPassword(email,Encryption.encryptPassword(password)).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    pd.dismiss();
+                    if(task.isSuccessful()) {
+                        goToMainActivity();
+                    }else{
+                        //LOGIN USING MY SERVER
+                        myLogin(email,password);
 
-            Login login = new Login(this, mEmailView, mPasswordView, pref);
-            login.execute(email, Encryption.encryptPassword(password));//sends sha1 encrypted password
-
-            //showProgress(false);
+                    }
+                    Log.e("IN ON COMPLETE LISTENER","HERE ");
+                }
+            });
 
         }
     }
+    private void myLogin(String email, String password) {
+        Login login = new Login(this, mEmailView, mPasswordView, pref);
+        login.execute(email, Encryption.encryptPassword(password));//sends sha1 encrypted password
+    }
+
+    @Override
+public void onStart(){
+    super.onStart();
+   if(mAuth!=null && mAuthListener!=null) mAuth.addAuthStateListener(this.mAuthListener);
+}
+@Override
+public void onStop(){
+    super.onStop();
+   if(this.mAuthListener != null){
+        mAuth.removeAuthStateListener(this.mAuthListener);
+    }
+}
 
     private void goToMainActivity() {
-        gps.getLocation();
+        if(!gps.canGetLocation())gps.getLocation();
+
         if (mPublisherInterstitialAd.isLoaded()) {
             mPublisherInterstitialAd.show();
         } else {
             Intent intent = new Intent(this, MainActivity.class);
             this.startActivity(intent);
         }
+    }
+    private void errorWithSignIn() {
+        this.mEmailView.setError("Email may be wrong");
+        this.mPasswordView.setError("Password may be wrong");
     }
     @Override
     public void onBackPressed() {
@@ -271,12 +340,12 @@ public class LoginActivity extends AppCompatActivity  {
     }
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.contains("@");
+        return email.contains("@") || email.length()>3;
     }
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return password.length() >0;
+        return password.length() >= 5;
     }
     /**
      * Function to show settings alert dialog

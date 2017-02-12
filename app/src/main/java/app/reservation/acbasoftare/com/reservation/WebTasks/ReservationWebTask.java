@@ -51,10 +51,10 @@ public class ReservationWebTask  extends AsyncTask<String,Void,String> {
 
         try {
             SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String id=ra.getStore().getID(); //param 1 is store_id
+            String id=ra.getStore().getPhone(); //param 1 is store_id
             String datetime_start=sdf.format(ra.getTimeSet().getLowerBound()); ///start_time
             String datetime_end=sdf.format(ra.getTimeSet().getUpperBound());////
-            String stylist=ra.getStylist().getID();
+            String stylist=ra.getStylist().getId();
             String customer_id=ra.getCustomer().getID();//FB id if available
             String customer_name=ra.getCustomer().getName();
             String service_id=ra.getSalonService().getId() + "";

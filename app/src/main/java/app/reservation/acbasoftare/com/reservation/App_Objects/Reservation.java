@@ -1,20 +1,18 @@
 package app.reservation.acbasoftare.com.reservation.App_Objects;
 
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
-import java.lang.reflect.Array;
-import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-import static android.R.id.list;
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
+import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.a;
 
 /**
  * Created by Gabe-ACBA on 12/1/2016.
@@ -22,17 +20,6 @@ import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
  * Idea is to hold a hashmap of DateTimes(mysql) to fill a CalendarVeiw
  */
 public class Reservation implements Parcelable {
-    public static final Parcelable.Creator<Reservation> CREATOR=new Parcelable.Creator<Reservation>() {
-        @Override
-        public Reservation createFromParcel(Parcel source) {
-            return new Reservation(source);
-        }
-
-        @Override
-        public Reservation[] newArray(int size) {
-            return new Reservation[size];
-        }
-    };
     private HashMap<TimeSet, ReservationDetails> time_range_details_hm;
     private HashMap<Stylist, HashMap<Date, Date>> reservation_hm;//alias for stylist appointments
     private HashMap<String, HashMap<TimeSet,ReservationDetails>> days_reserved_hm;//String is represented as MMM/dd/yyyy. The reason i used String
@@ -62,14 +49,30 @@ public class Reservation implements Parcelable {
         this.days_reserved_hm=new HashMap<>();
     }
 
+
     protected Reservation(Parcel in) {
-        in.readMap(this.reservation_hm, Stylist.class.getClassLoader());
+        Bundle b = in.readBundle();
+        this.days_reserved_hm = (HashMap<String, HashMap<TimeSet, ReservationDetails>>) b.getSerializable("days");
+        this.time_range_details_hm = (HashMap<TimeSet, ReservationDetails>) b.getSerializable("time");
+        this.reservation_hm = (HashMap<Stylist, HashMap<Date, Date>>) b.getSerializable("res");
     }
+
+    public static final Creator<Reservation> CREATOR = new Creator<Reservation>() {
+        @Override
+        public Reservation createFromParcel(Parcel in) {
+            return new Reservation(in);
+        }
+
+        @Override
+        public Reservation[] newArray(int size) {
+            return new Reservation[size];
+        }
+    };
 
     public void populateMap(ArrayList<Stylist> list) {
         this.reservation_hm=new HashMap<>();
         for(Stylist s : list) {
-            if(!s.getID().equalsIgnoreCase("-1"))
+            if(!s.getId().equalsIgnoreCase("-1"))
                 this.reservation_hm.put(s, new HashMap<Date, Date>());
         }
     }
@@ -188,15 +191,7 @@ public class Reservation implements Parcelable {
         d.remove(start);
         this.reservation_hm.put(s,d);
     }
-    @Override
-    public int describeContents() {
-        return 0;
-    }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeMap(this.reservation_hm);
-    }
 
     public HashMap<TimeSet,ReservationDetails> getReservationDetailsHashMap() {return this.time_range_details_hm;}
 
@@ -238,5 +233,32 @@ public class Reservation implements Parcelable {
             return  new ArrayList<>();
         }
             return list;
+    }
+
+//MEANT GETTERS FOR FIREBASE DONT ACTUALLY USE
+    public HashMap<TimeSet, ReservationDetails> getTime_range_details_hm() {
+        return time_range_details_hm;
+    }
+
+    public HashMap<Stylist, HashMap<Date, Date>> getReservation_hm() {
+        return reservation_hm;
+    }
+
+    public HashMap<String, HashMap<TimeSet, ReservationDetails>> getDays_reserved_hm() {
+        return days_reserved_hm;
+    }//END O FIREBASE GETTERS
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+       Bundle b = new Bundle();
+        b.putSerializable("days",this.days_reserved_hm);
+        b.putSerializable("time",this.time_range_details_hm);
+        b.putSerializable("res",this.reservation_hm);
+        parcel.writeBundle(b);
     }
 }

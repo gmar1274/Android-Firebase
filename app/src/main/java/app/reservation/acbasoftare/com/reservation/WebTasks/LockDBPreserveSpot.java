@@ -12,16 +12,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
-import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
-import app.reservation.acbasoftare.com.reservation.Manifest;
-import app.reservation.acbasoftare.com.reservation.R;
 
 /**
  * Created by user on 2016-11-18.
@@ -72,7 +68,7 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
                 String store_id=arg0[0];
                 String link = this.site;
                 String data="";
-                final Stylist stylist_obj=  MainActivity.stylists_list.get(MainActivity.stylist_postion);
+                final Stylist stylist_obj=  MainActivity.stylists_list.get(MainActivity.stylist_position);
                 if(arg0.length==1) {//////////case 1: only 1 param. Make a arbritarty insert ticket
                     //no need to specify stylist id
                     INSERT=true;
@@ -82,7 +78,7 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
                     data += "&" + URLEncoder.encode("lock", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbalockacba"), "UTF-8");
                     data += "&" + URLEncoder.encode("insert", "UTF-8") + "=" + URLEncoder.encode("true", "UTF-8");
                     data += "&" + URLEncoder.encode("date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");
-                    data += "&" + URLEncoder.encode("stylist", "UTF-8") + "=" + URLEncoder.encode(stylist_obj.getID(), "UTF-8");//get selected stylisy
+                    data += "&" + URLEncoder.encode("stylist", "UTF-8") + "=" + URLEncoder.encode(stylist_obj.getId(), "UTF-8");//get selected stylisy
 
                 }else if(arg0.length==2){//case 2: delete the ticket. 2 params, store and ticket_number
                     DELETE=true;
@@ -136,15 +132,15 @@ private final String site="http://acbasoftware.com/pos/lockdb.php";
                     try {
 
                        JSONObject obj = new JSONObject(result);
-                       MainActivity.ticket_number=obj.getInt("ticket");//saves the potential
+                      // MainActivity.ticket_number=obj.getInt("ticket");//saves the potential
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }else if(DELETE){//delete the remebred ticket
-                    MainActivity.ticket_number=-1;
-                    MainActivity.TICKET=null;
+                   // MainActivity.ticket_number=-1;
+                    //MainActivity.TICKET=null;
                 }else{//TICKET was a success
-                    MainActivity.TICKET= new Ticket(store_id,ticket,name,stylist,phone);
+                  //  MainActivity.TICKET= new Ticket(0,store_id,ticket,name,stylist,phone);
                 }
         }
 

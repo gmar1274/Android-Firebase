@@ -90,7 +90,7 @@ public class SalonServiceWebTask extends AsyncTask<String,Void,String> {
                     JSONObject oneObject=jArray.getJSONObject(i);
                     // Pulling items from the array
 
-                    BigDecimal price=new BigDecimal(oneObject.getDouble("price"));
+                    double price=oneObject.getDouble("price");
                     String name=oneObject.getString("name");
                     int id=oneObject.getInt("id");
                     String duration=oneObject.getString("duration");///string format
@@ -109,10 +109,10 @@ public class SalonServiceWebTask extends AsyncTask<String,Void,String> {
                 try {
                     JSONObject oneObject=jArray2.getJSONObject(i);
                     Stylist sty = store.getStylistHashMap().get(oneObject.getString("stylist_id"));///should guarentee stylist
-                    if(sty.getID().equalsIgnoreCase("-1")){continue;}
+                    if(sty.getId().equalsIgnoreCase("-1")){continue;}
                     String start_time = oneObject.getString("start_time");
                     String end_time = oneObject.getString("end_time");
-                    store.getReservations().setDateTime(sty,start_time,end_time);//sets appointments//or updates the appointment
+                    store.getReservation().setDateTime(sty,start_time,end_time);//sets appointments//or updates the appointment
                 } catch(JSONException e) {
                     e.printStackTrace();
                 }

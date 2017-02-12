@@ -32,6 +32,7 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.R;
 
+import static android.R.attr.activityCloseEnterAnimation;
 import static android.R.attr.data;
 import static android.util.Base64.encode;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.miles;
@@ -43,7 +44,9 @@ import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActiv
 public class UploadImageWebTask extends AsyncTask<String, Void, String> {
     private String link = "http://acbasoftware.com/pos/upload_image.php";
     private Bitmap image;
-    public UploadImageWebTask(Bitmap im){
+    private EmployeeActivity ea;
+    public UploadImageWebTask(EmployeeActivity ea, Bitmap im){
+        this.ea=ea;
         this.image=im;
     }
     @Override
@@ -56,9 +59,9 @@ public class UploadImageWebTask extends AsyncTask<String, Void, String> {
             String img =Base64.encodeToString(i,Base64.DEFAULT);
             Log.e("pic::",img);
             String data = URLEncoder.encode("code", "UTF-8") + "=" + URLEncoder.encode(Encryption.encryptPassword("acbaimageacba"), "UTF-8");
-            data += "&" + URLEncoder.encode("stylist_id", "UTF-8") + "=" + URLEncoder.encode(EmployeeActivity.getStylistID(), "UTF-8");
+            data += "&" + URLEncoder.encode("stylist_id", "UTF-8") + "=" + URLEncoder.encode(ea.getStylistID(), "UTF-8");
             data += "&" + URLEncoder.encode("image", "UTF-8") + "=" + URLEncoder.encode(img, "UTF-8");
-            data += "&" + URLEncoder.encode("store_id", "UTF-8") + "=" + URLEncoder.encode(EmployeeActivity.store_id, "UTF-8");//meters
+            data += "&" + URLEncoder.encode("store_id", "UTF-8") + "=" + URLEncoder.encode(ea.store_id, "UTF-8");//meters
 
             URL url = new URL(link);
             URLConnection conn = url.openConnection();
@@ -88,8 +91,8 @@ public class UploadImageWebTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
-        Log.e("resultttt:", result);
-        Toast.makeText(EmployeeActivity.employeeActivity,"Picture updated!",Toast.LENGTH_LONG).show();
+
+        Toast.makeText(ea,"Picture updated!",Toast.LENGTH_LONG).show();
     }
 
 

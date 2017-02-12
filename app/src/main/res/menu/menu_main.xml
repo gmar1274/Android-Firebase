@@ -2,6 +2,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".App_Activity.MainActivity">
+    <item android:title="Ticket History"
+        android:id="@+id/ticket_history" />
     <item
         android:id="@+id/credit_card_settings"
         android:orderInCategory="2"

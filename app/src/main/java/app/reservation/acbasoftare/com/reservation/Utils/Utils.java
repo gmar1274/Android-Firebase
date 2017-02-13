@@ -26,6 +26,7 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
  * Created by user on 12/6/16.
  */
 public class Utils {
+    public final static int DEFAULT_TIME = 35;
     /*
     * Needs db analytics to gather intellignet wait per store...
     * Not in commission at this moment...
@@ -42,7 +43,7 @@ public class Utils {
     /*Should return the new time in advanced.
     * */
     public static String calculateWait(int waiting) {
-        int wait = 45 * waiting;//45 mins * #wait
+        int wait = DEFAULT_TIME * waiting;//45 mins * #wait
         int hour= new Integer(""+wait/60);
         int min= new Integer(""+wait%60);
         if(hour>0)return hour+" hrs "+min+" mins";
@@ -56,7 +57,7 @@ public class Utils {
         return sdf.format(wait_date);
     }
     public static String calculateTimeReady(int waiting){
-        int wait = Utils.minTomilliseconds(45) * waiting;//45 mins to milliseconds
+        int wait = Utils.minTomilliseconds(DEFAULT_TIME) * waiting;//45 mins to milliseconds
         Date clear = new Date();
         Date wait_date = new Date(Math.abs(wait + clear.getTime()));
         SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");//hour:min format

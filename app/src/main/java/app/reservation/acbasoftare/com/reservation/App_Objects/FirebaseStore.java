@@ -2,6 +2,11 @@ package app.reservation.acbasoftare.com.reservation.App_Objects;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by user on 2/3/17.
@@ -234,5 +239,40 @@ public class FirebaseStore implements Parcelable , Comparable<FirebaseStore>{
             return 1;
         }else return 0;
     }
+    public String formatHoursTo12hours(){
+        SimpleDateFormat h = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");
+        try{
+            Date o = h.parse(this.open_time);
+            Date c = h.parse(this.close_time);
+            return sdf.format(o) +" - "+sdf.format(c);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return "N/A";
+    }
 
+    public String displayIsAvailable() {
+        SimpleDateFormat h = new SimpleDateFormat("HH:mm:ss");
+        boolean open = false;
+        try{
+
+
+            Date o = h.parse(this.open_time);
+            Date c = h.parse(this.close_time);
+
+            String now_time = h.format(new Date());
+            Date now = h.parse(now_time);
+
+            //Log.e("times::::::","o: "+o+" now: "+now+" c: "+c);
+            open =   now.compareTo(o) >= 0 && now.compareTo(c) <= 0;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        if(open){
+            return "OPEN TODAY";
+        }else{
+            return "CLOSED TODAY";
+        }
+    }
 }

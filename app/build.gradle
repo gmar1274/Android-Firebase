@@ -48,5 +48,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     //compile files('/home/user/HelloReservationApp-current/mysql-connector-java-3.0.17-ga-bin.jar')
     compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
+    compile 'com.google.android.gms:play-services-ads:10.0.1'
 }
 apply plugin: 'com.google.gms.google-services'

@@ -31,6 +31,7 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
@@ -142,13 +143,17 @@ public class LoginActivity extends AppCompatActivity  {
             @Override
             public void onAdClosed() {
                 requestNewInterstitial();
-                goToMainActivity();
+               Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                LoginActivity.this.startActivity(i);
             }
         });
+
 
         requestNewInterstitial();
         MobileAds.initialize(getApplicationContext(), "ca-app-pub-9309556355508377~8508953646");
         AdView mAdView = (AdView) findViewById(R.id.adView);
+        //mAdView.setAdUnitId("ca-app-pub-9309556355508377/8229752040");
+       // mAdView.setAdSize(AdSize.SMART_BANNER);
         AdRequest adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
         mAdView.loadAd(adRequest);
         //////////load Ad
@@ -327,10 +332,10 @@ public void onStop(){
 
         if (mPublisherInterstitialAd.isLoaded()) {
             mPublisherInterstitialAd.show();
-        } else {
+        } /*else {
             Intent intent = new Intent(this, MainActivity.class);
             this.startActivity(intent);
-        }
+        }*/
     }
     private void errorWithSignIn() {
         this.mEmailView.setError("Email may be wrong");

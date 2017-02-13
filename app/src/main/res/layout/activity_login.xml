@@ -87,9 +87,9 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_alignParentBottom="true"
-            ads:adSize="BANNER"
             ads:adUnitId="@string/login_banner_ad_unit_id"
-            android:layout_gravity="bottom|center">
+            android:layout_gravity="bottom|center" android:elevation="0dp"
+            ads:adSize="BANNER">
         </com.google.android.gms.ads.AdView>
 
         <com.facebook.login.widget.LoginButton

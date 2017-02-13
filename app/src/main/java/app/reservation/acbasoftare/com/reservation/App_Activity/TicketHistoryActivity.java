@@ -54,7 +54,7 @@ public class TicketHistoryActivity extends AppCompatActivity {
             }
             TextView num = (TextView)convertView.findViewById(R.id.th_number_textView);
             TextView sty = (TextView)convertView.findViewById(R.id.th_stylist_textView);
-            Ticket t = list.get(position_item);
+            Ticket t = this.getItem(position_item);
 
             num.setText("Your Ticket #: "+t.getUnique_id());
             sty.setText("Stylist: "+t.getStylist().toUpperCase());

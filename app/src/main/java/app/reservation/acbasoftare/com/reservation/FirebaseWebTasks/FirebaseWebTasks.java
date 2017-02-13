@@ -143,16 +143,16 @@ public class FirebaseWebTasks {
                     //list_stylist.add(s);
                     Bitmap b = Utils.convertBytesToBitmap(bytes); //Utils.decodeSampledBitmapFromArray(s.getImage_bytes(), 50, 50);
                     bytes=null;
-                    if(stylist_bitmaps==null){stylist_bitmaps = new ArrayList<Bitmap>();}
-                    stylist_bitmaps.add(b);
+                    if(stylist_bitmaps==null){stylist_bitmaps = new java.util.HashMap<>();}
+                    stylist_bitmaps.put(s.getId(),b);
                     if(stylist_bitmaps.size() == list_stylist.size()){
                         //store.determineCurrentTicketAfterFirebaseLoads();
                         ma.updateStore(store);
                         ma.initializeStylists(list_stylist,stylist_bitmaps);
                         Log.e("FINISH: ","Finished download images");
                         pd.dismiss();
-                        ProgressBar pb = (ProgressBar)ma.rootView_LiveTab.findViewById(R.id.progressBar_live_feed);
-                        pb.setVisibility(View.GONE);
+                        /*ProgressBar pb = (ProgressBar)ma.rootView_LiveTab.findViewById(R.id.progressBar_live_feed);
+                        pb.setVisibility(View.GONE);*/
                     }
                     //not sure store gets updated will delete the use even though its stored in array cant useon the change but its ok because i can set the stylist list to the list for store
                     // pd.dismiss();
@@ -197,9 +197,9 @@ public class FirebaseWebTasks {
             TextView tv_waiting=(TextView)convertView.findViewById(R.id.tv_waiting_lv);
             tv_waiting.setText(String.valueOf(s.getWait()));
             TextView tv_approx_wait=(TextView)convertView.findViewById(R.id.textView_aprox_wait_lv);
-            tv_approx_wait.setText(Utils.calculateWait(s.getWait()));
+            tv_approx_wait.setText(Utils.calculateWait(s.getPsuedo_wait()));
             TextView tv_readyby=(TextView)convertView.findViewById(R.id.textView_readyby_lv);
-            tv_readyby.setText(Utils.calculateTimeReady(s.getWait()));
+            tv_readyby.setText(Utils.calculateTimeReady(s.getPsuedo_wait()));
             ///////
             TextView tv3=(TextView)convertView.findViewById(R.id.textView3);
             TextView tv4=(TextView)convertView.findViewById(R.id.textView4);
@@ -211,14 +211,14 @@ public class FirebaseWebTasks {
             //if(s.getImage_bytes() == null){
             //iv.setImageDrawable(R.drawable.acba);//Utils.resize(rootView.getContext(),rootView.getResources().getDrawable(R.drawable.acba),50,50));
             // }else {
-            if (stylist_bitmaps != null && stylist_bitmaps.size()>=position+1 ){
-                iv.setImageBitmap(stylist_bitmaps.get(position)); // iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
+          //  if (stylist_bitmaps != null && stylist_bitmaps.size()>=position+1 ){
+                iv.setImageBitmap(stylist_bitmaps.get(s.getId())); // iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
                 if(position==0){
                     iv.assignContactFromPhone(ma.store_list.get(ma.selectedPosition).getPhone(),true);
                 }else{
                     iv.assignContactFromPhone(s.getPhone(),true);
                 }
-            }
+            //}
             //}
             iv.setMode(ContactsContract.QuickContact.MODE_LARGE);
             // iv.setVisibility(View.VISIBLE);

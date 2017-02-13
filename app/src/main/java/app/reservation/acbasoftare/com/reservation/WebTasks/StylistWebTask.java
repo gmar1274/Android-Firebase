@@ -69,14 +69,14 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
     }
 
     private void showProgressBar(boolean show, View rootView) {
-        progressBar = (ProgressBar) rootView.findViewById(R.id.progressBar_live_feed);
+       /* progressBar = (ProgressBar) rootView.findViewById(R.id.progressBar_live_feed);
         if (show == false) {
             progressBar.setIndeterminate(false);
             progressBar.setVisibility(View.GONE);
         }else {
             progressBar.setIndeterminate(true);
             progressBar.setVisibility(View.VISIBLE);
-        }
+        }*/
     }
 
     @Override
@@ -198,7 +198,7 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
         ma.store_list.add(ma.selectedPosition,store);//hopefully overloads the object
        initListView();
        // rootView.setVisibility(View.VISIBLE);
-        ma.noStaff=false;
+       // ma.noStaff=false;
         //MainActivity.rootView_Reservation.setVisibility(View.VISIBLE);
     }
 
@@ -221,8 +221,8 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
         initListView();
         //rootView.setVisibility(View.GONE);
         // MainActivity.rootView_Reservation.setVisibility(View.GONE);
-        ma.updateTab3();
-        ma.noStaff=true;
+       // ma.updateTab3();
+        //ma.noStaff=true;
     }
 
     public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> {

@@ -10,6 +10,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -43,6 +44,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.Profile;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
+import com.google.android.gms.ads.doubleclick.PublisherInterstitialAd;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -50,6 +58,8 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -58,16 +68,23 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import org.w3c.dom.Text;
+
+import java.lang.reflect.Array;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.LatLng;
@@ -82,43 +99,39 @@ import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Recycleview.RVAdapter;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
-import static android.os.Build.VERSION_CODES.M;
-
 
 //import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AppCompatActivity {
-    //public static int ticket_number;///is the potential ticket number
-    public  ArrayList<FirebaseStore> store_list = null;
-    public  ArrayList<Stylist> stylists_list = null;
-    // public static ListView lv = null;
-    // public static ListAdapter la = null;
-    public  View rootView = null;//, mainView = null;
-    public  int stylist_position = 0;
-
-    public  TabLayout tabLayout;
-    public  Location user_loc;
-    public  int miles = 10;
-    public  GoogleMap gm;
-    public  MapView mv;
-    public int selectedPosition;
-    //public static Ticket TICKET;
-    public  String phone;//user phone number
-    public  boolean isSuccess;//success payment ticket register
-    public  boolean STYLIST_BITMAPS_LOADED;
-    public  View rootView_LiveTab, rootView_Reservation;
-    // public static Appointment appointment;//used to hold data in third tab...
-    //public static SwipeRefreshLayout srl;
-    public  Profile user_fb_profile;
-    public  MyIntent myIntent;
-    public  RecyclerView recyclerView_stylists;
-    public  boolean noStaff;
+    public static HashMap<String,Bitmap> stylist_bitmaps;
     /**
      * The {@link ViewPager} that will host the section contents.
      */
     private static AlphaAnimation inAnimation;
-    private  RecyclerView recyclerView_services;
+    //public static int ticket_number;///is the potential ticket number
+    public ArrayList<FirebaseStore> store_list = null;
+    public ArrayList<Stylist> stylists_list = null;
+    // public static ListView lv = null;
+    // public static ListAdapter la = null;
+   // public View rootView = null;//, mainView = null;
+    public int stylist_position = 0;
+    public TabLayout tabLayout;
+    public Location user_loc;
+    public int miles = 10;
+    public GoogleMap gm;
+    public MapView mv;
+    public int selectedPosition;
+    //public static Ticket TICKET;
+    public String phone;//user phone number
+    public boolean isSuccess;//success payment ticket register
+    public boolean STYLIST_BITMAPS_LOADED;
+   // public View rootView_LiveTab, rootView_Reservation;
+    // public static Appointment appointment;//used to hold data in third tab...
+    //public static SwipeRefreshLayout srl;
+    public Profile user_fb_profile;
+    public MyIntent myIntent;
+   // public RecyclerView recyclerView_stylists;
+   // public boolean noStaff;
     /**
      * The {@link } that will provide
      * fragments for each of the sections. We use store_list
@@ -129,16 +142,16 @@ public class MainActivity extends AppCompatActivity {
      */
     public CustomFragPageAdapter mCustomFragPageAdapter;
     public ViewPager mViewPager;
-    public FirebaseDatabase db;
-    public DatabaseReference db_ref;
-    public static ArrayList<Bitmap> stylist_bitmaps;
-    public  ArrayList<Ticket> ticket_history;
-    private long current_ticket;
+    public ArrayList<Ticket> ticket_history;
+   // private RecyclerView recyclerView_services;
+    //private long current_ticket;
     private HashMap<String, Stylist> sty_hm;
+    private boolean noStaff;
+    private PublisherInterstitialAd mPublisherInterstitialAd;
 
-    public  void showGoogleMaps(final View rootView, final ArrayList<FirebaseStore> store_list) {
+    public void showGoogleMaps(final View rootView, final ArrayList<FirebaseStore> store_list) {
 
-        if(mv==null)
+        if (mv == null)
             mv = (MapView) rootView.findViewById(R.id.mapView);
 
         mv.onCreate(null);
@@ -177,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                     //Log.e("ERRRR,,", "ERRRRR GM permission gor google maps");
                     return;
                 }
-                com.google.android.gms.maps.model.LatLng  myLoc = new com.google.android.gms.maps.model.LatLng(MainActivity.this.user_loc.getLatitude(), MainActivity.this.user_loc.getLongitude());
+                com.google.android.gms.maps.model.LatLng myLoc = new com.google.android.gms.maps.model.LatLng(MainActivity.this.user_loc.getLatitude(), MainActivity.this.user_loc.getLongitude());
                 gm.addMarker(new MarkerOptions()
                                      .position(myLoc)
                                      .title("My Loctaion").alpha(.5f)).setTag(-1);
@@ -202,41 +215,41 @@ public class MainActivity extends AppCompatActivity {
      * This method doesnt need to check null states of lists because this function will only get called when list>0 and not null
      * Update Calendar with appointments
      */
-    public  void updateRVServices(final Store s) {
+    public void updateRVServices(final Store s) {
         //fill out the
         //Store s=store_list.get(selectedPosition);////get the store
-        final RVAdapter<Stylist> stylist_adapter = (RVAdapter<Stylist>) recyclerView_stylists.getAdapter();
+       /* final RVAdapter<Stylist> stylist_adapter = (RVAdapter<Stylist>) recyclerView_stylists.getAdapter();
 
-        recyclerView_services = (RecyclerView) rootView_Reservation.findViewById(R.id.rv_service_view);
+        RecyclerView   recyclerView_services = (RecyclerView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.rv_service_view);
         recyclerView_services.setHasFixedSize(true);
-        recyclerView_services.setAdapter(new RVAdapter<SalonService>(this,s.getSalonServicesArrayList(), R.layout.rv_service, false));//fasle for not stylits...services==true
-        LinearLayoutManager lll = new LinearLayoutManager(rootView_Reservation.getContext());
+        recyclerView_services.setAdapter(new RVAdapter<SalonService>(this, s.getSalonServicesArrayList(), R.layout.rv_service, false));//fasle for not stylits...services==true
+        LinearLayoutManager lll = new LinearLayoutManager(mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getContext());
         lll.setOrientation(lll.HORIZONTAL);
         recyclerView_services.setLayoutManager(lll);
         recyclerView_services.getAdapter().notifyDataSetChanged();
         final RVAdapter<SalonService> ss_adapter = (RVAdapter<SalonService>) recyclerView_services.getAdapter();
         ////update CalendarView
-        CalendarView cv = (CalendarView) rootView_Reservation.findViewById(R.id.calendarView);
+        CalendarView cv = (CalendarView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.calendarView);
         final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy H:mm a");
         cv.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
                 GregorianCalendar calendar = new GregorianCalendar(year, month, dayOfMonth);
                 Date d = calendar.getTime();
                 stylist_adapter.customeNotifyDataSetChanged();
-                if (d.before(new Date()) || noStaff) return;
+                if (d.before(new Date()) ) return;
                 startReservationActivity(d, s, stylist_adapter.getStylist(), ss_adapter.getSalonService());
-                /**MainActivity.a.setContentView(R.layout.fragment_reservation);//////////////update view to fragment
+                *//**MainActivity.a.setContentView(R.layout.fragment_reservation);//////////////update view to fragment
                  ReservationFragment newFragment = new ReservationFragment();
                  newFragment.init(d,stylist_adapter.getStylist(),s,ss_adapter.getSalonService());
                  FragmentTransaction transaction = a.getFragmentManager().beginTransaction();
                  transaction.add(newFragment,null).commit();
-                 *///////////////////////////////////////////
+                 *//*//////////////////////////////////////////
 
                 // transaction.commit();//activates oncreate() from testing ive done...
             }//met
         });
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView_services.getContext(), lll.getOrientation());
-        recyclerView_services.addItemDecoration(dividerItemDecoration);
+        recyclerView_services.addItemDecoration(dividerItemDecoration);*/
 
     }/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////tab 3
 
@@ -245,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param store - Stylist and SalonService
      */
-    private  void startReservationActivity(Date date, Store store, Stylist s, SalonService ss) {
+    private void startReservationActivity(Date date, Store store, Stylist s, SalonService ss) {
         myIntent = null;
         myIntent = new MyIntent(date, store, s, ss, this.selectedPosition);
         Intent intent = new Intent(MainActivity.this, ReservationActivity.class);
@@ -255,26 +268,16 @@ public class MainActivity extends AppCompatActivity {
         MainActivity.this.startActivity(intent);
     }
 
-    private  void showCreditCard() {
+    private void showCreditCard() {
         if (stylists_list == null || store_list == null || store_list.size() == 0)
             return;
         // LockDBPreserveSpot db = new LockDBPreserveSpot();
         //db.execute(store_list.get(selectedPosition).getPhone());
-        CreditCardDialog ccd = new CreditCardDialog(this,selectedPosition, stylist_position, phone);
+        CreditCardDialog ccd = new CreditCardDialog(this, selectedPosition, stylist_position, phone);
         ccd.showCreditCardDialog();
     }
 
-    /**
-     * Reset the RV for this tab
-     */
-    public  void updateTab3() {
-        if (MainActivity.this.recyclerView_stylists != null) {//delete stylists
-            MainActivity.this.recyclerView_stylists.setAdapter(null);
-        }
-        if (MainActivity.this.recyclerView_services != null) {
-            MainActivity.this.recyclerView_services.setAdapter(null);
-        }
-    }
+
 
     @Override
     public void onBackPressed() {
@@ -291,11 +294,11 @@ public class MainActivity extends AppCompatActivity {
         outState.putParcelableArrayList("store_list", store_list);
         //  outState.putParcelable("ticket", TICKET); // mv.onSaveInstanceState(outState);
         //outState.putInt("ticket_number", ticket_number);
-        outState.putParcelableArrayList("ticket_history",ticket_history);
+        outState.putParcelableArrayList("ticket_history", ticket_history);
         outState.putBoolean("issSuccess", isSuccess);
-        outState.putParcelableArrayList("stylist_bitmaps",stylist_bitmaps);
+        outState.putSerializable("stylist_bitmaps", stylist_bitmaps);
         outState.putBoolean("STYLIST_BITMAPS_LOADED", STYLIST_BITMAPS_LOADED);
-        outState.putSerializable("sty_hm",sty_hm);
+        outState.putSerializable("sty_hm", sty_hm);
     }
 
     @Override
@@ -306,8 +309,18 @@ public class MainActivity extends AppCompatActivity {
         user_loc = LoginActivity.gps.getLocation();
         mv = null;
         gm = null;
-        //la = null;
-        //lv = null;
+        mPublisherInterstitialAd = new PublisherInterstitialAd(this);
+        mPublisherInterstitialAd.setAdUnitId("ca-app-pub-9309556355508377/7384464845");
+        mPublisherInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                requestNewInterstitial();
+            }
+        });
+        requestNewInterstitial();
+        MobileAds.initialize(getApplicationContext(), "ca-app-pub-9309556355508377~8508953646");
+
+
         askUserPermissionForPhone();
         if (savedInstanceState != null) {
             selectedPosition = savedInstanceState.getInt("selected");
@@ -315,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
             //TICKET = savedInstanceState.getParcelable("ticket");
             //ticket_number = savedInstanceState.getInt("ticket_number");
             isSuccess = savedInstanceState.getBoolean("isSuccess");
-            stylist_bitmaps = savedInstanceState.getParcelableArrayList("stylist_bitmaps");
+            stylist_bitmaps = (HashMap<String, Bitmap>) savedInstanceState.getSerializable("stylist_bitmaps"); //getParcelableArrayList("stylist_bitmaps");
             STYLIST_BITMAPS_LOADED = savedInstanceState.getBoolean("STYLIST_BITMAPS_LOADED");
             ticket_history = savedInstanceState.getParcelableArrayList("ticket_history");
             sty_hm = (HashMap<String, Stylist>) savedInstanceState.getSerializable("sty_hm");
@@ -327,19 +340,18 @@ public class MainActivity extends AppCompatActivity {
             stylists_list = null;
             stylist_position = 0;
             noStaff = true;
-            stylist_bitmaps = new ArrayList<>();
-            STYLIST_BITMAPS_LOADED =false;
+            stylist_bitmaps = new HashMap<>();
+            STYLIST_BITMAPS_LOADED = false;
             ticket_history = new ArrayList<>();
             sty_hm = new HashMap<>();
         }
-        db = FirebaseDatabase.getInstance();
-        db_ref = db.getReference();
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
-        mCustomFragPageAdapter = new CustomFragPageAdapter(getSupportFragmentManager(),MainActivity.this);
+        mCustomFragPageAdapter = new CustomFragPageAdapter(getSupportFragmentManager(), MainActivity.this);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
@@ -362,23 +374,28 @@ public class MainActivity extends AppCompatActivity {
                     //Appointment.reset();
                     return;
                 } else if (position == 1) {//second tab or LIVE FEED TAB//0,1,2 page numbers
-                    // Appointment.reset();
-                    if (store_list == null || store_list.size() == 0) {
-                        return;//nothing to display...
-                    } else {
+                    AdView mAdView = (AdView) MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.adView_liveFeed);
+                    AdRequest adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+                    mAdView.loadAd(adRequest);
+
+                   if(stylist_bitmaps!=null){
+                       stylist_bitmaps.clear();
+                   }else {
+                       stylist_bitmaps = new HashMap<String, Bitmap>();
+                   }
+                    if (stylists_list !=null) {
+                        stylists_list.clear();
+                    }else{
+                        stylists_list = new ArrayList<Stylist>();
+                    }
                         FirebaseStore s = store_list.get(selectedPosition);
                         /*StylistWebTask swt = new StylistWebTask(rootView_LiveTab);
                         if (stylists_list == null) {
                             swt.execute(s.getPhone());
                         }*/
-                        if( STYLIST_BITMAPS_LOADED && stylist_bitmaps != null && stylist_bitmaps.size()>0){//if same store dont fetch to firebase otherwise
-                            return;
-                        }else {
-                            STYLIST_BITMAPS_LOADED =true;
-                            recycleBitmaps();
+
                             loadFirebaseStylist(s);
-                        }
-                    }
+
                     //mv.onCreate(savedInstanceState);
                 } /*else if (position == 2) {//the third tab . aka Reservation Appointment
                     updateTab3();
@@ -397,10 +414,10 @@ public class MainActivity extends AppCompatActivity {
             }
 
             private void setUpRV3rdTab() {
-                recyclerView_stylists = (RecyclerView) rootView_Reservation.findViewById(R.id.rv_stylist_view);
+                RecyclerView  recyclerView_stylists = (RecyclerView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.rv_stylist_view);
                 recyclerView_stylists.setHasFixedSize(true);
-                recyclerView_stylists.setAdapter(new RVAdapter<Stylist>(MainActivity.this,Utils.getArrayListStylist(stylists_list), R.layout.rv_stylist, true));
-                LinearLayoutManager ll = new LinearLayoutManager(rootView_Reservation.getContext());
+                recyclerView_stylists.setAdapter(new RVAdapter<Stylist>(MainActivity.this, Utils.getArrayListStylist(stylists_list), R.layout.rv_stylist, true));
+                LinearLayoutManager ll = new LinearLayoutManager(mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getContext());
                 ll.setOrientation(ll.HORIZONTAL);
                 recyclerView_stylists.setLayoutManager(ll);
                 DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView_stylists.getContext(), ll.getOrientation());
@@ -419,70 +436,223 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Fetch the stylist pictures from the database.
      */
-    private void loadFirebaseStylist(final FirebaseStore store){
-        if(store == null)return;
-        final ProgressDialog pd = ProgressDialog.show(this,"Searching","Please Wait...",true,false);
+    private void loadFirebaseStylist(final FirebaseStore store) {
+        if (store == null) return;
+
+        final ProgressDialog pd = ProgressDialog.show(this, "Searching", "Please Wait...", true, false);
         pd.show();
-        if(stylists_list == null) {
+        if(sty_hm == null){
+            this.sty_hm = new HashMap<>();
+        }else {
+            this.sty_hm.clear();
+        }
+        if (stylists_list == null) {
             stylists_list = new ArrayList<>();
-        }else{
+        } else {
             this.stylists_list.clear(); //store_list.clear();
         }
-        recycleBitmaps();
-        ;
-        DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("stylists").child(String.valueOf(store.getStore_number()));
+        if (stylist_bitmaps != null) {
+            stylist_bitmaps.clear();
+        }
+        else {
+            stylist_bitmaps = new HashMap<String, Bitmap>();
+        }
+        DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("stylists/" + String.valueOf(store.getStore_number()));
         db.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.e("STORE_NUMBER IN:","IN stylists "+store.getStore_number());
-                if(dataSnapshot.getValue()==null){
-                    if(stylists_list!=null)stylists_list.clear();
-                    if(stylist_bitmaps!=null)stylist_bitmaps.clear();
-                    ListView lv=(ListView) rootView_LiveTab.findViewById(R.id.fragment_livefeed_listview);
+                //Log.e("STORE_NUMBER IN:","IN stylists "+store.getStore_number());
+                if (dataSnapshot.getValue() == null) {
+                    ListView lv = (ListView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_livefeed_listview);
                     lv.setAdapter(null);
                     pd.dismiss();
                     return;
                 }
 
-                GenericTypeIndicator<Map<String,Stylist>> gti = new GenericTypeIndicator<Map<String, Stylist>>() {};
+                GenericTypeIndicator<Map<String, Stylist>> gti = new GenericTypeIndicator<Map<String, Stylist>>() {
+                };
                 Map<String, Stylist> map = dataSnapshot.getValue(gti);
                 sty_hm = new HashMap<String, Stylist>(map);
                 stylists_list = new ArrayList<Stylist>(map.values());
                 Collections.sort(stylists_list);
-                FirebaseDatabase.getInstance().getReference().child("tickets/"+store.getStore_number()).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if(dataSnapshot.getValue()==null){return;}
-                        GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
-                        List<Ticket> list = dataSnapshot.getValue(gti);
-                        store.setCurrent_ticket(list.get(0).getUnique_id());
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
-                FirebaseWebTasks.downloadImages(MainActivity.this,store,stylists_list,pd);
+                //got the stylists now need to get images
+                for (final Stylist sty : stylists_list) {
+                    StorageReference sr = FirebaseStorage.getInstance().getReference().child(store.getPhone() + "/images/stylists/" + sty.getId());
+                    sr.getBytes(1024 * 1024 * 10).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                        @Override
+                        public void onSuccess(byte[] bytes) {
+                            Log.e("image success..","loaded success..");
+                            stylist_bitmaps.put( sty.getId(),Utils.convertBytesToBitmap(bytes));
+                            if (stylists_list.size() == stylist_bitmaps.size()) {
+                                Log.e("all finished.","loaded all of pics...");
+                                pd.dismiss();
+                                predictTicketWait(store, stylists_list); //done with loading images
+                            }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            pd.dismiss();
+                        }
+                    });
+                }
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 pd.dismiss();
             }
+        });//end getting data from firebase
+        DatabaseReference r = FirebaseDatabase.getInstance().getReference().child("user/"+store.getStore_number()+"/current_ticket");
+        r.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() == null){
+                    store.setCurrent_ticket(0);
+                }else {
+                    long ct = (long) dataSnapshot.getValue();
+                    store.setCurrent_ticket(ct);
+                }
+                TextView tv = (TextView) MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.currentTicketTextView);
+                tv.setText(String.valueOf(store.getCurrent_ticket()));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
         });
-        // Log.e("LOADED #: ","# loaded: [ "+stylists_list.size()+" ] look on loaded from firebase...");
+    }
+    public Fragment getCurrentFragmentDisplayFromMainAct(){
+        return this.mCustomFragPageAdapter.getCurrentFragmentView(this.mViewPager.getCurrentItem());
     }
 
-    private void recycleBitmaps() {
-        if(MainActivity.stylist_bitmaps!=null){
-            for(Bitmap bm : stylist_bitmaps)
-            {
-                Log.e("IN LOOP:","looop");
-                bm.recycle();
+    private void predictTicketWait(final FirebaseStore store, final ArrayList<Stylist> stylists_list) {
+        FirebaseDatabase.getInstance().getReference().child("tickets/" + store.getStore_number()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                zeroOutStylsts(stylists_list);//reset wait to zero
+                if (dataSnapshot.getValue() == null) {
+                    initializeStylists(stylists_list,stylist_bitmaps);
+                    return;
+                }
+                GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {
+                };
+
+               try {
+                   List<Ticket> list = dataSnapshot.getValue(gti);
+
+                   if (list.size() == 0) {
+                       initializeStylists(stylists_list, stylist_bitmaps);
+                       return;
+                   }
+                   Ticket lastKnownTicket = list.get(list.size() - 1);
+                   TextView tv = (TextView) MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.nextAvailableTicket_tv);
+                   tv.setText(String.valueOf(lastKnownTicket.unique_id + 1));
+                   /////calculate algorithm for oredictive then display
+                   final Ticket user = new Ticket(lastKnownTicket);
+                   HashMap<String, PriorityQueue<Ticket>> queues = generateQueues(list, stylists_list, user);//every stylists should have sorted queue
+
+                   PriorityQueue<Ticket> no_pref = queues.get("-1");//-1 is a CONSTANT for STORE_NO_PREFERENCE STYLIST
+                   queues.remove("-1");//got what we needed now delete it
+                   boolean finished = false;
+                   while (no_pref.size() > 0 && finished == false) {//distrubute this queue to the rest of the stylists...
+                       for (String key : queues.keySet()) {
+                           Ticket no_p = no_pref.poll();
+                           if (no_p == null) {
+                               finished = true;
+                               break;
+                           } else {
+                               PriorityQueue<Ticket> pq = queues.get(key);
+                               pq.add(no_p);
+                               queues.put(key, pq);//update new queue
+                           }
+                       }
+                   }//at the end we should have sorted queues for each stylists
+                   int lowest_wait= Integer.MAX_VALUE;
+                   for (String key : queues.keySet()) {
+                       PriorityQueue<Ticket> pq = queues.get(key);
+                       Object[] o = pq.toArray();
+                       List<Ticket> relative = Arrays.asList(Arrays.copyOf(o, o.length, Ticket[].class));
+                       Collections.sort(relative);
+                       //Log.e("relative List:: ",relative.toString());
+                       int index = relative.indexOf(user);//is the wait for stylist
+                       Stylist temp = new Stylist(key);
+                       int sty_index = stylists_list.indexOf(temp);
+                       Stylist sty = stylists_list.get(sty_index);
+                       sty.setPsuedo_wait(index);
+                       //sty.setWait(relative.size()-1);
+                       stylists_list.remove(sty_index);
+                       stylists_list.add(sty_index, sty);
+                       if(sty.getPsuedo_wait() < lowest_wait){
+                           lowest_wait = sty.getPsuedo_wait();
+                       }
+                   }
+                    Stylist s = stylists_list.get(0);
+                   s.setPsuedo_wait(lowest_wait);
+                   stylists_list.remove(0);
+                   stylists_list.add(0,s);
+                   sty_hm.put(s.getId(),s);
+                   initializeStylists(stylists_list, stylist_bitmaps);
+               }catch (Exception e ){
+                   e.printStackTrace();
+               }
+               // FirebaseWebTasks.ListViewAdpaterStylist a = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this,0,stylists_list);
+                /*ListView lv = (ListView)MainActivity.this.mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_livefeed_listview);
+                lv.setAdapter(null);
+                lv.setAdapter(a);*/
+                //store.setCurrent_ticket(list.get(0).getUnique_id());
             }
-            stylist_bitmaps=null;
-            stylist_bitmaps=new ArrayList<Bitmap>();
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                initializeStylists(stylists_list,stylist_bitmaps);
+            }
+        });
+
+    }
+
+    private void zeroOutStylsts(ArrayList<Stylist> stylists_list) {
+        stylists_list.clear();
+        for (String id : this.sty_hm.keySet()){
+            Stylist s = this.sty_hm.get(id);
+            s.setWait(0);
+            this.sty_hm.put(id,s);
+            stylists_list.add(s);
         }
+        Collections.sort(stylists_list);
+    }
+
+    /**
+     * This method will maintain a sorted quuee for each stylist. We want this to then use in preparation for our predictive algorithm
+     * We then will add a POTENTIAL TICKET that will act as if the user is already inthis list
+     * @param list
+     * @param sty
+     * @return
+     */
+
+    private HashMap<String,PriorityQueue<Ticket>> generateQueues(List<Ticket> list, ArrayList<Stylist> sty, Ticket user){
+        HashMap<String,PriorityQueue<Ticket>> map = new HashMap<>();
+        //loop stylsits to populate all requested from the list of tickets..
+        for (Stylist s : sty){
+            s.setWait(0);//zero out wait
+            this.sty_hm.put(s.getId(),s);
+            PriorityQueue<Ticket> pq  = new PriorityQueue<>();//add the user to each stylist to simulate the poostiion would be at
+            pq.add(user);
+            map.put(s.getId(),pq);
+        }
+        for(Ticket t : list){
+            if (t != null) {
+                Stylist s = this.sty_hm.get(t.stylist_id);
+                s.incrementWait();
+                PriorityQueue<Ticket> pq = map.get(t.stylist_id);
+                pq.add(t);
+                map.put(t.stylist_id, pq);//update the map
+            }
+        }//end sorting.
+        sty = new ArrayList<>(this.sty_hm.values());
+        Collections.sort(sty);
+        return map;
     }
 
     /**
@@ -569,10 +739,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void ticketHistoryActivity() {
-        Intent i = new Intent(this,TicketHistoryActivity.class);
+        Intent i = new Intent(this, TicketHistoryActivity.class);
         // i.putExtra("ticket_number",this.ticket_number);
         // i.putExtra("stylist",this.stylist);
-        i.putParcelableArrayListExtra("ticket_history",this.ticket_history);
+        i.putParcelableArrayListExtra("ticket_history", this.ticket_history);
         this.startActivity(i);
     }
 
@@ -615,6 +785,7 @@ public class MainActivity extends AppCompatActivity {
         if (mv != null) mv.onStop();
 
     }
+
     @Override
     public void onStart() {
         super.onStart();// ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -646,82 +817,47 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Update the store in the list with the parameter store
+     *
      * @param store
      */
-    public  void updateStore(FirebaseStore store) {
+    public void updateStore(FirebaseStore store) {
         MainActivity.this.store_list.remove(selectedPosition);
-        MainActivity.this.store_list.add(selectedPosition,store);
+        MainActivity.this.store_list.add(selectedPosition, store);
     }
 
     /**
      * Register a transaction to firebase.
+     *
      * @param store
      * @param sty
      * @param cust_name
      * @param phone
-     *
      */
+    public void sendTicket(final FirebaseStore store, Stylist sty, String cust_name, String phone, final ProgressDialog pd) {
 
-    public  void sendTicket(final FirebaseStore store, Stylist sty, String cust_name, String phone,final ProgressDialog pd) {
-
-        final  Ticket t = new Ticket(current_ticket,(sty.getWait()+1)+"",cust_name,sty.getId(), sty.getName(),phone);//create the ticket
-        DatabaseReference ref =  FirebaseDatabase.getInstance().getReference().child("tickets").child(String.valueOf(store.getStore_number()));
-        /**Listen to firebase data changes and update new values..
-         * */
-        ref.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
-                List<Ticket> list = dataSnapshot.getValue(gti);
-
-                long curr_ticket = list!=null && list.size()>0 ? list.get(0).unique_id : 1;
-                store.setCurrent_ticket (curr_ticket);
-
-                for(Ticket t : list){//linear runtime
-                    Stylist sty = sty_hm.get(t.getStylist_id());//get the stylist of ticket
-                    Log.e("sty_hm ",sty_hm.toString());
-                    Log.e("ticket id:",t.stylist_id);
-                    if(sty != null) {
-                        sty.setWait(Integer.valueOf(t.getTicket_number()));//assume the last known record is the current max
-                        sty_hm.put(sty.getId(),sty);//update stylist
-                        int pos = stylists_list.indexOf(sty);//old to new
-                        stylists_list.remove(pos);
-                        stylists_list.add(pos, sty);//update stylist_list
-                    }
-                }//end for
-                //might need to update store list
-                updateStore(store);
-
-                initializeStylists(stylists_list,stylist_bitmaps);//update GUI
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.e("Ref value listener fir",databaseError.getMessage());
-            }
-        });
+        //dont even need the first parameter because when i check the lisckets i wi;; get the last of the ticekts in thye List<Ticket>
+        final Ticket t = new Ticket(store.getCurrent_ticket()+1, (sty.getWait() + 1) + "", cust_name, sty.getId(), sty.getName(), phone);//create the ticket
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("tickets").child(String.valueOf(store.getStore_number()));
         /****
          * Make concurrent firebase call to add tickket..
          */
-        ref.runTransaction(new Transaction.Handler(){
+        ref.runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData mutableData) {
-                if(mutableData.getValue() != null) {//value in this case should be list of tickets
-                    GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
+                if (mutableData.getValue() != null) {//value in this case should be list of tickets
+                    GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {
+                    };
                     List<Ticket> curr_values = mutableData.getValue(gti);//get all the entries that are in this url_path
-                    t.unique_id = curr_values.size()+1;
+                    t.unique_id = curr_values.get(curr_values.size()-1).unique_id + 1; //get the lastest entry plus 1
                     if (curr_values.contains(t)) {
                         t.unique_id += 1;//increment the store ticket
                         t.ticket_number = String.valueOf(Long.valueOf(t.ticket_number) + 1);//increment the next ticket waiting in line for stylist
                     }
                     curr_values.add(t);
-                    store.setCurrent_ticket(t.unique_id);
-
                     mutableData.setValue(curr_values);
-                }else{//there was no entries in the url so create new List<Ticket> with the first entry
-                    t.unique_id = 1;///first entry
-                    t.ticket_number="1";
+                } else {//there was no entries in the url so create new List<Ticket> with the first entry
+                    t.unique_id = store.getCurrent_ticket()==0? 1: store.getCurrent_ticket();///first entry
+                    t.ticket_number = "1";
                     List<Ticket> l = new ArrayList<Ticket>();
                     l.add(t);
                     mutableData.setValue(l);
@@ -732,42 +868,28 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
                 pd.dismiss();
-                Toast.makeText(MainActivity.this,"Your ticket is #"+t.unique_id,Toast.LENGTH_LONG).show(); //resetStylistChoice();//deselect radio button
+                Toast.makeText(MainActivity.this, "Your ticket is #" + t.unique_id, Toast.LENGTH_LONG).show(); //resetStylistChoice();//deselect radio button
                 ticket_history.add(t);
-                DatabaseReference hm = db.getReference().child("stylists").child(String.valueOf(store.getStore_number()));
-                hm.setValue(sty_hm);
-                hm.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.e("HASHMAP UPDATED:","Stylists updated");
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.e("HASHMAP FAILED:","Stylists failed to updated");
-                        databaseError.toException().printStackTrace();
-                    }
-                });
-                //Map<String,Object> map = store.getStylistHashMap();
+                if(mPublisherInterstitialAd.isLoaded()){
+                    mPublisherInterstitialAd.show();
+                }
             }
         });
     }
+
     /**
      * I want to restart all GUI for displaying stylists.
+     *
      * @param list_stylist
      * @param stylist_bitmaps
      */
-    public  void initializeStylists(ArrayList<Stylist> list_stylist, ArrayList<Bitmap> stylist_bitmaps) {
-        if(list_stylist==null){
-            list_stylist = new ArrayList<>();
-        }
-        if(stylist_bitmaps==null){
-            stylist_bitmaps = new ArrayList<>();
-        }
+    public void initializeStylists(ArrayList<Stylist> list_stylist, HashMap<String,Bitmap> stylist_bitmaps) {
 
-        TextView tv = (TextView)findViewById(R.id.currentTicketTextView);
-        tv.setText(""+store_list.get(selectedPosition).getCurrent_ticket());//String.valueOf(store_list.get(selectedPosition).getCurrent_ticket()));
-        ListAdapter la=new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, list_stylist);
-        ListView lv=(ListView) rootView_LiveTab.findViewById(R.id.fragment_livefeed_listview);
+        Log.e("heer","in init\n List is: "+stylists_list);
+        //TextView tv = (TextView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.currentTicketTextView);
+        //tv.setText("" + store_list.get(selectedPosition).getCurrent_ticket());//String.valueOf(store_list.get(selectedPosition).getCurrent_ticket()));
+        FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, list_stylist);
+        ListView lv = (ListView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_livefeed_listview);
         lv.setAdapter(null);
         lv.setAdapter(la);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -775,23 +897,30 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(final AdapterView<?> adapterView, View view, int position, long l) {
                 //Update selected stylist position  index
                 stylist_position = position;
-                Stylist s =stylists_list.get(position);
+                Stylist s = stylists_list.get(position);
                 ((FirebaseWebTasks.ListViewAdpaterStylist) adapterView.getAdapter()).notifyDataSetChanged();
                 Toast.makeText(MainActivity.this, s.getName() + " selected.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    public interface MainActivityData {
+        MainActivity getMainActivity();
+
+        void setMainActivity(MainActivity ma);
+    }
+    /////////////////////////////////////////////////////////////////////////////////END CLASS
+
     /**
      * A placeholder fragment containing store_list simple view.
      */
-    public static class TabFragment extends Fragment  implements MainActivityData{
+    public static class TabFragment extends Fragment implements MainActivityData {
+        private static final String ARG_SECTION_NUMBER = "section_number";
         /**
          * The fragment argument representing the section number for this
          * fragment.
          */
         private MainActivity ma;
-        private static final String ARG_SECTION_NUMBER = "section_number";
 
         public TabFragment() {
 
@@ -822,7 +951,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case 1:
                     rootView = inflater.inflate(R.layout.fragment_layout_live_feed, container, false);
-                    ma.rootView_LiveTab = rootView;
+                    //ma.rootView_LiveTab = rootView;
                     break;
                 case 2:
                     rootView = inflater.inflate(R.layout.layout_appointment, container, false);
@@ -830,6 +959,7 @@ public class MainActivity extends AppCompatActivity {
             }
             return displayView(rootView, page - 1);
         }
+
         /*This method is responsible for displaying the appropriate Views
         * I guess the layouts are formed before even switching to a tab, so on startup up...
         * */
@@ -843,18 +973,34 @@ public class MainActivity extends AppCompatActivity {
                     fragmentView1(rootView);
                     break;
                 case 2:
-                    fragmentView2(rootView);
+                    //fragmentView2(rootView);
                     break;
             }
             return rootView;
         }
 
-        private void fragmentView2(View rootView) {
-            ma.rootView_Reservation = rootView;
-        }
+       /* @Override
+        public void setUserVisibleHint(boolean isVisibleToUser) {
+            super.setUserVisibleHint(isVisibleToUser);
+            if (isVisibleToUser) {
+                int page = this.getArguments().getInt(ARG_SECTION_NUMBER) - 1;
+                switch (page){
+                    case 0:
+                        break;
+                    case 1:
+
+                        break;
+                }
+            }
+            else {
+            }}*/
+
+      //  private void fragmentView2(View rootView) {
+      //      ma.rootView_Reservation = rootView;
+        //}
 
         private void fragmentView0(final View rootView) {
-            ma.rootView = rootView;
+          /// ma.rootView = rootView;
             final TextView miles = (TextView) rootView.findViewById(R.id.textView_distance);
             final SeekBar sb = (SeekBar) rootView.findViewById(R.id.seekBar_radius);
             sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -907,9 +1053,9 @@ public class MainActivity extends AppCompatActivity {
                     if (ma.miles == sb.getProgress() + 1) {//repeated
                         return;
                     } else {//get new search results
-                        if(ma.store_list!=null)ma.store_list.clear();
-                        if(ma.stylists_list!=null)ma.stylists_list.clear();
-                        recycleBitmaps();
+                        if (ma.store_list != null) ma.store_list.clear();
+                        if (ma.stylists_list != null) ma.stylists_list.clear();
+
                         ma.store_list = null;
                         ma.stylists_list = null;
                         ma.miles = sb.getProgress();
@@ -935,16 +1081,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        private void recycleBitmaps() {
-            if(MainActivity.stylist_bitmaps!=null){
-                for(Bitmap bm : stylist_bitmaps)
-                {
-                    //Log.e("IN LOOP:","looop");
-                    bm.recycle();
-                }
-            }
-        }
-
         /**
          * HUGE METHOD. THIS method will query the firebase DB and sort the distance based on current user location.
          * Then it populates the store list for program.
@@ -959,16 +1095,17 @@ public class MainActivity extends AppCompatActivity {
             db_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.getValue() ==null)return;
-                    GenericTypeIndicator<List<FirebaseStore>>gti = new GenericTypeIndicator<List< FirebaseStore>>() {};
+                    if (dataSnapshot.getValue() == null) return;
+                    GenericTypeIndicator<List<FirebaseStore>> gti = new GenericTypeIndicator<List<FirebaseStore>>() {
+                    };
                     List<FirebaseStore> map = dataSnapshot.getValue(gti);
-                    ma.store_list = Utils.calculateDistance(ma.user_loc,map,ma.miles);
-                    ListView lv = (ListView) ma.rootView.findViewById(R.id.fragment_listview);
+                    ma.store_list = Utils.calculateDistance(ma.user_loc, map, ma.miles);
+                    ListView lv = (ListView) ma.mCustomFragPageAdapter.getCurrentFragmentView(ma.mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_listview);
                     ListViewAdapter la = new ListViewAdapter(ma, ma.store_list);
                     lv.setAdapter(null);
                     lv.setAdapter(la);
                     pd.dismiss();
-                    ma.showGoogleMaps(ma.rootView, ma.store_list);
+                    ma.showGoogleMaps(ma.mCustomFragPageAdapter.getCurrentFragmentView(ma.mViewPager.getCurrentItem()).getView(), ma.store_list);
                 }
 
                 @Override
@@ -976,7 +1113,6 @@ public class MainActivity extends AppCompatActivity {
                     pd.dismiss();
                 }
             });
-
 
 
         }
@@ -1002,16 +1138,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void setMainActivity(MainActivity ma) {
-            this.ma = ma;
-        }
-
-        @Override
         public MainActivity getMainActivity() {
             return this.ma;
         }
+
+        @Override
+        public void setMainActivity(MainActivity ma) {
+            this.ma = ma;
+        }
     }
-    /////////////////////////////////////////////////////////////////////////////////END CLASS
 
     /**
      * This is for Store list.
@@ -1019,6 +1154,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public static class ListViewAdapter extends ArrayAdapter<FirebaseStore> {
         private MainActivity ma;
+
         public ListViewAdapter(MainActivity ma, ArrayList<FirebaseStore> values) {
             super(ma, R.layout.list_view_layout, values);
             this.ma = ma;
@@ -1037,7 +1173,7 @@ public class MainActivity extends AppCompatActivity {
             RadioButton r = (RadioButton) rowView.findViewById(R.id.radio_button);
             double miles_away = store.getMiles_away();
             DecimalFormat df = new DecimalFormat("0.##");
-            r.setText("Shop: " + store.getName() + "\n" + "Miles away: " + df.format(miles_away) + "\n" + "Address: " + store.getAddress().toUpperCase() + "\n" + store.getCitystate().toUpperCase());
+            r.setText("Shop: " + store.getName() + "\n" + "Miles away: " + df.format(miles_away) + "\nHours: " + store.formatHoursTo12hours() + "\n" + store.displayIsAvailable());//+"\n" + "Address: " + store.getAddress().toUpperCase() + "\n" + store.getCitystate().toUpperCase());
 
             r.setChecked(position_item == ma.selectedPosition);
             r.setTag(position_item);
@@ -1045,22 +1181,22 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     if (position_item != ma.selectedPosition) {//new store...go get the stylists from that db
-                        ma. stylists_list = null;//new store null stylists
+                        ma.stylists_list = null;//new store null stylists
                     }
-                    int LAST_PICKED=ma.selectedPosition;
+                    int LAST_PICKED = ma.selectedPosition;
                     ma.selectedPosition = (Integer) view.getTag();
-                    if(ma.selectedPosition != LAST_PICKED){
-                        Log.e("DIFF CHOICE::","sp: "+ma.selectedPosition+" <> lastpicked: "+LAST_PICKED);
+                    if (ma.selectedPosition != LAST_PICKED) {
+                        // Log.e("DIFF CHOICE::","sp: "+ma.selectedPosition+" <> lastpicked: "+LAST_PICKED);
                         ma.STYLIST_BITMAPS_LOADED = false;
-                        if(ma.stylists_list!=null)ma.stylists_list.clear();
-                        if(stylist_bitmaps!=null)stylist_bitmaps.clear();
-                        stylist_bitmaps=null;
-                        ma.stylists_list=null;
+                        if (ma.stylists_list != null) ma.stylists_list.clear();
+                        if (stylist_bitmaps != null) stylist_bitmaps.clear();
+                        stylist_bitmaps = null;
+                        ma.stylists_list = null;
                     }
                     notifyDataSetChanged();//updates the button click isset
-                    LatLng myLoc =store.getLocation();
+                    LatLng myLoc = store.getLocation();
                     // Updates the location and zoom of the MapView
-                    com.google.android.gms.maps.model.LatLng l = new com.google.android.gms.maps.model.LatLng(myLoc.latitude,myLoc.longitude);
+                    com.google.android.gms.maps.model.LatLng l = new com.google.android.gms.maps.model.LatLng(myLoc.latitude, myLoc.longitude);
                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(l, 14);//20 is closeset 5 is largest
                     ma.gm.animateCamera(cameraUpdate);
                     ma.mv.onResume();
@@ -1074,28 +1210,32 @@ public class MainActivity extends AppCompatActivity {
      * A {@link FragmentPagerAdapter} that returns store_list fragment corresponding to
      * one of the sections/tabs/pages.
      */
-    public class CustomFragPageAdapter extends FragmentPagerAdapter{
+    public class CustomFragPageAdapter extends FragmentPagerAdapter {
         private MainActivity ma;
-        private HashMap<Integer,Fragment>map;
-        public CustomFragPageAdapter(FragmentManager fm,MainActivity ma) {
+        private HashMap<Integer, Fragment> map;
+
+        public CustomFragPageAdapter(FragmentManager fm, MainActivity ma) {
             super(fm);
-            this.ma=ma;
+            this.ma = ma;
             this.map = new HashMap<>();
+        }
+        public  Fragment getCurrentFragmentView(int index){
+            return this.map.get(index);
         }
         @Override
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return store_list TabFragment (defined as store_list static inner class above).
-            switch (position){
+            switch (position) {
                 case 0:
-                    TabFragment tf = TabFragment.newInstance(position+1);
+                    TabFragment tf = TabFragment.newInstance(position + 1);
                     tf.setMainActivity(ma);
-                    map.put(position,tf);
+                    map.put(position, tf);
                     return tf;
                 case 1:
-                    TabFragment tf2 = TabFragment.newInstance(position+1);
+                    TabFragment tf2 = TabFragment.newInstance(position + 1);
                     tf2.setMainActivity(ma);
-                    map.put(position,tf2);
+                    map.put(position, tf2);
                     return tf2;
                 default:
                     return null;
@@ -1121,8 +1261,14 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
     }
-    public interface MainActivityData{
-        void setMainActivity(MainActivity ma);
-        MainActivity getMainActivity();
+
+    /**
+     * REQUEST A AD
+     */
+    private void requestNewInterstitial() {
+        PublisherAdRequest adRequest = new PublisherAdRequest.Builder()
+                                               .addTestDevice("23B075DED4F5E3DB63757F55444BFF46")
+                                               .build();
+        mPublisherInterstitialAd.loadAd(adRequest);
     }
 }

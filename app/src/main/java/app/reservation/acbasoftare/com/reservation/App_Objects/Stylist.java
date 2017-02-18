@@ -13,8 +13,13 @@ public class Stylist implements Parcelable, Comparable<Stylist> {
   //  private Bitmap image;
    // private String image_bytes;//Base64.encode(byte[]);
     private String store_id;
-
+    private String name;
+   // private long storeID;
     private int psuedo_wait = 0;
+    private String readyBy;
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getFname() {
         return fname;
@@ -88,9 +93,15 @@ public Stylist(){
     public void incrementWait(){
         this.wait += 1;
     }
-    public String getStoreID(){
-        return this.store_id;
+
+    public String getReadyBy() {
+        return readyBy;
     }
+
+    public void setReadyBy(String readyBy) {
+        this.readyBy = readyBy;
+    }
+
     public String getPhone(){return  this.phone;}
     public void setPhone(String p){
         this.phone=p;
@@ -165,6 +176,7 @@ public void setWait(int wait){
         dest.writeByte(this.available ? (byte) 1 : (byte) 0);
         dest.writeString(this.store_id);
         dest.writeInt(this.psuedo_wait);
+        dest.writeString(readyBy);
     }
 
     protected Stylist(Parcel in) {
@@ -177,6 +189,7 @@ public void setWait(int wait){
         this.available = in.readByte() != 0;
         this.store_id = in.readString();
         this.psuedo_wait = in.readInt();
+        this.readyBy = in.readString();
     }
 
     public static final Creator<Stylist> CREATOR = new Creator<Stylist>() {

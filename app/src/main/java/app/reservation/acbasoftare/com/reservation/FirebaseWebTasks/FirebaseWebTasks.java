@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.InStoreTicketReservationActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
@@ -41,8 +42,6 @@ import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
 import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_bitmaps;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.bitmaps;
-
 
 /**
  * Created by user on 1/16/17.
@@ -60,7 +59,7 @@ public class FirebaseWebTasks {
         bit.compress(Bitmap.CompressFormat.PNG, 100, stream);
         byte[] arr=stream.toByteArray();
         TicketScreenActivity tsa = (TicketScreenActivity) a;
-        StorageReference ref= tsa.mStorageRef.child(tsa.store.getStore_number() + "/images/stylists/" + filename);//ticketScreenActivity
+        StorageReference ref= FirebaseStorage.getInstance().getReference().child(tsa.store.getStore_number() + "/images/stylists/" + filename);//ticketScreenActivity
         UploadTask up=ref.putBytes(arr);
         up.addOnFailureListener(new OnFailureListener() {
             @Override
@@ -92,21 +91,24 @@ public class FirebaseWebTasks {
      */
     public static void downloadImages(final TicketScreenActivity tsa, final FirebaseStore store, final ArrayList<Stylist>list_stylist, final ProgressDialog pd){
 
+       TicketScreenActivity.bitmaps.clear();
         // final TicketScreenActivity tsa = (TicketScreenActivity) pd.getContext();
         for(final Stylist s : list_stylist ) {
             //Log.e("FIREBASE IMAGES STYLIS:",s.getId()+" ID AND NAME: "+s.getName());
             String name = s.getId();
             // if(name.equals("-1")){name = "-1.png";}
-            StorageReference sr = tsa.mStorageRef.child(store.getPhone()+ "/images/stylists/"+name);
+            StorageReference sr = FirebaseStorage.getInstance().getReference().child(store.getPhone()+ "/images/stylists/"+name);
             sr.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                 @Override
                 public void onSuccess(byte[] bytes) {
                     Log.e("OnSuccessImage","image on success");
                     Bitmap b = Utils.convertBytesToBitmap(bytes);//Utils.convertToByteArray(s.getImage_bytes())); //Utils.decodeSampledBitmapFromArray(s.getImage_bytes(), 50, 50);
-                    bitmaps.add(b);
-                    bytes=null;
-                    if(bitmaps.size() == list_stylist.size()){
+                    TicketScreenActivity.bitmaps.put(s.getId(),b);
+                    //bytes=null;
+                    if( TicketScreenActivity.bitmaps.keySet().size() == list_stylist.size()){//finished loading all images for the shop stylists
                         pd.dismiss();
+                        tsa.loadTckets(pd);
+                        Log.e("Loaded all images.","sty images are all loaded..");
                     }
                 }
             }).addOnFailureListener(new OnFailureListener() {
@@ -230,6 +232,12 @@ public class FirebaseWebTasks {
                         Toast.makeText(getContext(), getItem(position) + " selected", Toast.LENGTH_LONG).show();
                     }
                 });*/
+            Log.e("Styyy:",s.isAvailable()+" <<>>> "+s);
+            if(!s.isAvailable()){
+                r.setEnabled(false);
+                convertView.setOnClickListener(null);
+                convertView.setEnabled(false);
+            }
             return convertView;
         }
     }

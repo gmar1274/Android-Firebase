@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -38,13 +39,14 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
+import app.reservation.acbasoftare.com.reservation.WebTasks.SMSWebTask;
 
 import static app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity.bitmaps;
 
 public class InStoreTicketReservationActivity extends AppCompatActivity {
     private ListView lv;
     private AutoCompleteTextView cust_name_textview;
-    private AutoCompleteTextView phone_textview;
+    private EditText phone_textview;
     //private ArrayList<Stylist> stylist_list;
     //private ArrayList<Ticket> tickets;
     private int stylist_position;
@@ -97,10 +99,10 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
 
         lv = (ListView) this.findViewById(R.id.choose_stylist_listview);
         cust_name_textview = (AutoCompleteTextView) this.findViewById(R.id.customer_name_autocompletetextfield);
-        phone_textview = (AutoCompleteTextView) this.findViewById(R.id.phone_notification_autotextview);
+        phone_textview = (EditText) this.findViewById(R.id.phone_notification_autotextview);
 
          if (lv.getAdapter() == null) {
-            ListAdapter la = new ListViewAdpaterStylist(this.getApplicationContext(), R.layout.list_view_live_feed, stylist_list);
+             ListViewAdpaterStylist la = new ListViewAdpaterStylist(this.getApplicationContext(), R.layout.list_view_live_feed, stylist_list);
             lv.setAdapter(la);
         }
 
@@ -150,10 +152,11 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
         //store.incrementCurrentTicket();//update the CURRENT STORE TICKET
         String cust_name = this.cust_name_textview.getText().toString();//can optimize by creating Customer object....
         cust_name = cust_name.length()==0 ? "N/A":cust_name;
-        String cust_phone = this.phone_textview.getText().toString();
+        final String cust_phone = this.phone_textview.getText().toString();
 
         //Create the ticket with Absolute Ticket#, Relative ticket#, cust_name, sty_id, sty_name, cust_phone...
       final Ticket t = new Ticket(current_ticket,(s.getWait())+"",cust_name,s.getId(), s.getName(),cust_phone);//create the ticket
+        t.setReadyBy(s.getReadyBy());
 
       /*  //Create the ticket_number with Absolute Ticket#, Relative ticket_number#, cust_name, sty_id, sty_name, cust_phone...
       final Ticket t = new Ticket(store.getCurrent_ticket(),(s.getWait())+"",cust_name,s.getId(), s.getName(),cust_phone);//create the ticket_number
@@ -189,22 +192,18 @@ public class InStoreTicketReservationActivity extends AppCompatActivity {
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
                  resetStylistChoice();//deselect radio button
-                updateHM(s,t);
+                //Log.e("ON CALL BACK TIKK: ",t+" phone: "+cust_phone +" rb: "+t.readyBy);
+                if(t.phone != null && t.phone.length()>0) {
+
+                    new SMSWebTask(store, t).execute();//send reciept
+                }
+                //updateHM(s,t);
             }
         });
 
-        DatabaseReference ref2 = ref.getParent().child("stylistHashMap");//.child(s.getId()).child("wait");//ref:root/store_number/tickets
-        if(ref2!=null) {//update stylist hashmap
-         //   ref2.setValue(s.getWait());
-        }
-        DatabaseReference ref3 = FirebaseDatabase.getInstance().getReference().child(store.getStore_number()+"").child("current_ticket");//update current ticket_number
-        if(ref3 != null){
-           // ref3.setValue(Long.valueOf(store.getCurrent_ticket()));
-        }
-
         this.goBack();
     }
-private void updateHM(final Stylist s, Ticket t){
+/*private void updateHM(final Stylist s, Ticket t){
 Log.e("Wait: ",s.getWait()+"");
     DatabaseReference ref2 = FirebaseDatabase.getInstance().getReference().child("stylists").child(String.valueOf(store.getStore_number())).child(s.getId());//.child(s.getId()).child("wait");//ref:root/store_number/tickets
     ref2.runTransaction(new Transaction.Handler() {
@@ -226,7 +225,7 @@ Log.e("Wait: ",s.getWait()+"");
         }
     });
 
-}
+}*/
     private void resetStylistChoice() {
         stylist_position = -1;
     }
@@ -290,10 +289,12 @@ Log.e("Wait: ",s.getWait()+"");
             tv_waiting.setText("" + s.getWait());
             //setListener(tv_waiting, r);
             TextView tv_approx_wait = (TextView) convertView.findViewById(R.id.textView_aprox_wait_lv);
-            tv_approx_wait.setText(Utils.calculateWait(s.getWait()));
+            tv_approx_wait.setText(Utils.calculateWait(s.getPsuedo_wait()));
             //setListener(tv_approx_wait, r);
             TextView tv_readyby = (TextView) convertView.findViewById(R.id.textView_readyby_lv);
-            tv_readyby.setText(Utils.calculateTimeReady(s.getWait()));
+            String readyBy = Utils.calculateTimeReady(s.getPsuedo_wait());
+            s.setReadyBy(readyBy);
+            tv_readyby.setText(readyBy);
             //setListener(tv_readyby, r);
             ///////
             TextView tv3 = (TextView) convertView.findViewById(R.id.textView3);
@@ -318,9 +319,7 @@ Log.e("Wait: ",s.getWait()+"");
                     }else{*/
                       // if(s.getImage_bytes() == null){}
                        // else if(loaded){
-                            if(bitmaps!=null && (position+1)<= bitmaps.size()) {
-                                iv.setImageBitmap(bitmaps.get(position));
-                            }
+                            iv.setImageBitmap(TicketScreenActivity.bitmaps.get(s.getId()));
                        //}else{
                           /* Bitmap b = Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())); //Utils.decodeSampledBitmapFromArray(s.getImage_bytes(), 50, 50);
                            iv.setImageBitmap(b);

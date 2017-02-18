@@ -5,4 +5,8 @@
     <color name="colorAccent">#ff4081</color>
     <color name="calendar">#31ff0000</color>
     <color name="calendar_background">#fff7f7</color>
+    <color name="header">#e6e6e6</color>
+    <color name="store_name">#ffffff</color>
+    <color name="view">#ffffff</color>
+    <color name="customBackground">#f6f6f6</color>
 </resources>

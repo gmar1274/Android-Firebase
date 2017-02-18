@@ -12,6 +12,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 import java.util.ArrayList;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
@@ -26,6 +30,11 @@ public class TicketHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ticket_history);
+        MobileAds.initialize(getApplicationContext(), "ca-app-pub-9309556355508377~8508953646");
+        AdView a = (AdView) this.findViewById(R.id.adView_TicketHistory);
+        AdRequest adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+        a.loadAd(adRequest);
+
         ArrayList<Ticket> ticket_history = this.getIntent().getParcelableArrayListExtra("ticket_history");
         ListView lv = (ListView)this.findViewById(R.id.ticket_history_listview);
         ListAdapterTicket la = new ListAdapterTicket(this,R.layout.ticket_history_listview_item,ticket_history);

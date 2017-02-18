@@ -247,7 +247,7 @@ public class Utils {
         options.outHeight=200;
         options.outWidth =200;
         options.inScaled=true;
-        Bitmap b =  BitmapFactory.decodeByteArray(pic, 0,pic.length, options);
+        Bitmap b =  BitmapFactory.decodeByteArray(pic, 0,pic.length);//, options);
         //options.inSampleSize = 8;
         //int imgHeight = options.outHeight;
         //int imgWidth= options.outWidth;

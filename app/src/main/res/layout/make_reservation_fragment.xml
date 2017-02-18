@@ -34,7 +34,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"/>
 
-        <EditText
+        <AutoCompleteTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:inputType="textPersonName"
@@ -43,24 +43,24 @@
             android:layout_below="@+id/stylist_reservation_textview"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:hint="Name On Card"
+            android:hint="Name"
             android:layout_alignRight="@+id/reservation_phone"
             android:layout_alignEnd="@+id/reservation_phone"
             android:maxLength="120"/>
 
-        <EditText
+        <AutoCompleteTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="phone"
+
             android:ems="10"
             android:id="@+id/reservation_phone"
             android:layout_below="@+id/reservation_name"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:hint="Phone Number"
+            android:hint="Email"
             android:layout_alignRight="@+id/reservation_expyear"
             android:layout_alignEnd="@+id/reservation_expyear"
-            android:maxLength="10"/>
+            android:maxLength="255"/>
 
         <EditText
             android:layout_width="wrap_content"
@@ -89,7 +89,7 @@
             android:layout_alignEnd="@+id/reservation_expmonth"
             android:hint="CCV"
             android:freezesText="false"
-            android:maxLength="4"/>
+            android:maxLength="3"/>
 
         <EditText
             android:layout_width="100dp"
@@ -130,5 +130,12 @@
             android:visibility="visible"
             android:editable="false"
             android:maxLength="6"/>
+        <TextView
+            android:text="@string/FINAL_SALE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_below="@+id/reservation_ccv"
+            android:layout_alignParentLeft="true" android:layout_alignParentStart="true"
+            android:layout_marginTop="37dp" android:id="@+id/textView19"
+            android:layout_alignParentRight="true" android:layout_alignParentEnd="true"/>
     </RelativeLayout>
 </LinearLayout>

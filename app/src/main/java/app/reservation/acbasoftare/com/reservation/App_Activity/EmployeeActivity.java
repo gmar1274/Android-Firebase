@@ -2,6 +2,7 @@ package app.reservation.acbasoftare.com.reservation.App_Activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -38,11 +39,14 @@ import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -241,6 +245,9 @@ public class EmployeeActivity extends AppCompatActivity {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     lv.setAdapter(null);
+                    if(dataSnapshot.getValue() == null){
+                        return;
+                    }
                     GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {};
                     List<Ticket> list = dataSnapshot.getValue(gti);
                     EmployeeStoreTicketAdapter a = new EmployeeStoreTicketAdapter(ea,0,list);
@@ -325,6 +332,34 @@ public class EmployeeActivity extends AppCompatActivity {
                     openImageGallery();
                 }
             });
+            final Switch avail = (Switch) rootView.findViewById(R.id.switchEmp);
+            this.ea.determineAvailable(avail);
+            avail.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    final String path = "stylists/"+ea.firebaseEmployee.getStore_number()+"/"+ ea.firebaseEmployee.getId()+"/available";
+                    final ProgressDialog pd = ProgressDialog.show(ea,"Updating Status","Please wait...",true,false);
+                    pd.show();
+                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
+                    ref.setValue(avail.isChecked()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            pd.dismiss();
+                            Toast.makeText(ea,"Status updated!",Toast.LENGTH_LONG).show();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            avail.setChecked(!avail.isChecked());
+                            pd.dismiss();
+                            Toast.makeText(ea,"Uh oh something went wrong...Nothing changed.",Toast.LENGTH_LONG).show();
+                            e.printStackTrace();
+                        }
+                    });
+
+                }
+            });
         }
 
         @Override
@@ -353,7 +388,7 @@ public class EmployeeActivity extends AppCompatActivity {
         }*/
         @Override
         public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-            Log.e("On Request Permission", "RequestCode: " + requestCode);
+           // Log.e("On Request Permission", "RequestCode: " + requestCode);
             switch (requestCode) {
                 case 1: {
                     // If request is cancelled, the result arrays are empty.
@@ -418,6 +453,26 @@ public class EmployeeActivity extends AppCompatActivity {
             alert.show();
         }
     }//end placeholder
+
+    private void determineAvailable(final Switch switchAvail) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("stylists/"+firebaseEmployee.getStore_number()+"/"+firebaseEmployee.getId());
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() == null){
+                    switchAvail.setChecked(false);
+                    return;
+                }
+                Stylist s = dataSnapshot.getValue(Stylist.class);
+                switchAvail.setChecked(s.isAvailable());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 
     /**
      * A {@link SectionsPagerAdapter} that returns a fragment corresponding to

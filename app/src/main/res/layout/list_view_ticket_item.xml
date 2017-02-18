@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+                                              xmlns:app="http://schemas.android.com/apk/res-auto"
+                                              xmlns:tools="http://schemas.android.com/tools"
+                                              android:id="@+id/choice_grid"
+             android:layout_width="fill_parent"
+             android:layout_height="wrap_content"
+             android:layout_centerHorizontal="true"
+             android:padding="4dp"
+            >
+    <TextView
+
+        android:text="Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:id="@+id/tv_ticket_name"
+        android:fontFamily="sans-serif" android:layout_row="0" android:layout_column="0"
+        android:textSize="18sp" android:textStyle="normal|bold"
+        android:textColor="@android:color/background_dark" android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true" android:layout_alignParentStart="true"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toTopOf="parent" android:layout_marginStart="8dp"
+        app:layout_constraintLeft_toLeftOf="parent" android:layout_marginLeft="8dp"
+        android:textAlignment="center"/>
+    <TextView
+        android:text="Ticket #"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:id="@+id/tv_unique_number" android:layout_row="0"
+        android:layout_column="1"
+        android:textColor="@android:color/holo_orange_dark" android:textSize="18sp"
+        android:textStyle="normal|bold"
+        android:layout_alignBaseline="@+id/tv_ticket_name"
+        android:layout_alignBottom="@+id/tv_ticket_name"
+        android:layout_toRightOf="@+id/tv_ticket_name"
+        android:layout_toEndOf="@+id/tv_ticket_name"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toTopOf="parent" android:layout_marginStart="100dp"
+        app:layout_constraintLeft_toRightOf="@+id/tv_ticket_name" android:layout_marginLeft="100dp"
+        android:textAlignment="textEnd"/>
+    <TextView
+        android:text="Stylist Name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:id="@+id/tv_stylist_name" android:layout_row="0"
+        android:layout_column="2" android:textAlignment="textEnd" android:textSize="18sp"
+        android:textColor="@android:color/background_dark" android:textStyle="normal|bold"
+        android:layout_alignBaseline="@+id/tv_unique_number"
+        android:layout_alignBottom="@+id/tv_unique_number"
+        android:layout_toRightOf="@+id/tv_unique_number"
+        android:layout_toEndOf="@+id/tv_unique_number"
+        android:layout_marginStart="100dp" app:layout_constraintLeft_toRightOf="@+id/tv_unique_number"
+        android:layout_marginLeft="100dp" android:layout_marginTop="8dp"
+        app:layout_constraintTop_toTopOf="parent"/>
+    <TextView
+        android:text="ReadyByDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" android:id="@+id/tv_readyby_mainqueue" android:layout_row="0"
+        android:layout_column="3" android:textSize="18sp"
+        android:textColor="@color/colorPrimaryDark" android:textStyle="normal|bold"
+        android:layout_below="@+id/tv_stylist_name"
+        android:layout_alignParentRight="true" android:layout_alignParentEnd="true"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toTopOf="parent" android:layout_marginStart="100dp"
+        app:layout_constraintLeft_toRightOf="@+id/tv_stylist_name" android:layout_marginLeft="100dp"
+        android:layout_marginEnd="8dp" app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginRight="8dp" android:textAlignment="textEnd"/>
+</android.support.constraint.ConstraintLayout>

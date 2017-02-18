@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -64,6 +65,7 @@ public class CreditCardDialog {
     private ReservationActivity activity;
     private Card card;
     private MainActivity act;
+    private String email;
     public CreditCardDialog(MainActivity ma,int store_pos, int styl_pos, String phone) {
         this.store_pos = store_pos;
         this.stylist_pos = styl_pos;
@@ -196,8 +198,8 @@ public class CreditCardDialog {
 
         final View layout = inflater.inflate(R.layout.make_reservation_fragment, null);
 
-        EditText phone_et = (EditText) layout.findViewById(R.id.reservation_phone);
-        phone_et.setText(phone);
+        final AutoCompleteTextView email_et = (AutoCompleteTextView) layout.findViewById(R.id.reservation_phone);
+       // phone_et.setText(phone);
         TextView amount = (TextView) layout.findViewById(R.id.textview_reservation_amount);
         DecimalFormat df = new DecimalFormat("$0.00");
         amount.setText(df.format(store.getTicket_price()));
@@ -208,7 +210,7 @@ public class CreditCardDialog {
 
         alert.setView(layout);
 
-        alert.setPositiveButton("Reserve", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton("Grab a Ticket", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
             }
         });
@@ -229,7 +231,7 @@ public class CreditCardDialog {
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        EditText name = (EditText) layout.findViewById(R.id.reservation_name);
+                        AutoCompleteTextView name = (AutoCompleteTextView) layout.findViewById(R.id.reservation_name);
                         EditText ccv = (EditText) layout.findViewById(R.id.reservation_ccv);
                         EditText creditcard = (EditText) layout.findViewById(R.id.reservation_creditcard);
                         EditText exp_month = (EditText) layout.findViewById(R.id.reservation_expmonth);
@@ -244,7 +246,7 @@ public class CreditCardDialog {
                             int yrr = d.getYear() + 1900;
                             yr = "" + ((yrr / 100) + parseInt(yr));//////////////////this could be huge error
                         }
-                        execute(creditcard.getText().toString(), ccv.getText().toString(), exp_month.getText().toString(), yr, name.getText().toString(), "" + amount_b);
+                        execute(creditcard.getText().toString(), ccv.getText().toString(), exp_month.getText().toString(), yr, name.getText().toString(), "" + amount_b,email_et.getText().toString());
 
                     }
                 });
@@ -346,6 +348,11 @@ public class CreditCardDialog {
             expr_year = parseInt(params[3]);
             name = params[4];
             amount = parseInt(params[5]);
+            email = params[6];
+            if(!email.contains("@") && !email.contains(".")){
+                error("Email is invalid.");
+                return;
+            }
             if(activity!=null){
                 activity.getCustomer().setName(name);
             }
@@ -401,7 +408,7 @@ public class CreditCardDialog {
             l.add(new ParamPair("credit_code", Encryption.encryptPassword("acbacreditacba")));
             l.add(new ParamPair("amount", amount));
             l.add(new ParamPair("name", name));
-            l.add(new ParamPair("email", "gnmartinezedu@hotmail.com"));
+            l.add(new ParamPair("email", email));
             l.add(new ParamPair("fingerprint", token.getCard().getFingerprint()));
             JSONObject ob=ws.makeHttpRequest(WebService.createChargeURL, l);
             if(ob != null) {//payment successful

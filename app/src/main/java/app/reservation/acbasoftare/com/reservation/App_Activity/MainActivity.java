@@ -885,7 +885,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void initializeStylists(ArrayList<Stylist> list_stylist, HashMap<String,Bitmap> stylist_bitmaps) {
 
-        Log.e("heer","in init\n List is: "+stylists_list);
+       // Log.e("heer","in init\n List is: "+stylists_list);
         //TextView tv = (TextView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.currentTicketTextView);
         //tv.setText("" + store_list.get(selectedPosition).getCurrent_ticket());//String.valueOf(store_list.get(selectedPosition).getCurrent_ticket()));
         FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, list_stylist);

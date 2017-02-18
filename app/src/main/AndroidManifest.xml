@@ -126,7 +126,9 @@
             android:name=".App_Activity.InStoreTicketReservationActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
-            android:windowSoftInputMode="stateHidden"></activity>
+
+            android:windowSoftInputMode="adjustPan">
+        ></activity>
         <activity android:name=".App_Activity.TicketHistoryActivity"></activity>
     </application>
 

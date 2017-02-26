@@ -22,6 +22,11 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -174,13 +179,16 @@ public class FirebaseWebTasks {
     }
     public static class ListViewAdpaterStylist extends ArrayAdapter<Stylist> {
         private MainActivity ma;
+        private HashMap<String, Boolean> loaded;
+        //private ArrayList<Stylist> list;
         public ListViewAdpaterStylist(MainActivity ma, int list_view_live_feed, ArrayList<Stylist> values) {
             super(ma, list_view_live_feed, values);
             this.ma = ma;
+            this.loaded = new HashMap<>();
         }
 
         public View getView(final int position, View convertView, ViewGroup parent) {
-            Stylist s = getItem(position);
+            final Stylist s = getItem(position);
             // Check if an existing view is being reused, otherwise inflate the view
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_view_live_feed, parent, false);
             RadioButton r = (RadioButton) convertView.findViewById(R.id.live_feed_radiobtn);
@@ -219,6 +227,39 @@ public class FirebaseWebTasks {
                     iv.assignContactFromPhone(ma.store_list.get(ma.selectedPosition).getPhone(),true);
                 }else{
                     iv.assignContactFromPhone(s.getPhone(),true);
+                    ////Update whwn the Stylist becomes ACTIVE OR INACTIVE...
+                    if(!loaded.containsKey(s.getId())){
+                        /////////////////////////add listener to stylists
+                        //I CAN SEE A BUG WHEN USER DELETES A STYLISTS DURONG PEAK HOURS
+                        // MIGHT STILL BE LOADED IN APP IF SOMEONE CLICKS to purchase etc...
+                        DatabaseReference sty = FirebaseDatabase.getInstance().getReference().child("stylists/"+ma.store.getStore_number()+"/"+s.getId());
+                        sty.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                               // Log.e("in LA:::.", dataSnapshot.getValue()+"");
+
+                                if(dataSnapshot.getValue() == null){
+                                    remove(s);
+                                    MainActivity.stylist_bitmaps.remove(s.getId());
+                                    notifyDataSetChanged();
+                                    return;
+                                }
+                                Stylist sty = dataSnapshot.getValue(Stylist.class);
+                                //remove(s);
+                               // insert(sty,position);
+                                s.setAvailable(sty.isAvailable());
+                                loaded.put(sty.getId(),true);
+                                notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+
+
                 }
             //}
             //}
@@ -232,7 +273,7 @@ public class FirebaseWebTasks {
                         Toast.makeText(getContext(), getItem(position) + " selected", Toast.LENGTH_LONG).show();
                     }
                 });*/
-            Log.e("Styyy:",s.isAvailable()+" <<>>> "+s);
+            //Log.e("Styyy:",s.isAvailable()+" <<>>> "+s);
             if(!s.isAvailable()){
                 r.setEnabled(false);
                 convertView.setOnClickListener(null);

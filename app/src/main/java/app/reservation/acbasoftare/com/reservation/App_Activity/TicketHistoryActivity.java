@@ -30,9 +30,17 @@ public class TicketHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ticket_history);
-        MobileAds.initialize(getApplicationContext(), "ca-app-pub-9309556355508377~8508953646");
+        //MobileAds.initialize(getApplicationContext(), "ca-app-pub-9309556355508377~8508953646");
         AdView a = (AdView) this.findViewById(R.id.adView_TicketHistory);
-        AdRequest adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+        AdRequest adRequest = null;
+        if(MainActivity.ADTESTING){
+            adRequest  = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+        }
+        else{
+            adRequest  = new AdRequest.Builder().build();
+        }
+        //Log.e("ADRFEQQQQ",String.valueOf(adRequest==null));
+       // Log.e("ADVIEW:: ",a.isShown()+" <<<< "+a.isLoading());
         a.loadAd(adRequest);
 
         ArrayList<Ticket> ticket_history = this.getIntent().getParcelableArrayListExtra("ticket_history");

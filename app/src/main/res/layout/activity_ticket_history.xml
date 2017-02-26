@@ -3,7 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-     xmlns:ads="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_ticket_history"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -25,8 +24,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/adView_TicketHistory"
-            ads:adUnitId="@string/ticket_history_id"
-            ads:adSize="SMART_BANNER"
+            app:adUnitId="@string/ticket_history_id"
+            app:adSize="SMART_BANNER"
 
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"

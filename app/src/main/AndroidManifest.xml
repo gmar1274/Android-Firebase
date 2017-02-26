@@ -87,6 +87,7 @@
         <activity
             android:name=".App_Activity.MapsActivity"
             android:label="@string/title_activity_maps"
+            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"></activity>
         <activity
             android:name=".App_Activity.TicketScreenActivity"
@@ -110,7 +111,8 @@
         <activity
             android:name=".App_Activity.EmployeeActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden"></activity>
+            android:windowSoftInputMode="adjustPan">
+        </activity>
 
 
 

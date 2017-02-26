@@ -44,6 +44,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
 import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseEmployeeLogin;
@@ -56,7 +59,7 @@ import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
  * A login screen that offers login via email/password.
  */
 public class LoginActivity extends AppCompatActivity  {
-
+    public static final boolean ADTESTING = false;//false means live
     public static final String PREF_USERNAME = "username";
     public static final String PREF_PASSWORD = "password";
     /**
@@ -78,9 +81,23 @@ public class LoginActivity extends AppCompatActivity  {
     private ProgressDialog pd;
 
     private void requestNewInterstitial() {
-        PublisherAdRequest adRequest = new PublisherAdRequest.Builder()
-                .addTestDevice("23B075DED4F5E3DB63757F55444BFF46")
-                .build();
+        PublisherAdRequest adRequest = null;
+        if(ADTESTING){
+            adRequest = new PublisherAdRequest.Builder()
+                    .addTestDevice("23B075DED4F5E3DB63757F55444BFF46")
+                    .build();
+        }
+        else{
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+            try {
+                adRequest = new PublisherAdRequest.Builder().setBirthday(sdf.parse("01/01/1996"))
+                        .build();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+
         mPublisherInterstitialAd.loadAd(adRequest);
     }
 
@@ -154,7 +171,19 @@ public class LoginActivity extends AppCompatActivity  {
         AdView mAdView = (AdView) findViewById(R.id.adView);
         //mAdView.setAdUnitId("ca-app-pub-9309556355508377/8229752040");
        // mAdView.setAdSize(AdSize.SMART_BANNER);
-        AdRequest adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+        AdRequest adRequest = null;
+        if(ADTESTING){
+            adRequest  = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+        }
+        else{
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+            try {
+                adRequest = new AdRequest.Builder().setBirthday(sdf.parse("01/01/1996"))
+                                    .build();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
         mAdView.loadAd(adRequest);
         //////////load Ad
         // Set up the login form.
@@ -338,7 +367,7 @@ public void onStop(){
         }*/
     }
     private void errorWithSignIn() {
-        this.mEmailView.setError("Email may be wrong");
+        this.mEmailView.setError("Email/Username may be wrong");
         this.mPasswordView.setError("Password may be wrong");
     }
     @Override
@@ -348,7 +377,7 @@ public void onStop(){
     }
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.contains("@") || email.length()>3;
+        return (email.contains("@")&&email.contains(".")) || email.length()>3;
     }
 
     private boolean isPasswordValid(String password) {

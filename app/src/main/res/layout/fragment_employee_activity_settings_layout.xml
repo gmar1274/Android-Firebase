@@ -58,17 +58,40 @@
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:background="@color/view" android:elevation="10dp"
+        android:layout_marginTop="32dp"
         app:layout_constraintTop_toBottomOf="@+id/button_upload_profile_pic"
-        app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp" app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginRight="8dp" android:layout_marginStart="8dp"
-        app:layout_constraintLeft_toLeftOf="parent" android:layout_marginLeft="8dp"
-        android:background="@color/view" android:elevation="10dp">
+        android:layout_marginStart="32dp" app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="32dp" android:layout_marginEnd="32dp"
+        app:layout_constraintRight_toRightOf="parent" android:layout_marginRight="32dp">
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:ems="10"
+                android:id="@+id/editTextEmployeePhone"
+                app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="8dp"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/switchEmp"
+                android:hint="Preffered contact number" android:singleLine="true"
+                android:maxLength="10" app:layout_constraintVertical_bias="1.0"
+                android:layout_marginEnd="16dp" android:layout_marginRight="16dp"/>
+            <TextView
+                android:text="Phone:"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/textView23"
+                android:layout_marginStart="16dp"
+                app:layout_constraintLeft_toLeftOf="parent" android:layout_marginLeft="16dp"
+                app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="16dp"
+                app:layout_constraintRight_toLeftOf="@+id/editTextEmployeePhone"
+                android:layout_marginEnd="32dp" android:layout_marginRight="32dp"
+                android:textSize="24sp" android:textStyle="normal|bold"
+                android:textColor="@android:color/background_dark"/>
             <Switch
                 android:textOn="Active"
                 android:textOff="Not Active"
@@ -80,8 +103,8 @@
                 android:layout_marginEnd="16dp" app:layout_constraintRight_toRightOf="parent"
                 android:layout_marginRight="16dp" android:layout_marginTop="16dp"
                 app:layout_constraintTop_toTopOf="parent" android:textSize="24sp"
-                android:id="@+id/switchEmp" app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginBottom="16dp"/>
+                android:id="@+id/switchEmp"
+            />
             <TextView
                 android:text="Current Status:"
                 android:layout_width="wrap_content"
@@ -90,9 +113,10 @@
                 android:textStyle="normal|bold" android:fontFamily="sans-serif"
                 android:textColor="@android:color/background_dark" android:textSize="24sp"
                 android:layout_marginTop="16dp"
-                app:layout_constraintTop_toTopOf="parent" android:layout_marginStart="16dp"
-                app:layout_constraintLeft_toLeftOf="parent" android:layout_marginLeft="16dp"
-                app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="16dp"/>
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/textView23"
+                android:layout_marginBottom="16dp" android:layout_marginStart="16dp"
+                app:layout_constraintLeft_toLeftOf="parent" android:layout_marginLeft="16dp"/>
         </android.support.constraint.ConstraintLayout>
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

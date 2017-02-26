@@ -75,6 +75,7 @@ import org.w3c.dom.Text;
 
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,6 +104,7 @@ import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 //import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AppCompatActivity {
+    public final static boolean ADTESTING=false;//false means LIVE ads
     public static HashMap<String,Bitmap> stylist_bitmaps;
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -121,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
     public GoogleMap gm;
     public MapView mv;
     public int selectedPosition;
+    public FirebaseStore store;
     //public static Ticket TICKET;
     public String phone;//user phone number
     public boolean isSuccess;//success payment ticket register
@@ -273,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         // LockDBPreserveSpot db = new LockDBPreserveSpot();
         //db.execute(store_list.get(selectedPosition).getPhone());
-        CreditCardDialog ccd = new CreditCardDialog(this, selectedPosition, stylist_position, phone);
+        CreditCardDialog ccd = new CreditCardDialog(MainActivity.this, selectedPosition, stylist_position, phone);
         ccd.showCreditCardDialog();
     }
 
@@ -299,6 +302,7 @@ public class MainActivity extends AppCompatActivity {
         outState.putSerializable("stylist_bitmaps", stylist_bitmaps);
         outState.putBoolean("STYLIST_BITMAPS_LOADED", STYLIST_BITMAPS_LOADED);
         outState.putSerializable("sty_hm", sty_hm);
+        outState.putParcelable("store",store);
     }
 
     @Override
@@ -332,6 +336,7 @@ public class MainActivity extends AppCompatActivity {
             STYLIST_BITMAPS_LOADED = savedInstanceState.getBoolean("STYLIST_BITMAPS_LOADED");
             ticket_history = savedInstanceState.getParcelableArrayList("ticket_history");
             sty_hm = (HashMap<String, Stylist>) savedInstanceState.getSerializable("sty_hm");
+            store = savedInstanceState.getParcelable("store");
         } else {
             selectedPosition = 0;//initial pos
             //ticket_number = -1;//not set
@@ -375,8 +380,24 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 } else if (position == 1) {//second tab or LIVE FEED TAB//0,1,2 page numbers
                     AdView mAdView = (AdView) MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.adView_liveFeed);
-                    AdRequest adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+                    AdRequest adRequest = null;
+
+                    if(ADTESTING) {
+                      adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+                    }else {
+                        //adRequest = new AdRequest.Builder().build(); //addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+                        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+                        try {
+                            adRequest = new AdRequest.Builder().setBirthday(sdf.parse("01/01/1996"))
+                                                .build();
+                        } catch (ParseException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
                     mAdView.loadAd(adRequest);
+
+
 
                    if(stylist_bitmaps!=null){
                        stylist_bitmaps.clear();
@@ -389,6 +410,7 @@ public class MainActivity extends AppCompatActivity {
                         stylists_list = new ArrayList<Stylist>();
                     }
                         FirebaseStore s = store_list.get(selectedPosition);
+                        store = s;
                         /*StylistWebTask swt = new StylistWebTask(rootView_LiveTab);
                         if (stylists_list == null) {
                             swt.execute(s.getPhone());
@@ -473,7 +495,8 @@ public class MainActivity extends AppCompatActivity {
                 };
                 Map<String, Stylist> map = dataSnapshot.getValue(gti);
                 sty_hm = new HashMap<String, Stylist>(map);
-                stylists_list = new ArrayList<Stylist>(map.values());
+
+                stylists_list = new ArrayList<Stylist>(sty_hm.values());
                 Collections.sort(stylists_list);
                 //got the stylists now need to get images
                 for (final Stylist sty : stylists_list) {
@@ -527,6 +550,11 @@ public class MainActivity extends AppCompatActivity {
         return this.mCustomFragPageAdapter.getCurrentFragmentView(this.mViewPager.getCurrentItem());
     }
 
+    /***
+     * THIS METHOD RUNS AFTER ALL STYLISTS AND BITMAPS ARE READY TO DISPLAY
+     * @param store
+     * @param stylists_list
+     */
     private void predictTicketWait(final FirebaseStore store, final ArrayList<Stylist> stylists_list) {
         FirebaseDatabase.getInstance().getReference().child("tickets/" + store.getStore_number()).addValueEventListener(new ValueEventListener() {
             @Override
@@ -609,6 +637,7 @@ public class MainActivity extends AppCompatActivity {
                 initializeStylists(stylists_list,stylist_bitmaps);
             }
         });
+
 
     }
 
@@ -883,21 +912,23 @@ public class MainActivity extends AppCompatActivity {
      * @param list_stylist
      * @param stylist_bitmaps
      */
-    public void initializeStylists(ArrayList<Stylist> list_stylist, HashMap<String,Bitmap> stylist_bitmaps) {
+    public void initializeStylists(ArrayList<Stylist> list_stylist, final HashMap<String,Bitmap> stylist_bitmaps) {
 
-       // Log.e("heer","in init\n List is: "+stylists_list);
-        //TextView tv = (TextView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.currentTicketTextView);
-        //tv.setText("" + store_list.get(selectedPosition).getCurrent_ticket());//String.valueOf(store_list.get(selectedPosition).getCurrent_ticket()));
-        FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, list_stylist);
+        stylists_list = new ArrayList<Stylist>(sty_hm.values());
+        Collections.sort(stylists_list);
+
+        FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, stylists_list);
         ListView lv = (ListView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_livefeed_listview);
         lv.setAdapter(null);
         lv.setAdapter(la);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(final AdapterView<?> adapterView, View view, int position, long l) {
+            public void onItemClick(final AdapterView<?> adapterView, final View view, int position, long l) {
                 //Update selected stylist position  index
                 stylist_position = position;
-                Stylist s = stylists_list.get(position);
+               final Stylist s = stylists_list.get(position);
+
+
                 ((FirebaseWebTasks.ListViewAdpaterStylist) adapterView.getAdapter()).notifyDataSetChanged();
                 Toast.makeText(MainActivity.this, s.getName() + " selected.", Toast.LENGTH_SHORT).show();
             }
@@ -1266,9 +1297,23 @@ public class MainActivity extends AppCompatActivity {
      * REQUEST A AD
      */
     private void requestNewInterstitial() {
-        PublisherAdRequest adRequest = new PublisherAdRequest.Builder()
-                                               .addTestDevice("23B075DED4F5E3DB63757F55444BFF46")
-                                               .build();
+        PublisherAdRequest adRequest = null;
+        if(ADTESTING){
+            adRequest = new PublisherAdRequest.Builder()
+                                .addTestDevice("23B075DED4F5E3DB63757F55444BFF46")
+                                .build();
+        }
+        else{
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+            try {
+                adRequest = new PublisherAdRequest.Builder().setBirthday(sdf.parse("01/01/1996"))
+                                    .build();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+
+
         mPublisherInterstitialAd.loadAd(adRequest);
     }
 }

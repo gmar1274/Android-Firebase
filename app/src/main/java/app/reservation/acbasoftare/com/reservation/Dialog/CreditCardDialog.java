@@ -189,10 +189,14 @@ public class CreditCardDialog {
 
     }
 
+    /**
+     * MAinActivity displayyy
+     */
+
     public void showCreditCardDialog() {
         alert = new AlertDialog.Builder(this.act);
 
-        alert.setTitle("Enter Contact Information");
+        alert.setTitle("Contact Information");
 
         LayoutInflater inflater = this.act.getLayoutInflater();
 
@@ -204,7 +208,7 @@ public class CreditCardDialog {
         DecimalFormat df = new DecimalFormat("$0.00");
         amount.setText(df.format(store.getTicket_price()));
         TextView store_tv = (TextView) layout.findViewById(R.id.store_reservation_textview);
-        store_tv.setText("Store: " + store.getName().toUpperCase());
+        store_tv.setText("Shop: " + store.getName().toUpperCase());
         TextView stylist_tv = (TextView) layout.findViewById(R.id.stylist_reservation_textview);
         stylist_tv.setText("Stylist: " + stylist.getName().toUpperCase());
 
@@ -264,7 +268,7 @@ public class CreditCardDialog {
     public void showCreditCardDialog(boolean test) {
         alert = new AlertDialog.Builder(act);//
 
-        alert.setTitle("Enter Contact Information");
+        alert.setTitle("Contact Information");
 
         LayoutInflater inflater = act.getLayoutInflater();
 
@@ -336,7 +340,7 @@ public class CreditCardDialog {
      */
     private void execute(String... params) {
         try {
-            for (int i = 0; i < params.length; ++i) {
+            for (int i = 0; i < params.length-1; ++i) {
                 if (params[i] == null || params[i].length() == 0) {
                     displayError();
                     return;
@@ -349,7 +353,9 @@ public class CreditCardDialog {
             name = params[4];
             amount = parseInt(params[5]);
             email = params[6];
-            if(!email.contains("@") && !email.contains(".")){
+            email = email.replace(" ","");
+            if(email.length()==0){}
+            else if(!email.contains("@") && !email.contains(".")){
                 error("Email is invalid.");
                 return;
             }
@@ -380,7 +386,7 @@ public class CreditCardDialog {
         } catch (AuthenticationException e) {
             e.printStackTrace();
         }
-        // com.stripe.Stripe.apiKey = sk;
+
         if (stripe != null) {
             stripe.createToken(card, new TokenCallback() {
                         @Override
@@ -401,6 +407,13 @@ public class CreditCardDialog {
             );
         }
     }
+
+    /**
+     * API call to my server to send to stripe
+     * Will return a JSON format:: {status:"result"}
+     * @param token
+     * @param pd
+     */
     private void webCallMakeCharge(Token token,ProgressDialog pd){
         if(ws != null) {
             ArrayList<ParamPair> l=new ArrayList<>();
@@ -410,13 +423,35 @@ public class CreditCardDialog {
             l.add(new ParamPair("name", name));
             l.add(new ParamPair("email", email));
             l.add(new ParamPair("fingerprint", token.getCard().getFingerprint()));
-            JSONObject ob=ws.makeHttpRequest(WebService.createChargeURL, l);
-            if(ob != null) {//payment successful
-                firebaseAddTicket(store, stylist, name, phone,pd);
-                //Log.e("IN CREDIT:: ", ob.toString());
-            } else {
-                Log.e("IN CREDIT:: ", "ERROR in creating params");
-                Toast.makeText(this.act,"Payment unsuccessful. No charges were made. Try again.",Toast.LENGTH_LONG).show();
+            JSONObject ob=ws.makeHTTPSConnection(WebService.createChargeURL, l);
+            try {
+               // Log.e("WEB CALL BACK: ","SERVER RESPONSE: "+ob.toString());
+                if (ob != null && ob.get("status").equals("success")) {//payment successful
+                    firebaseAddTicket(store, stylist, name, phone, pd);
+                    //Log.e("IN CREDIT:: ", ob.toString());
+                } else {
+                    pd.dismiss();
+
+                    Log.e("IN CREDIT:: ", "ERROR in creating params");
+                    act.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(act, "Payment unsuccessful. No charges were made. Try again.", Toast.LENGTH_LONG).show();
+
+                        }
+                    });
+                }
+            }catch (Exception e){
+                pd.dismiss();
+                act.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.e("IN CREDIT:: ", "ERROR in JSON result");
+                        Toast.makeText(act, "Payment unsuccessful. No charges were made. Try again.", Toast.LENGTH_LONG).show();
+
+                    }
+                });
+                e.printStackTrace();
             }
             alertd.dismiss();
         }
@@ -496,7 +531,7 @@ public class CreditCardDialog {
 
         alert.setView(layout);
 
-        alert.setPositiveButton("Reserve", new DialogInterface.OnClickListener() {
+        alert.setPositiveButton("Sign up", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
             }
         });

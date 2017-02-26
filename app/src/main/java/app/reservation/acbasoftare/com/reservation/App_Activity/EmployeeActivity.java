@@ -25,8 +25,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,10 +38,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ExpandableListView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,21 +63,13 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseEmployee;
-import app.reservation.acbasoftare.com.reservation.App_Objects.Reservation;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
-import app.reservation.acbasoftare.com.reservation.ExpandableListView.ExpandableListViewAdapter;
-import app.reservation.acbasoftare.com.reservation.ListAdapters.DateArrayAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
-import app.reservation.acbasoftare.com.reservation.Utils.Utils;
-import app.reservation.acbasoftare.com.reservation.WebTasks.StylistWebTaskAppointments;
-import app.reservation.acbasoftare.com.reservation.WebTasks.UploadImageWebTask;
+import app.reservation.acbasoftare.com.reservation.Utils.Utils;;
 
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.PREF_PASSWORD;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.PREF_USERNAME;
@@ -297,7 +291,7 @@ public class EmployeeActivity extends AppCompatActivity {
 
                         @Override
                         public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-
+                            determineCurrentTicket(t);
                             Log.e("on complete delete ...","on complete");
                         }
                     });
@@ -308,6 +302,28 @@ public class EmployeeActivity extends AppCompatActivity {
                     //nothing
                 }
             }).show();
+        }
+
+        private void determineCurrentTicket(final Ticket t) {
+            DatabaseReference r = FirebaseDatabase.getInstance().getReference().child("user/"+ea.firebaseEmployee.getStore_number()+"/current_ticket");
+            r.runTransaction(new Transaction.Handler() {
+                @Override
+                public Transaction.Result doTransaction(MutableData mutableData) {
+                    if(mutableData.getValue() == null){
+                        mutableData.setValue(t.unique_id);
+                    }
+                    long ct = mutableData.getValue(Long.class);
+                    if(t.unique_id > ct){
+                        mutableData.setValue(t.unique_id);
+                    }
+                    return Transaction.success(mutableData);
+                }
+
+                @Override
+                public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                        Log.e("CT updated...","current t updated or at least callback..."); ///
+                }
+            });
         }
 
         private void fragmentView2(final View rootView) {
@@ -360,6 +376,49 @@ public class EmployeeActivity extends AppCompatActivity {
 
                 }
             });
+            EditText phone = (EditText)rootView.findViewById(R.id.editTextEmployeePhone);
+            TextWatcher tw = new TextWatcher() {
+                public void afterTextChanged(Editable s){
+
+                }
+                public void  beforeTextChanged(CharSequence s, int start, int count, int after){
+                    // you can check for enter key here
+                }
+                public void  onTextChanged (CharSequence s, int start, int before,int count) {
+                    if(s.length()==10){
+                        updatePhone(s);
+                    }
+                }
+            };
+            phone.addTextChangedListener(tw);
+        }
+
+        private void updatePhone(final CharSequence phone) {
+            new AlertDialog.Builder(this.ea).setTitle("Update Phone?").setMessage("This option will update the phone number for the app to: "+phone+".")
+                    .setPositiveButton("Update", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            final String path = "stylists/"+ea.firebaseEmployee.getStore_number()+"/"+ea.firebaseEmployee.getId()+"/phone";
+                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
+                            ref.setValue(phone.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+
+                                    Toast.makeText(ea,"Phone updated!",Toast.LENGTH_LONG).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(ea,"Error. Failed to update.",Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+
+                }
+            }).show();
         }
 
         @Override

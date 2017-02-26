@@ -13,6 +13,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -34,7 +35,7 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.ParamPair;
  */
 public class WebService {
     public static final String storeURL = "http://acbasoftware.com/pos/store.php";
-    public static final String createChargeURL = "https://54.153.34.48/createCharge.php?";//"http://acbasoftware.com/pos/createCharge.php";
+    public static final String createChargeURL = "https://ec2-54-153-34-48.us-west-1.compute.amazonaws.com/createCharge.php";//54.153.34.48/createCharge.php";//"http://acbasoftware.com/pos/createCharge.php";
     public static final String storeLoginURL = "http://acbasoftware.com/pos/store_login.php";
     static InputStream is = null;
     static JSONObject jObj = null;
@@ -122,7 +123,6 @@ public class WebService {
 // Now you can access an https URL without having the certificate in the truststore
             URL url = new URL(url_string);
 
-
             //////
             String data = "";
             for (ParamPair p : params) {
@@ -136,12 +136,11 @@ public class WebService {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setUseCaches(false);
-            conn.setInstanceFollowRedirects(false);
             conn.setSSLSocketFactory(sc.getSocketFactory());
 
 
             conn.setRequestProperty( "Accept", "*/*" );
-            conn.setFixedLengthStreamingMode(data.getBytes().length);
+            conn.setFixedLengthStreamingMode(data.getBytes("UTF-8").length);
             //conn.setDoInput(true);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type",
@@ -157,6 +156,11 @@ public class WebService {
             });
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
             conn.setRequestProperty("Content-Language", "en-US");
+           // conn.setRequestProperty("User-Agent","Mozilla/5.0 (Windows NT 5.1; rv:19.0) Gecko/20100101 Firefox/19.0");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
+            conn.setInstanceFollowRedirects(true);
+
+            conn.connect();
           ///write
             OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
             wr.write(data);

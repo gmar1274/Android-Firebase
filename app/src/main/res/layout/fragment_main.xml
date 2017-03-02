@@ -8,7 +8,20 @@
                                                       android:id="@+id/rel">
 
 
+<<<<<<< HEAD
             <SeekBar
+=======
+
+                <TextView
+                    android:layout_width="368dp"
+                    android:layout_height="136dp"
+                    android:id="@+id/fragment_text_view"
+                    tools:layout_editor_absoluteY="113dp"
+                    tools:layout_editor_absoluteX="8dp"
+                    tools:ignore="MissingConstraints"/>
+
+                     <SeekBar
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
                          android:layout_width="363dp"
                          android:layout_height="41dp"
                          android:id="@+id/seekBar_radius"
@@ -20,6 +33,7 @@
                          android:layout_below="@+id/textview_searchradius"
                          android:progress="9"
                          app:layout_constraintLeft_toLeftOf="parent"
+<<<<<<< HEAD
                          android:layout_marginTop="32dp"
                          app:layout_constraintTop_toTopOf="parent"
                          app:layout_constraintRight_toRightOf="parent"
@@ -27,6 +41,53 @@
 
 
             <TextView
+=======
+                         android:layout_marginTop="24dp"
+                         app:layout_constraintTop_toTopOf="parent"
+                         app:layout_constraintRight_toRightOf="parent"
+                         app:layout_constraintHorizontal_bias="0.33"/>
+
+                     <ProgressBar
+                         style="?android:attr/progressBarStyleLarge"
+                         android:layout_width="384dp"
+                         android:layout_height="107dp"
+                         android:id="@+id/fragment_progress_bar"
+                         android:layout_alignParentRight="true"
+                         android:layout_alignParentEnd="true"
+                         android:layout_alignParentLeft="true"
+                         android:layout_alignParentStart="true"
+                         android:indeterminateOnly="false"
+                         android:indeterminate="false"
+                         android:layout_alignParentTop="true"
+                         android:layout_marginTop="32dp"
+                         app:layout_constraintTop_toTopOf="parent"
+                         android:layout_marginStart="32dp"
+                         app:layout_constraintLeft_toLeftOf="parent"
+                         android:layout_marginLeft="32dp"
+                         app:layout_constraintRight_toRightOf="@+id/fragment_text_view"
+                         android:layout_marginEnd="32dp"
+                         android:layout_marginRight="32dp"/>
+
+                <com.google.android.gms.maps.MapView
+                    android:layout_height="164dp"
+                    android:id="@+id/mapView"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/seekBar_radius"
+                    android:layout_above="@+id/fragment_listview"
+                    android:layout_width="362dp"
+                    app:layout_constraintTop_toBottomOf="@+id/button_search"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:layout_marginEnd="8dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginLeft="8dp"
+                    app:layout_constraintHorizontal_bias="0.57"/>
+
+
+                     <TextView
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
             android:text="Search Distance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,6 +98,7 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:editable="false"
+<<<<<<< HEAD
                 tools:layout_editor_absoluteY="0dp"
                 tools:layout_editor_absoluteX="8dp" />
 
@@ -44,6 +106,15 @@
             android:text="10 mi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+=======
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:text="10 mi"
+            android:layout_width="57dp"
+            android:layout_height="23dp"
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
             android:id="@+id/textView_distance"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
@@ -52,19 +123,29 @@
             android:textColor="@android:color/black"
             android:textSize="20sp"
             android:editable="false"
+<<<<<<< HEAD
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginEnd="8dp"
             app:layout_constraintRight_toRightOf="parent"
             android:layout_marginRight="8dp" />
+=======
+            app:layout_constraintRight_toRightOf="@+id/seekBar_radius"
+            app:layout_constraintTop_toTopOf="parent"/>
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 
                 <Button
                     android:text="Search"
                     android:id="@+id/button_search"
                     app:layout_constraintRight_toRightOf="parent"
+<<<<<<< HEAD
+=======
+                    app:layout_constraintTop_toBottomOf="@+id/seekBar_radius"
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
                     android:typeface="normal"
                     android:layout_height="wrap_content"
                     android:textSize="10sp"
                     android:fontFamily="sans-serif-medium"
+<<<<<<< HEAD
                     android:layout_width="127dp"
                     android:layout_marginEnd="8dp"
                     android:layout_marginRight="8dp"
@@ -113,12 +194,26 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 app:layout_constraintTop_toBottomOf="@+id/mapView"
+=======
+                    android:layout_width="127dp"/>
+
+            <ListView
+                android:id="@+id/fragment_listview"
+                android:choiceMode="singleChoice"
+
+                android:layout_below="@+id/fragment_progress_bar"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_width="368dp"
+                android:layout_height="205dp"
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
                 android:layout_marginEnd="8dp"
                 app:layout_constraintRight_toRightOf="parent"
                 android:layout_marginRight="8dp"
                 android:layout_marginStart="8dp"
                 app:layout_constraintLeft_toLeftOf="parent"
                 android:layout_marginLeft="8dp"
+<<<<<<< HEAD
                 app:layout_constraintHorizontal_bias="0.54"
                 app:layout_constraintBottom_toBottomOf="parent"
                 android:layout_marginBottom="8dp">
@@ -130,6 +225,14 @@
                     tools:layout_editor_absoluteX="8dp"
                     tools:layout_editor_absoluteY="420dp" />
             </LinearLayout>
+=======
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintHorizontal_bias="0.33"
+                android:scrollbars="horizontal|vertical"
+                android:focusableInTouchMode="true"
+                app:layout_constraintTop_toBottomOf="@+id/mapView"
+                android:layout_marginBottom="8dp"/>
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 
         </android.support.constraint.ConstraintLayout>
 

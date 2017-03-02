@@ -16,14 +16,20 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 
+<<<<<<< HEAD
 import java.text.ParseException;
+=======
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import java.util.ArrayList;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.R;
 
+<<<<<<< HEAD
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.AD_AGE_DATE_STRING;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.sdf;
+=======
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import static app.reservation.acbasoftare.com.reservation.R.id.ticket_history;
 
 
@@ -33,18 +39,26 @@ public class TicketHistoryActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ticket_history);
+<<<<<<< HEAD
         MobileAds.initialize(getApplicationContext(), "ca-app-pub-9309556355508377~8508953646");
+=======
+        //MobileAds.initialize(getApplicationContext(), "ca-app-pub-9309556355508377~8508953646");
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
         AdView a = (AdView) this.findViewById(R.id.adView_TicketHistory);
         AdRequest adRequest = null;
         if(MainActivity.ADTESTING){
             adRequest  = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
         }
         else{
+<<<<<<< HEAD
             try {
                 adRequest  = new AdRequest.Builder().setBirthday(sdf.parse(AD_AGE_DATE_STRING)).build();
             } catch (ParseException e) {
                 e.printStackTrace();
             }
+=======
+            adRequest  = new AdRequest.Builder().build();
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
         }
         //Log.e("ADRFEQQQQ",String.valueOf(adRequest==null));
        // Log.e("ADVIEW:: ",a.isShown()+" <<<< "+a.isLoading());

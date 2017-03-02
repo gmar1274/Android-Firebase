@@ -2,8 +2,15 @@ package app.reservation.acbasoftare.com.reservation.App_Objects;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+<<<<<<< HEAD
 
 import java.text.SimpleDateFormat;
+=======
+import android.util.Log;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import java.util.Date;
 
 /**
@@ -228,9 +235,13 @@ public class FirebaseStore implements Parcelable , Comparable<FirebaseStore>{
         parcel.writeDouble(reservation_calendar_price);
         parcel.writeLong(store_number);
     }
+<<<<<<< HEAD
 public String toString(){
     return this.name+" "+miles_away;
 }
+=======
+
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
     @Override
     public int compareTo(FirebaseStore firebaseStore) {
         if(this.miles_away < firebaseStore.miles_away){

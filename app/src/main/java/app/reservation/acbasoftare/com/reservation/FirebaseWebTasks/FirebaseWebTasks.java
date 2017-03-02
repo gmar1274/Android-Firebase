@@ -2,6 +2,10 @@ package app.reservation.acbasoftare.com.reservation.FirebaseWebTasks;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+<<<<<<< HEAD
+=======
+import android.content.Context;
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import android.graphics.Bitmap;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
@@ -9,7 +13,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+<<<<<<< HEAD
 import android.widget.ArrayAdapter;
+=======
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import android.widget.QuickContactBadge;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -28,11 +40,23 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+<<<<<<< HEAD
 import java.util.HashMap;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
+=======
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+
+import app.reservation.acbasoftare.com.reservation.App_Activity.InStoreTicketReservationActivity;
+import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
+import app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
+import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
@@ -254,8 +278,12 @@ public class FirebaseWebTasks {
                 }
             //}
             //}
+<<<<<<< HEAD
             iv.setMode(ContactsContract.QuickContact.MODE_MEDIUM);
 
+=======
+            iv.setMode(ContactsContract.QuickContact.MODE_LARGE);
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
             // iv.setVisibility(View.VISIBLE);
                 /*r.setOnClickListener(new View.OnClickListener() {
                     @Override

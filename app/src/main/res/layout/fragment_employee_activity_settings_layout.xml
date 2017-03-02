@@ -52,7 +52,11 @@
         android:layout_marginStart="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginLeft="16dp"
+<<<<<<< HEAD
         android:layout_marginTop="8dp"
+=======
+        android:layout_marginTop="64dp"
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
         app:layout_constraintTop_toBottomOf="@+id/textView_tab3_employee_activity"/>
     <LinearLayout
         android:orientation="vertical"
@@ -63,6 +67,7 @@
         app:layout_constraintTop_toBottomOf="@+id/button_upload_profile_pic"
         android:layout_marginStart="32dp" app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginLeft="32dp" android:layout_marginEnd="32dp"
+<<<<<<< HEAD
         app:layout_constraintRight_toRightOf="parent" android:layout_marginRight="32dp"
         android:id="@+id/linearLayout">
         <android.support.constraint.ConstraintLayout
@@ -71,6 +76,12 @@
             android:splitMotionEvents="false"
             android:soundEffectsEnabled="false"
             android:elevation="10dp">
+=======
+        app:layout_constraintRight_toRightOf="parent" android:layout_marginRight="32dp">
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 
             <EditText
                 android:layout_width="wrap_content"
@@ -123,6 +134,7 @@
                 app:layout_constraintLeft_toLeftOf="parent" android:layout_marginLeft="16dp"/>
         </android.support.constraint.ConstraintLayout>
     </LinearLayout>
+<<<<<<< HEAD
 
     <Button
         android:text="Reset Tickets"
@@ -139,4 +151,6 @@
         android:layout_marginEnd="16dp"
         app:layout_constraintRight_toRightOf="parent"
         android:layout_marginRight="16dp" />
+=======
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 </android.support.constraint.ConstraintLayout>

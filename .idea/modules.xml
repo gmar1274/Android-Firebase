@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/Android-Firebase-master.iml" filepath="$PROJECT_DIR$/Android-Firebase-master.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/Android-Firebase-02-12-17.iml" filepath="$PROJECT_DIR$/Android-Firebase-02-12-17.iml" />
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

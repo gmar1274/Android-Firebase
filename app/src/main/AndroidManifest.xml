@@ -87,8 +87,13 @@
         <activity
             android:name=".App_Activity.MapsActivity"
             android:label="@string/title_activity_maps"
+<<<<<<< HEAD
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
+=======
+            android:windowSoftInputMode="adjustPan"
+            android:screenOrientation="portrait"></activity>
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
         <activity
             android:name=".App_Activity.TicketScreenActivity"
             android:label="@string/title_activity_main"
@@ -108,6 +113,7 @@
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
+<<<<<<< HEAD
 
         <activity
             android:name=".App_Activity.EmployeeActivity"
@@ -121,10 +127,29 @@
         <activity
             android:name=".App_Activity.RegisterShopActivity"
             android:label="@string/title_activity_register_shop" />
+=======
+        <activity
+            android:name=".App_Activity.EmployeeActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan">
+        </activity>
+
+
+
+        <activity
+            android:name=".App_Activity.ReservationActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden"></activity>
+        <activity android:name=".App_Activity.DateViewerActivity"></activity>
+        <activity
+            android:name=".App_Activity.RegisterShopActivity"
+            android:label="@string/title_activity_register_shop"></activity>
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
         <activity
             android:name=".App_Activity.InStoreTicketReservationActivity"
             android:label="@string/app_name"
             android:screenOrientation="landscape"
+<<<<<<< HEAD
             android:windowSoftInputMode="adjustPan">
             >
         </activity>
@@ -137,6 +162,12 @@
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustPan" />
 
+=======
+
+            android:windowSoftInputMode="adjustPan">
+        ></activity>
+        <activity android:name=".App_Activity.TicketHistoryActivity"></activity>
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
     </application>
 
 </manifest>

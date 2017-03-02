@@ -26,10 +26,18 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
+<<<<<<< HEAD
+=======
+import com.facebook.Profile;
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
+<<<<<<< HEAD
+=======
+import com.google.android.gms.ads.AdSize;
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
@@ -51,6 +59,11 @@ import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseEmpl
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.WebTasks.Login;
 
+<<<<<<< HEAD
+=======
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
+
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 /**
  * A login screen that offers login via email/password.
  */
@@ -58,8 +71,11 @@ public class LoginActivity extends AppCompatActivity  {
     public static final boolean ADTESTING = false;//false means live
     public static final String PREF_USERNAME = "username";
     public static final String PREF_PASSWORD = "password";
+<<<<<<< HEAD
     public static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
     public static final String AD_AGE_DATE_STRING = "01/01/2005";
+=======
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
     /**
      * Id to identity READ_CONTACTS permission request.
      * cntrl alt L for formatting
@@ -86,9 +102,15 @@ public class LoginActivity extends AppCompatActivity  {
                     .build();
         }
         else{
+<<<<<<< HEAD
 
             try {
                 adRequest = new PublisherAdRequest.Builder().setBirthday(sdf.parse(AD_AGE_DATE_STRING))
+=======
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+            try {
+                adRequest = new PublisherAdRequest.Builder().setBirthday(sdf.parse("01/01/1996"))
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
                         .build();
             } catch (ParseException e) {
                 e.printStackTrace();
@@ -108,11 +130,19 @@ public class LoginActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         mAuth = FirebaseAuth.getInstance();
         super.onCreate(savedInstanceState);
+<<<<<<< HEAD
         FacebookSdk.sdkInitialize(getApplicationContext());
         // AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_login);
         test();
         callbackManager = CallbackManager.Factory.create();
+=======
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        // AppEventsLogger.activateApp(this);
+        setContentView(R.layout.activity_login);
+         callbackManager = CallbackManager.Factory.create();
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
         LoginButton loginButton = (LoginButton) findViewById(R.id.fb);
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
@@ -174,9 +204,15 @@ public class LoginActivity extends AppCompatActivity  {
             adRequest  = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
         }
         else{
+<<<<<<< HEAD
 
             try {
                 adRequest = new AdRequest.Builder().setBirthday(sdf.parse(AD_AGE_DATE_STRING))
+=======
+            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+            try {
+                adRequest = new AdRequest.Builder().setBirthday(sdf.parse("01/01/1996"))
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
                                     .build();
             } catch (ParseException e) {
                 e.printStackTrace();
@@ -260,12 +296,15 @@ public class LoginActivity extends AppCompatActivity  {
         mAuth.addAuthStateListener(mAuthListener);
     }
 
+<<<<<<< HEAD
     private void test() {
         Intent i = new Intent(this, ShopRegristrationActivity.class);
         this.startActivity(i);
         this.finish();
     }
 
+=======
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
     private void goToShopLogin() {
         this.startActivity(new Intent(this,ShopLoginActivity.class));
         this.finish();

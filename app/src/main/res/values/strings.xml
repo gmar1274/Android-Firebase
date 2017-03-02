@@ -29,6 +29,9 @@
     <string name="live_feed_banner">ca-app-pub-9309556355508377/8861198049</string>
     <string name="ticket_history_id">ca-app-pub-9309556355508377/1337931249</string>
     <string name="FINAL_SALE">*All transactions are non refundable and processed securely.</string>
+<<<<<<< HEAD
     <string name="title_activity_shop_regristration">ShopRegristrationActivity</string>
+=======
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 
 </resources>

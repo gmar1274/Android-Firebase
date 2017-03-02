@@ -4,6 +4,10 @@ import android.os.AsyncTask;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+<<<<<<< HEAD
+=======
+import android.widget.TextView;
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -45,10 +49,26 @@ private MainActivity ma;
     }
 
     protected void onPreExecute() {
+<<<<<<< HEAD
 
     }
 
 
+=======
+        showProgressBar(true, rootView);
+    }
+
+    private void showProgressBar(boolean show, View rootView) {
+        progressBar = (ProgressBar) rootView.findViewById(R.id.fragment_progress_bar);
+        if (!show) {
+            progressBar.setVisibility(View.GONE);
+            return;
+        }
+        progressBar.setIndeterminate(show);
+        progressBar.setVisibility(View.VISIBLE);
+
+    }
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 
     @Override
     protected String doInBackground(String... arg0) {
@@ -123,19 +143,32 @@ private MainActivity ma;
 
            // if (MainActivity.lv == null) {
                 //MainActivity.lv =
+<<<<<<< HEAD
                 ListView lv = (ListView) rootView.findViewById(R.id.fragmentListView);
+=======
+                ListView lv = (ListView) rootView.findViewById(R.id.fragment_listview);
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
             //}
            // if (MainActivity.la == null) {
              MainActivity.ListViewAdapter la = new MainActivity.ListViewAdapter(ma, ma.store_list);
                lv.setAdapter(la);
             //}
+<<<<<<< HEAD
 
+=======
+            showProgressBar(false, this.rootView);
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 
             ma.showGoogleMaps(rootView, ma.store_list);
             //if (MainActivity.srl.isRefreshing()) MainActivity.srl.setRefreshing(false);
         } catch (JSONException e) {
+<<<<<<< HEAD
            // TextView tv = (TextView) rootView.findViewById(R.id.fragment_text_view);
             //tv.setText("Network Error. Connection is down. Please be patient while the problem is being fixed.");
+=======
+            TextView tv = (TextView) rootView.findViewById(R.id.fragment_text_view);
+            tv.setText("Network Error. Connection is down. Please be patient while the problem is being fixed.");
+>>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
             e.printStackTrace();
         }
     }

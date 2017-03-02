@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "378770903898",
+    "firebase_url": "https://acba-reserve-me.firebaseio.com",
+    "project_id": "acba-reserve-me",
+    "storage_bucket": "acba-reserve-me.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:378770903898:android:b6470d8ca02497b5",
+        "android_client_info": {
+          "package_name": "app.reservation.acbasoftare.com.reservation"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "378770903898-13t44u0p3rm8a77ioiqj2q52jmb06ssr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.reservation.acbasoftare.com.reservation",
+            "certificate_hash": "365580E10069CD1E1DAFF06B2E3D42B3BBD74E40"
+          }
+        },
+        {
+          "client_id": "378770903898-h7f8e3n2cf1t1br4ap4t99kg269ascu2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.reservation.acbasoftare.com.reservation",
+            "certificate_hash": "31338FE7CC5DA58A37CC7AE0BE0BDE4AF1A16009"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1-9OwAZ-OQJrgN2hz7sOpt2NacJjraLw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,122 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="app.reservation.acbasoftare.com.reservation.Fragments.ReservationFragment"
+             android:id="@+id/fragment_reservation_id"
+
+    >
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <TextView
+            android:text="Available Times:\n"
+            android:layout_width="384dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/heading_tab3_textview"
+            android:textSize="24sp"
+            android:textColor="@color/colorPrimary"
+            android:textAlignment="center"
+            android:background="@android:color/background_dark"
+            android:textStyle="normal|bold"
+            tools:layout_editor_absoluteX="0dp"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <Spinner
+            android:layout_width="0dp"
+            android:id="@+id/spinner_times"
+            android:layout_marginStart="8dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginRight="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/heading_tab3_textview"
+            android:layout_height="70dp"/>
+
+        <Button
+            android:text="Reserve"
+            android:layout_width="316dp"
+            android:layout_height="56dp"
+            android:id="@+id/button_reserve_appointment"
+            android:layout_marginStart="16dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginLeft="16dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginRight="16dp"
+            app:layout_constraintHorizontal_bias="0.44"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/EditText_comment"/>
+
+        <Button
+            android:text="Cancel"
+            android:layout_width="315dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/btn_back"
+            android:visibility="visible"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@+id/button_reserve_appointment"
+            android:layout_marginStart="16dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginLeft="16dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginRight="16dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:id="@+id/textView_stylist_tab3"
+            android:layout_marginStart="8dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginLeft="8dp"
+            android:textSize="24sp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginRight="8dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@+id/spinner_times"
+            android:background="@drawable/custom_border"
+            android:textColor="@android:color/background_dark"
+            android:textAlignment="center"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:id="@+id/textView_service_resactivity"
+            android:textSize="24sp"
+            android:layout_marginStart="8dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginRight="8dp"
+            android:textAlignment="center"
+            android:textColor="@android:color/background_dark"
+            app:layout_constraintTop_toBottomOf="@+id/textView_stylist_tab3"
+            android:layout_height="wrap_content"
+            android:background="@drawable/custom_border"
+            android:layout_marginTop="8dp"/>
+
+        <EditText
+            android:layout_width="352dp"
+            android:layout_height="82dp"
+            android:id="@+id/EditText_comment"
+            android:layout_marginStart="16dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            android:layout_marginLeft="16dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginRight="16dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/textView_service_resactivity"
+            android:hint="Optional comments..."
+            android:scrollbars="horizontal|vertical"
+            android:editable="true"/>
+    </android.support.constraint.ConstraintLayout>
+</FrameLayout>

@@ -3,6 +3,8 @@ package app.reservation.acbasoftare.com.reservation.App_Objects;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.text.DecimalFormat;
+
 /**
  * Created by user on 2016-08-06.
  */
@@ -35,6 +37,68 @@ public class Stylist implements Parcelable, Comparable<Stylist> {
 
     public String getId() {
         return id;
+    }
+
+
+
+    /**
+     * THIS WILL BE FOR A STORE NO PREFERENCE ACCOUNT. JUST A DUMMY VARIABLE TO ADD TO FIREBASE URL: stylists/store_number/id/{obj}
+     */
+
+    public Stylist(FirebaseStore store, boolean nopref) {
+        if (nopref) {
+            this.fname = "NO PREFERENCE";
+            this.mname = "";
+            this.lname = "";
+            this.name = "NO PREFERENCE";
+            this.id = "-1";
+            this.phone = store.getPhone();
+            this.wait = 0;
+            this.available = true;
+        }
+    }
+    public Stylist(FirebaseStore store, String name, String username, String userPhone){
+            this.convertName(name);
+            DecimalFormat df = new DecimalFormat("####");
+            this.id = df.format(username.hashCode());
+            this.phone = userPhone;//default owner phonenumber...no changed to user phone
+            this.wait = 0;
+            this.available = true;
+
+    }
+
+
+    /**
+     * REGISTER EMPLOYEE BY OWNER
+     * Usage: owner logs in and creates a firebase employee with app_username email and default
+     * password = store_phone. Then the employee is able to log in and customize their settings.
+     * @param emp
+     */
+    public Stylist(FirebaseEmployee emp ){
+       this.convertName(emp.getName());
+        DecimalFormat df = new DecimalFormat("####");
+        this.id = df.format(emp.getApp_username().hashCode());
+        this.phone = emp.getPhone();
+        this.wait = 0;
+        this.available = false;
+    }
+
+    private void convertName(String fullname){
+        String[] name = fullname.split(" ");
+        if(name.length==3){
+            this.fname = name[0];
+            this.mname= name[1];
+            this.lname = name[2];
+        }else if(name.length==2){
+            this.fname = name[0];
+            this.lname = name[1];
+            this.mname = "";
+        }else{
+            this.fname = name[0];
+            this.mname="";
+            this.lname="";
+        }
+        this.name = this.getName();
     }
     //public String getImage_bytes() {return image_bytes;}
 

@@ -2,16 +2,14 @@ package app.reservation.acbasoftare.com.reservation.App_Objects;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-<<<<<<< HEAD
 
-import java.text.SimpleDateFormat;
-=======
-import android.util.Log;
+import com.google.android.gms.location.places.Place;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by user on 2/3/17.
@@ -25,6 +23,8 @@ public class FirebaseStore implements Parcelable , Comparable<FirebaseStore>{
     private long store_number;
     private double miles_away;
     private long current_ticket;
+
+    private Map<String,String> period; //google's naming of key: DAY - VALUE: X:XX AM/PM - Y:YY AM/PM
 
     public long getCurrent_ticket() {
         return current_ticket;
@@ -42,8 +42,26 @@ public class FirebaseStore implements Parcelable , Comparable<FirebaseStore>{
         this.miles_away = miles_away;
     }
 
+    public Map<String, String> getPeriod() {
+        return period;
+    }
+
     public FirebaseStore() {
     }
+    public FirebaseStore(Place p , long store_number, String email,String password , Map<String,String> period){
+        this.name = p.getName().toString();
+        this.address = p.getAddress().toString();
+        this.phone = p.getPhoneNumber().toString();
+        this.current_ticket = 1;
+        this.email = email;
+        this.citystate = p.getAddress().toString();
+        this.google_place_id= p.getId();
+        this.location = new LatLng(p.getLatLng().latitude,p.getLatLng().longitude);
+        this.store_number = store_number;
+        this.password = Encryption.encryptPassword(password);
+        this.period = period;
+    }
+
     public FirebaseStore(long sn, String name, String addr, String citystate, String phone, LatLng loc, double ticket_price, String open, String close, double cprice, String email, String password, String card_id, String subscription_id, String google) {
         this.store_number=sn;
         this.name=name;
@@ -78,6 +96,14 @@ public class FirebaseStore implements Parcelable , Comparable<FirebaseStore>{
         ticket_price = in.readDouble();
         reservation_calendar_price = in.readDouble();
         store_number = in.readLong();
+        int size = in.readInt();
+        for(int i = 0 ; i < size; ++i){
+            String key = in.readString();
+            String val = in.readString();
+            period.put(key,val);
+        }
+
+
     }
 
     public static final Creator<FirebaseStore> CREATOR = new Creator<FirebaseStore>() {
@@ -234,14 +260,15 @@ public class FirebaseStore implements Parcelable , Comparable<FirebaseStore>{
         parcel.writeDouble(ticket_price);
         parcel.writeDouble(reservation_calendar_price);
         parcel.writeLong(store_number);
-    }
-<<<<<<< HEAD
-public String toString(){
-    return this.name+" "+miles_away;
-}
-=======
 
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
+        parcel.writeInt(period.size());
+        for(Map.Entry<String,String> entry : period.entrySet()){
+            parcel.writeString(entry.getKey());
+            parcel.writeString(entry.getValue());
+        }
+    }
+
+
     @Override
     public int compareTo(FirebaseStore firebaseStore) {
         if(this.miles_away < firebaseStore.miles_away){
@@ -251,6 +278,12 @@ public String toString(){
         }else return 0;
     }
     public String formatHoursTo12hours(){
+        if(period!=null && period.size()>0){
+            return period.get(Calendar.getInstance().DAY_OF_WEEK);
+            //Calendar cal = Calendar.getInstance();
+            //String[] time = period.get(cal.DAY_OF_WEEK).split("-");
+            //return
+        }
         SimpleDateFormat h = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat sdf = new SimpleDateFormat("h:mm a");
         try{
@@ -269,11 +302,17 @@ public String toString(){
         try{
 
 
-            Date o = h.parse(this.open_time);
-            Date c = h.parse(this.close_time);
+            //Date o = h.parse(this.open_time);
+            //Date c = h.parse(this.close_time);
 
-            String now_time = h.format(new Date());
-            Date now = h.parse(now_time);
+           // String now_time = h.format(new Date());
+            //Date now = h.parse(now_time);
+            Calendar cal = Calendar.getInstance();
+            String[] time = period.get(cal.DAY_OF_WEEK).split("-");//
+            SimpleDateFormat ampm = new SimpleDateFormat("hh:mm a");
+            Date now =  ampm.parse(ampm.format(new Date()));
+            Date o =  ampm.parse(time[0]);
+            Date c= ampm.parse(time[1]);
 
             //Log.e("times::::::","o: "+o+" now: "+now+" c: "+c);
             open =   now.compareTo(o) >= 0 && now.compareTo(c) <= 0;
@@ -286,4 +325,14 @@ public String toString(){
             return "CLOSED TODAY";
         }
     }
+    @Override
+    public int hashCode(){
+        return this.name.hashCode() + String.valueOf(this.store_number).hashCode();
+    }
+    @Override
+    public  boolean equals(Object o){
+        FirebaseStore s = (FirebaseStore) o;
+        return  this.name.equalsIgnoreCase(s.name) || this.store_number==s.store_number || this.google_place_id.equalsIgnoreCase(s.google_place_id);
+    }
+
 }

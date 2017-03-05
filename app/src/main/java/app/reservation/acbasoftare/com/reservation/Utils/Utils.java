@@ -300,6 +300,7 @@ public class Utils {
     public static ArrayList<FirebaseStore> calculateDistance(Location myLoc, List<FirebaseStore> map, int radius) {
         ArrayList<FirebaseStore> list = new ArrayList<>();
         for(FirebaseStore store : map){//search keySet
+            if(store == null){continue;}
             double dist = Distance.calculateDistance(myLoc.getLatitude(),myLoc.getLongitude(),store.getLocation().latitude,store.getLocation().longitude);
             if(dist <= radius) {
                 store.setMiles_away(dist);

@@ -15,10 +15,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-<<<<<<< HEAD
-=======
-import android.support.annotation.StringDef;
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -32,10 +28,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
-<<<<<<< HEAD
-=======
-import android.view.KeyEvent;
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -75,20 +67,11 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseEmployee;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.R;
-<<<<<<< HEAD
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
-=======
-import app.reservation.acbasoftare.com.reservation.Utils.Utils;;
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.PREF_PASSWORD;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.PREF_USERNAME;
 
-<<<<<<< HEAD
-;
-
-=======
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 public class EmployeeActivity extends AppCompatActivity {
    // private SectionsPagerAdapter mSectionsPagerAdapter;
     /**
@@ -129,7 +112,7 @@ public class EmployeeActivity extends AppCompatActivity {
         //setSupportActionBar(toolbar);
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
-        mCustomFragPageAdapter = new EmployeeActivity.SectionsPagerAdapter(getSupportFragmentManager(), this);
+        mCustomFragPageAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), this);
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
@@ -214,11 +197,8 @@ public class EmployeeActivity extends AppCompatActivity {
             View rootView = null;
             switch (page - 1) {
                 case 0:
-<<<<<<< HEAD
                     rootView = inflater.inflate(R.layout.fragment_employee_settings_current_tickets, container, false); //inflater.inflate(R.layout.fragment_employee_today_layout, container, false);///this is the fragment view
-=======
-                    rootView = inflater.inflate(R.layout.fragment_employee_store_ticket_lists, container, false); //inflater.inflate(R.layout.fragment_employee_today_layout, container, false);///this is the fragment view
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
+
                     break;
                 case 1:
                     rootView = inflater.inflate(R.layout.fragment_employee_activity_settings_layout, container, false);  //rootView = inflater.inflate(R.layout.fragment_employee_upcoming_layout, container, false);
@@ -252,11 +232,9 @@ public class EmployeeActivity extends AppCompatActivity {
         }
 
         private void fragmentStoreList(View rootView) {
-<<<<<<< HEAD
+
            final ListView lv = (ListView) rootView.findViewById(R.id.mobile_tickets_lv);
-=======
-           final ListView lv = (ListView) rootView.findViewById(R.id.store_ticketlist_lv);
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
+
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("tickets/"+ea.firebaseEmployee.getStore_number());
             ref.addValueEventListener(new ValueEventListener() {
                 @Override
@@ -414,7 +392,7 @@ public class EmployeeActivity extends AppCompatActivity {
                 }
             };
             phone.addTextChangedListener(tw);
-<<<<<<< HEAD
+
 
             Button reset = (Button) rootView.findViewById(R.id.resetTicketBtn);
             reset.setOnClickListener(new View.OnClickListener() {
@@ -445,12 +423,12 @@ public class EmployeeActivity extends AppCompatActivity {
                     }).show();
                 }
             });
-
-
-=======
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
         }
 
+        /**
+         * UPDATES PHONE NUMBER FROM FIREBASE URL: stylists/store_number/sty_id/phone/
+         * @param phone
+         */
         private void updatePhone(final CharSequence phone) {
             new AlertDialog.Builder(this.ea).setTitle("Update Phone?").setMessage("This option will update the phone number for the app to: "+phone+".")
                     .setPositiveButton("Update", new DialogInterface.OnClickListener() {

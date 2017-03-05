@@ -38,6 +38,7 @@ import app.reservation.acbasoftare.com.reservation.WebTasks.WebService;
 
 /**
  * A login screen that offers login via email/password.
+ * ALSO REGISTER FOR A NEW SHOP
  */
 public class ShopLoginActivity extends Activity  {
 
@@ -206,8 +207,8 @@ public class ShopLoginActivity extends Activity  {
 
 
     private void registerToday() {
-            this.startActivity(new Intent(this,RegisterShopActivity.class));
-            //this.finish();
+            this.startActivity(new Intent(this,ShopRegristrationActivity.class));
+            this.finish();
     }
 
     private boolean isEmailValid(String email) {

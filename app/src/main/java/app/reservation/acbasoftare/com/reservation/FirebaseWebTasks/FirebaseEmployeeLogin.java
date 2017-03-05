@@ -78,9 +78,11 @@ public class FirebaseEmployeeLogin extends AsyncTask<String, Void, String> {
                 FirebaseEmployee temp = new FirebaseEmployee(user,pass);
                 GenericTypeIndicator<List<FirebaseEmployee>> gti= new GenericTypeIndicator<List<FirebaseEmployee>>(){};
                 List<FirebaseEmployee> list = dataSnapshot.getValue(gti);
+                int index = list.indexOf(temp);
                 pd.dismiss();
-                if(list.contains(temp)){//found
-                    loginSucces(list.get(list.indexOf(temp)));
+                if(index >= 0){//found
+                    temp = list.get(index);
+                    loginSucces(temp);//list.get(list.indexOf(temp)));
                 }else{//not found
                     //Log.e("user: ",user+" pass:"+pass);
                     showError();
@@ -97,11 +99,13 @@ public class FirebaseEmployeeLogin extends AsyncTask<String, Void, String> {
     }
     private void loginSucces(FirebaseEmployee emp){
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(c);
-
         pref.edit().putString(LoginActivity.PREF_USERNAME,emp.getApp_username()).putString(LoginActivity.PREF_PASSWORD, pass_orig).commit();
+
+
         Intent i = new Intent(c, EmployeeActivity.class);
         i.putExtra("employee",emp);
         c.startActivity(i);
+
     }
     private void showError() {
         emailView.setError("Username may be incorrect");

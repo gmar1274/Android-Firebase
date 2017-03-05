@@ -115,7 +115,7 @@
             android:layout_alignParentEnd="true"/>
 
         <Button
-            android:text="Shop Owner"
+            android:text="Shop Login/Sign up"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/storeLoginBtn"

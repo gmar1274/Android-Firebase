@@ -53,8 +53,8 @@
                 android:layout_marginRight="16dp"/>
 
             <ImageView
-                android:layout_width="200dp"
-                android:layout_height="137dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:id="@+id/imageView_employee_activity"
                 android:scaleType="centerCrop"
                 android:adjustViewBounds="true"
@@ -71,7 +71,7 @@
 
             <Button
                 android:text="Reset Tickets"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/resetTicketBtn"
                 android:layout_marginTop="16dp"
@@ -83,7 +83,9 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginEnd="16dp"
                 app:layout_constraintRight_toRightOf="parent"
-                android:layout_marginRight="16dp" />
+                android:layout_marginRight="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:layout_marginBottom="8dp" />
 
             <android.support.constraint.ConstraintLayout
                 android:orientation="vertical"
@@ -99,17 +101,48 @@
             android:id="@+id/linearLayout">
 
 
+                <AutoCompleteTextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/password_actv_emp_act"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toBottomOf="@+id/textView32"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginRight="16dp"
+                    android:password="true"
+                    android:hint="Update password"
+                    android:imeOptions="actionDone"
+                    android:inputType="textPassword"
+                    android:maxLines="1" />
+
+                <TextView
+                    android:text="NULL"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/sty_phon_textview_empAct"
+                    app:layout_constraintTop_toBottomOf="@+id/switchEmp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintLeft_toRightOf="@+id/textView23"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginTop="8dp" />
+
                 <TextView
                     android:text="Phone:"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" android:id="@+id/textView23"
-                    android:layout_marginStart="16dp"
-                    app:layout_constraintLeft_toLeftOf="parent" android:layout_marginLeft="16dp"
-                    app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="16dp"
-                    app:layout_constraintRight_toLeftOf="@+id/editTextEmployeePhone"
-                    android:layout_marginEnd="32dp" android:layout_marginRight="32dp"
                     android:textSize="14sp" android:textStyle="normal|bold"
-                    android:textColor="@android:color/background_dark"/>
+                    android:textColor="@android:color/background_dark"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
+                    app:layout_constraintTop_toTopOf="@+id/sty_phon_textview_empAct" />
 
                 <EditText
                         android:layout_width="wrap_content"
@@ -117,13 +150,15 @@
                         android:inputType="phone"
                         android:ems="10"
                         android:id="@+id/editTextEmployeePhone"
-                        app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="8dp"
-                        app:layout_constraintRight_toRightOf="parent"
-                        android:layout_marginTop="16dp"
-                        app:layout_constraintTop_toBottomOf="@+id/switchEmp"
-                        android:hint="Preffered contact number" android:singleLine="true"
-                        android:maxLength="10" app:layout_constraintVertical_bias="1.0"
-                        android:layout_marginEnd="16dp" android:layout_marginRight="16dp"/>
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:hint="Preffered contact number" android:singleLine="true"
+                        android:maxLength="10"
+                    android:layout_marginEnd="16dp" android:layout_marginRight="16dp"
+                    app:layout_constraintTop_toBottomOf="@+id/sty_phon_textview_empAct"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp" />
 
                 <TextView
                     android:text="Current Status:"
@@ -132,27 +167,60 @@
                     android:id="@+id/textView21"
                     android:textStyle="normal|bold" android:fontFamily="sans-serif"
                     android:textColor="@android:color/background_dark" android:textSize="14sp"
-                    android:layout_marginTop="16dp"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toTopOf="@+id/textView23"
-                    android:layout_marginBottom="16dp" android:layout_marginStart="16dp"
-                    app:layout_constraintLeft_toLeftOf="parent" android:layout_marginLeft="16dp"/>
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="16dp" />
+
+                <TextView
+                    android:text="N/A"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/ticketPrice_employee_empACT"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toBottomOf="@+id/editTextEmployeePhone"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintLeft_toRightOf="@+id/textView32"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginRight="16dp"
+                    app:layout_constraintBottom_toTopOf="@+id/password_actv_emp_act"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:text="Ticket Price:"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/textView32"
+                    app:layout_constraintTop_toBottomOf="@+id/editTextEmployeePhone"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:textStyle="normal|bold"
+                    android:textColor="@android:color/background_dark" />
 
                 <Switch
                         android:textOn="Active"
                         android:textOff="Not Active"
                         android:layout_height="wrap_content"
 
-                        android:layout_marginStart="32dp"
-                        app:layout_constraintLeft_toRightOf="@+id/textView21" android:layout_marginLeft="32dp"
-                        android:layout_width="0dp"
-                        android:layout_marginEnd="16dp" app:layout_constraintRight_toRightOf="parent"
-                        android:layout_marginRight="16dp" android:layout_marginTop="16dp"
-                        app:layout_constraintTop_toTopOf="parent" android:textSize="24sp"
+                    android:layout_width="wrap_content"
+                    android:textSize="24sp"
                         android:id="@+id/switchEmp"
-                        />
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintLeft_toRightOf="@+id/textView21"
+                    android:layout_marginLeft="8dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginRight="16dp" />
 
             </android.support.constraint.ConstraintLayout>
+
         </android.support.constraint.ConstraintLayout>
     </ScrollView>
 

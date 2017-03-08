@@ -40,7 +40,20 @@ public class Stylist implements Parcelable, Comparable<Stylist> {
     }
 
 
-
+    /**
+     * DEFAULT ADD by store owner.
+     * @param id - stylist ID
+     * @param name - sty name
+     * @param store_id - store number
+     */
+    public Stylist(String name, String id, String store_id){
+        this.convertName(name);
+        this.id = id;
+        this.store_id = store_id;
+        this.phone = "";
+        this.wait = 0;
+        this.available = false;
+    }
     /**
      * THIS WILL BE FOR A STORE NO PREFERENCE ACCOUNT. JUST A DUMMY VARIABLE TO ADD TO FIREBASE URL: stylists/store_number/id/{obj}
      */

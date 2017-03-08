@@ -10,6 +10,7 @@ import android.util.Base64;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,10 +18,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
+
+import static android.os.Build.VERSION_CODES.M;
 
 /**
  * Created by user on 12/6/16.
@@ -223,6 +227,13 @@ public class Utils {
 
     public static String formatPhoneNumber(String phone) {
         if(phone==null || phone.length()<10)return "N/A";
+        else if(phone.length()==11){
+            phone = phone.substring(1,phone.length());
+            String f=phone.substring(0,3);
+            String ff = phone.substring(3,6);
+            String fff =phone.substring(6,10);
+            return "+1("+f+")"+ff+"-"+fff;
+        }
         String f=phone.substring(0,3);
         String ff = phone.substring(3,6);
         String fff =phone.substring(6,10);
@@ -310,5 +321,29 @@ public class Utils {
         Collections.sort(list);
         map.clear();
         return list;
+    }
+
+    public static String generateID(String s) {
+        DecimalFormat df = new DecimalFormat("####");
+        return df.format(s.hashCode());
+    }
+
+    public static boolean isValidEmail(String email) {
+        return email.contains("@") && email.contains(".") && email.length()>=5;
+    }
+
+    public static boolean isValidPassword(String pass) {
+        return pass!=null && pass.length()>=6;
+    }
+    public static Map<String,String> testPeriodMap(){
+        final Map<String, String> period = new HashMap<String, String>();
+        period.put(1 + "", "5:00 AM-11:00 PM");
+        period.put(2 + "",  "5:00 AM-11:00 PM");
+        period.put(3 + "",  "5:00 AM-11:00 PM");
+        period.put(4 + "",  "5:00 AM-11:00 PM");
+        period.put(5 + "", "5:00 AM-11:00 PM");
+        period.put(6 + "",  "5:00 AM-11:00 PM");
+        period.put(7 + "",  "5:00 AM-11:00 PM");
+        return period;
     }
 }

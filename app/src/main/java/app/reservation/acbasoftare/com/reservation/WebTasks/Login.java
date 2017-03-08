@@ -109,12 +109,12 @@ public class Login extends AsyncTask<String, Void, String> {
                String stylist_id= obj.getString("stylist_id");
                if(success && isNormalUser(login_type) ){
                    if (pref != null) {
-                       pref.edit().putString(LoginActivity.PREF_USERNAME, emailView.getText().toString()).putString(LoginActivity.PREF_PASSWORD, passView.getText().toString()).commit();
+                      // pref.edit().putString(PREF_USERNAME, emailView.getText().toString()).putString(PREF_PASSWORD, passView.getText().toString()).commit();
                    }
                    a.startActivity(new Intent(a,MainActivity.class));
                }else if(success && isStylist(login_type)){
                    if (pref != null) {
-                       pref.edit().putString(LoginActivity.PREF_USERNAME, emailView.getText().toString()).putString(LoginActivity.PREF_PASSWORD, passView.getText().toString()).commit();
+                      // pref.edit().putString(PREF_USERNAME, emailView.getText().toString()).putString(PREF_PASSWORD, passView.getText().toString()).commit();
                    }
                    Intent intent = new Intent(a, EmployeeActivity.class);
                    intent.putExtra("store_id",store_id);

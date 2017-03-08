@@ -1,16 +1,33 @@
 package app.reservation.acbasoftare.com.reservation.App_Objects;
 
+import com.google.android.gms.location.places.Place;
+
+import app.reservation.acbasoftare.com.reservation.Utils.Utils;
+
 /**
  * Created by user on 2/3/17.
  */
 
-public class FirebaseStoreMetaData {
+public class FirebaseStoreMetaData implements Comparable {
 
     private long store_number;
     private String phone,google_place_id;
     private LatLng location;
     public FirebaseStoreMetaData(){
 
+    }
+
+    /**
+     * STORE REGISTRATION
+     * @param store
+     * @param place
+     */
+    public FirebaseStoreMetaData(FirebaseStore store, Place place) {
+        this.store_number = store.getStore_number();
+        this.phone = Utils.formatPhoneNumber(place.getPhoneNumber().toString());
+        this.google_place_id = place.getId();
+        LatLng loc = new LatLng(place.getLatLng().latitude,place.getLatLng().longitude);
+        this.location = loc;
     }
 
     public String getGoogle_place_id() {
@@ -50,4 +67,24 @@ public class FirebaseStoreMetaData {
     public LatLng getLocation() {
         return location;
     }
+
+    @Override
+    public int compareTo(Object o) {
+        FirebaseStoreMetaData m = (FirebaseStoreMetaData) o;
+        if(this.store_number<m.store_number)return -1;
+        else if(this.store_number>m.store_number)return 1;
+        return 0;
+    }
+    @Override
+    public boolean equals(Object o){
+        FirebaseStoreMetaData m = (FirebaseStoreMetaData) o;
+        return this.google_place_id.equals(m.getGoogle_place_id());
+    }
+    @Override
+    public int hashCode(){
+        return this.google_place_id.hashCode();
+    }
+
+
+
 }

@@ -38,7 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/owner_name_acv"
-        android:hint="Full Name"
+        android:hint="Your Full Name"
         android:inputType="textPersonName" />
 
     <AutoCompleteTextView

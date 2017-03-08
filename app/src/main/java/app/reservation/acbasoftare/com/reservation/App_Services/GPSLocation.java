@@ -11,6 +11,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
@@ -19,7 +21,7 @@ import android.widget.Toast;
 /**
  * Created by user on 2016-11-07.
  */
-public class GPSLocation extends Service implements LocationListener {
+public class GPSLocation extends Service implements LocationListener, Parcelable {
     private Context mContext;
     // flag for GPS status
     boolean isGPSEnabled = false;
@@ -44,6 +46,29 @@ public class GPSLocation extends Service implements LocationListener {
         getLocation();
 
     }
+
+    protected GPSLocation(Parcel in) {
+        isGPSEnabled = in.readByte() != 0;
+        isNetworkEnabled = in.readByte() != 0;
+        canGetLocation = in.readByte() != 0;
+        location = in.readParcelable(Location.class.getClassLoader());
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        error = in.readByte() != 0;
+    }
+
+    public static final Creator<GPSLocation> CREATOR = new Creator<GPSLocation>() {
+        @Override
+        public GPSLocation createFromParcel(Parcel in) {
+            return new GPSLocation(in);
+        }
+
+        @Override
+        public GPSLocation[] newArray(int size) {
+            return new GPSLocation[size];
+        }
+    };
+
     public boolean isPermissionError(){return  this.error;}
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         switch (requestCode) {
@@ -222,4 +247,19 @@ public class GPSLocation extends Service implements LocationListener {
         }
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeByte((byte) (isGPSEnabled ? 1 : 0));
+        parcel.writeByte((byte) (isNetworkEnabled ? 1 : 0));
+        parcel.writeByte((byte) (canGetLocation ? 1 : 0));
+        parcel.writeParcelable(location, i);
+        parcel.writeDouble(latitude);
+        parcel.writeDouble(longitude);
+        parcel.writeByte((byte) (error ? 1 : 0));
+    }
 }

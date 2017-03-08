@@ -90,6 +90,7 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
+import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
 import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
 import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebTasks;
 import app.reservation.acbasoftare.com.reservation.R;
@@ -307,7 +308,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // LoginActivity.debugDisplayGPS(this);
-        user_loc = LoginActivity.gps.getLocation();
+        GPSLocation gps=  this.getIntent().getParcelableExtra("gps");
+        user_loc = gps.getLocation();
         mv = null;
         gm = null;
         mPublisherInterstitialAd = new PublisherInterstitialAd(this);
@@ -1278,14 +1280,15 @@ public class MainActivity extends AppCompatActivity {
             if (ma.store_list != null) {//empty list if not null
                 ma.store_list.clear();
             }
-            DatabaseReference db_ref = FirebaseDatabase.getInstance().getReference().child("user");
+            DatabaseReference db_ref = FirebaseDatabase.getInstance().getReference().child("user/");
             db_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
+                    Log.e("Values:",dataSnapshot.getValue().toString());
                     if (dataSnapshot.getValue() == null) return;
-                    GenericTypeIndicator<List<FirebaseStore>> gti = new GenericTypeIndicator<List<FirebaseStore>>() {
-                    };
+                    GenericTypeIndicator<List<FirebaseStore>> gti = new GenericTypeIndicator<List<FirebaseStore>>() {};
                     List<FirebaseStore> map = dataSnapshot.getValue(gti);
+                    Log.e("DS VALUES:",map.size()+"");
                     ma.store_list = Utils.calculateDistance(ma.user_loc, map, ma.miles);
 
                     ListView lv = (ListView) ma.mCustomFragPageAdapter.getCurrentFragmentView(ma.mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_listview);

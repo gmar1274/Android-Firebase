@@ -62,8 +62,8 @@ import static com.google.api.client.http.HttpMethods.HEAD;
  */
 public class LoginActivity extends AppCompatActivity  {
     public static final boolean ADTESTING = false;//false means live
-    public static final String PREF_USERNAME = "username";
-    public static final String PREF_PASSWORD = "password";
+    public  final String PREF_USERNAME = "username";
+    public  final String PREF_PASSWORD = "password";
 
     public static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
     public static final String AD_AGE_DATE_STRING = "01/01/2005";
@@ -80,7 +80,7 @@ public class LoginActivity extends AppCompatActivity  {
     private EditText mPasswordView;
     private SharedPreferences pref;
     private PublisherInterstitialAd mPublisherInterstitialAd;
-    public static GPSLocation gps;
+    public  GPSLocation gps;
     private CallbackManager callbackManager;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -168,8 +168,10 @@ public class LoginActivity extends AppCompatActivity  {
             @Override
             public void onAdClosed() {
                 requestNewInterstitial();
-               Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                i.putExtra("gps",gps);
                 LoginActivity.this.startActivity(i);
+                LoginActivity.this.finish();
             }
         });
 
@@ -433,7 +435,7 @@ public void onStop(){
         // Showing Alert Message
         alertDialog.show();
     }
-public static void debugDisplayGPS(Activity a){
+public  void debugDisplayGPS(Activity a){
     Toast.makeText(a,"Updated GPS: "+gps.getLocation(),Toast.LENGTH_LONG).show();
 }
 }

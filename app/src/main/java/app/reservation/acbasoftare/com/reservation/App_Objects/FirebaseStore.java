@@ -23,7 +23,6 @@ public class FirebaseStore implements Parcelable , Comparable<FirebaseStore>{
     private long store_number;
     private double miles_away;
     private long current_ticket;
-
     private Map<String,String> period; //google's naming of key: DAY - VALUE: X:XX AM/PM - Y:YY AM/PM
 
     public long getCurrent_ticket() {
@@ -43,15 +42,19 @@ public class FirebaseStore implements Parcelable , Comparable<FirebaseStore>{
     }
 
     public Map<String, String> getPeriod() {
+        if(period == null){
+            period = new HashMap<>();
+        }
         return period;
     }
+    public void setPeriod(Map<String, String> period) {this.period = period;}
 
     public FirebaseStore() {
     }
     public FirebaseStore(Place p , long store_number, String email,String password , Map<String,String> period){
         this.name = p.getName().toString();
         this.address = p.getAddress().toString();
-        this.phone = p.getPhoneNumber().toString();
+        this.phone = p.getPhoneNumber().toString().replace(" ","").replace("+","").replace("-",""); ///strip +1 909-123-4567 to 19091234567
         this.current_ticket = 1;
         this.email = email;
         this.citystate = p.getAddress().toString();
@@ -332,7 +335,7 @@ public class FirebaseStore implements Parcelable , Comparable<FirebaseStore>{
     @Override
     public  boolean equals(Object o){
         FirebaseStore s = (FirebaseStore) o;
-        return  this.name.equalsIgnoreCase(s.name) || this.store_number==s.store_number || this.google_place_id.equalsIgnoreCase(s.google_place_id);
+        return  this.name.equalsIgnoreCase(s.name) && this.store_number==s.store_number && this.google_place_id.equalsIgnoreCase(s.google_place_id);
     }
 
 }

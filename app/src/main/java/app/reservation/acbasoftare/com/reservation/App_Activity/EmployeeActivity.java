@@ -28,13 +28,16 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -61,16 +64,18 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseEmployee;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.PREF_PASSWORD;
-import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.PREF_USERNAME;
 
 public class EmployeeActivity extends AppCompatActivity {
    // private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -149,6 +154,8 @@ public class EmployeeActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.log_out) {
             SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
+            String PREF_USERNAME = this.getIntent().getStringExtra("PREF_USERNAME");
+            String PREF_PASSWORD = this.getIntent().getStringExtra("PREF_PASSWORD");
             pref.edit().putString(PREF_USERNAME, null).putString(PREF_PASSWORD, null).commit();//debug clear memory of use
             Intent i = new Intent(this, LoginActivity.class);
             startActivity (i);
@@ -198,15 +205,12 @@ public class EmployeeActivity extends AppCompatActivity {
             switch (page - 1) {
                 case 0:
                     rootView = inflater.inflate(R.layout.fragment_employee_settings_current_tickets, container, false); //inflater.inflate(R.layout.fragment_employee_today_layout, container, false);///this is the fragment view
-
                     break;
                 case 1:
                     rootView = inflater.inflate(R.layout.fragment_employee_activity_settings_layout, container, false);  //rootView = inflater.inflate(R.layout.fragment_employee_upcoming_layout, container, false);
-                    //tab2=rootView;
                     break;
                 case 2:
-                    rootView = inflater.inflate(R.layout.fragment_employee_activity_settings_layout, container, false);
-                    // tab3=rootView;
+                    rootView = inflater.inflate(R.layout.fragment_employee_activity_store_settings_layout, container, false);
                     break;
             }
             return displayView(rootView, page - 1);
@@ -225,12 +229,179 @@ public class EmployeeActivity extends AppCompatActivity {
                     fragmentView2(rootView);
                     break;
                 case 2:
-                    //fragmentView2(rootView);
+                    fragmentViewStoreSettings(rootView);
                     break;
             }
             return rootView;
         }
 
+        private void fragmentViewStoreSettings(View rootView) {
+            final String storeURL = "user/"+ea.firebaseEmployee.getStore_number();
+            final DecimalFormat df = new DecimalFormat("$0.00");
+            final TextView price = (TextView)rootView.findViewById(R.id.ticketprice_Textview);
+
+
+            Button update = (Button)rootView.findViewById(R.id.updateTicketBTN);
+            final EditText ticket_et = (EditText)rootView.findViewById(R.id.editTextTicketPrice);
+            update.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(ticket_et.getText().length()==0){
+                        ticket_et.setError("Specify amount");
+                        return;
+                    }
+                    ticket_et.setError(null);
+                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(storeURL+"/ticket_price");
+                    ref.setValue(Double.valueOf(ticket_et.getText().toString())).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                         String msg="";
+                            if(task.isSuccessful()) {
+                             msg = "Ticket price updated!";
+                         }else{
+                             msg = "Oops. Something went wrong.";
+                         }
+                            Toast.makeText(ea,msg,Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            });/////end update ticekt price
+            DatabaseReference tprice_ref = FirebaseDatabase.getInstance().getReference().child(storeURL+"/ticket_price");
+            tprice_ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.getValue() == null)return;
+                    Double val = dataSnapshot.getValue(Double.class);
+                    price.setText(df.format(val));
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.e("err","ticket price err.");
+                }
+            });///end ticket price listner...
+            ///add storage for this store
+            Button addEmpBTN = (Button)rootView.findViewById(R.id.addStylistBTN);
+            addEmpBTN.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    addEmployee();
+                }
+            });
+            Button store_imageBTN = (Button)rootView.findViewById(R.id.uploadStorePicBTN);
+            store_imageBTN.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openImageGallery(2);
+                }
+            });
+            final ImageView store_pic = (ImageView)rootView.findViewById(R.id.imageView_store_pic);
+            final String  storageURL= ea.firebaseEmployee.getPhone()+"/images/stylists/-1";
+            StorageReference sr = FirebaseStorage.getInstance().getReference().child(storageURL);
+            sr.getBytes(10*1024*1024).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    store_pic.setImageBitmap(Utils.convertBytesToBitmap(bytes));
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+
+        }////////////////////////////////////end method third tab
+
+        /**
+         * THIS method will create a Alert dialog with a layout that take the stylist NAME and EMAIL and will
+         * GENERATE a user account and stylist for the shop.
+         */
+        private void addEmployee(){
+            View rootView = ea.getLayoutInflater().inflate(R.layout.add_employee_layout,null,false);
+            final String store_id = ea.firebaseEmployee.getStore_number();
+            //show a alert dialog to let email of the stylist and defualt password is store phone_number
+            final AutoCompleteTextView sty_name = (AutoCompleteTextView)rootView.findViewById(R.id.stylistname_actv_alert);
+
+            final AutoCompleteTextView sty_email = (AutoCompleteTextView)rootView.findViewById(R.id.styEmailNewUser_atv_alert);
+
+
+
+            new AlertDialog.Builder(ea).setTitle("New Stylist").setMessage("Create new user by entering the email of the stylist. The defualt password is your" +
+                    " shop's phone number: "+ea.firebaseEmployee.getStore_phone()+". Once submitted your stylist is ready to login and customize their profile!")
+                    .setView(rootView).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            }).setPositiveButton("Create Stylist", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    String name = sty_name.getText().toString();
+                    String id = Utils.generateID(sty_email.getText().toString());
+                    String email = sty_email.getText().toString();
+                    if(!Utils.isValidEmail(email)){
+                        sty_email.setError("Enter a valid email");
+                        return;
+                    }
+                    sty_email.setError(null);
+                    final Stylist emp = new Stylist(name,id,store_id);
+                    final FirebaseEmployee fe = new FirebaseEmployee(ea.firebaseEmployee,emp,email);
+                    final DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("employees/");
+                    ref.runTransaction(new Transaction.Handler() {
+                        @Override
+                        public Transaction.Result doTransaction(MutableData mutableData) {
+                            GenericTypeIndicator<Map<String,FirebaseEmployee>> gti = new GenericTypeIndicator<Map<String, FirebaseEmployee>>() {};
+                            Map<String, FirebaseEmployee>map = null;
+                            if(mutableData.getValue() == null){//nothing there
+                                map = new HashMap<String, FirebaseEmployee>();
+                            }else{
+                                map = mutableData.getValue(gti);
+                            }
+                            map.put(String.valueOf(fe.getApp_username().hashCode()),fe);
+                            mutableData.setValue(map);
+                            return Transaction.success(mutableData);
+                        }
+
+                        @Override
+                        public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                            Log.e("finished"," adding user to app.");
+                        }
+                    });/////////end add app to app
+                    final String styURL = "stylists/"+fe.getStore_number()+"/";//stylists/store_number/{map of sty}
+                    final DatabaseReference sty_ref = FirebaseDatabase.getInstance().getReference().child(styURL);
+                    sty_ref.runTransaction(new Transaction.Handler() {
+                        @Override
+                        public Transaction.Result doTransaction(MutableData mutableData) {
+                            GenericTypeIndicator<Map<String,Stylist>> gti = new GenericTypeIndicator<Map<String, Stylist>>() {};
+                            Map<String,Stylist> map = null;
+                            if(mutableData.getValue() == null){
+                                map = new HashMap<String, Stylist>();
+                            }else{
+                                map = mutableData.getValue(gti);
+                            }
+                            map.put(emp.getId(),emp);
+                            mutableData.setValue(map);
+                            return Transaction.success(mutableData);
+                        }
+
+                        @Override
+                        public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                                String msg = "";
+                            if(databaseError!=null && databaseError.toException()!=null){
+                                msg = "Oops. Something went wrong. Contact ACBA for help.";
+                            }else{
+                                msg = "Stylist added!";
+                            }
+                            Toast.makeText(ea,msg,Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            }).show();
+        }
+
+        /**
+         * FIRST TAB DISPLAYS ALL STORE TICKETS
+         * @param rootView
+         */
         private void fragmentStoreList(View rootView) {
 
            final ListView lv = (ListView) rootView.findViewById(R.id.mobile_tickets_lv);
@@ -328,6 +499,7 @@ public class EmployeeActivity extends AppCompatActivity {
         }
 
         private void fragmentView2(final View rootView) {
+
             if (ea.firebaseEmployee != null) {
                 StorageReference sr = FirebaseStorage.getInstance().getReference().child(ea.firebaseEmployee.getStore_phone() + "/images/stylists/" + ea.firebaseEmployee.getId());
                 sr.getBytes(1024 * 1024 * 10).addOnSuccessListener(new OnSuccessListener<byte[]>() {
@@ -346,7 +518,7 @@ public class EmployeeActivity extends AppCompatActivity {
             b.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    openImageGallery();
+                    openImageGallery(1);
                 }
             });
             final Switch avail = (Switch) rootView.findViewById(R.id.switchEmp);
@@ -377,6 +549,8 @@ public class EmployeeActivity extends AppCompatActivity {
 
                 }
             });
+            final TextView phoneTV = (TextView)rootView.findViewById(R.id.sty_phon_textview_empAct);
+            phoneTV.setText(Utils.formatPhoneNumber(ea.firebaseEmployee.getPhone()));
             EditText phone = (EditText)rootView.findViewById(R.id.editTextEmployeePhone);
             TextWatcher tw = new TextWatcher() {
                 public void afterTextChanged(Editable s){
@@ -387,7 +561,7 @@ public class EmployeeActivity extends AppCompatActivity {
                 }
                 public void  onTextChanged (CharSequence s, int start, int before,int count) {
                     if(s.length()==10){
-                        updatePhone(s);
+                        updatePhone(s,phoneTV);
                     }
                 }
             };
@@ -398,7 +572,7 @@ public class EmployeeActivity extends AppCompatActivity {
             reset.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    new AlertDialog.Builder(ea).setTitle("Reset Ticket Counter?").setMessage("This option will set the next available ticket to 1.").setIcon(ea.getDrawable(android.R.drawable.ic_dialog_alert)).
+                    new AlertDialog.Builder(ea).setTitle("Reset Ticket Counter?").setMessage("This option will set the next available ticket to 1.").setIcon(ea.getResources().getDrawable(android.R.drawable.ic_dialog_alert)).
                             setPositiveButton("Reset", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
@@ -422,14 +596,104 @@ public class EmployeeActivity extends AppCompatActivity {
                         }
                     }).show();
                 }
+            });//////////BUTON RESET TICKETS
+
+
+            final TextView tprice = (TextView)rootView.findViewById(R.id.ticketPrice_employee_empACT);
+            FirebaseDatabase.getInstance().getReference().child("stylists/"+ea.firebaseEmployee.getStore_phone()+"/"+ea.firebaseEmployee.getId()+"/ticket_price")
+                    .addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.getValue() == null){
+                                tprice.setText("N/A");
+                                return;
+                            }
+                            Double price = dataSnapshot.getValue(Double.class);
+                            DecimalFormat df = new DecimalFormat("$ 0.00");
+                            tprice.setText(df.format(price));
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });/////////get the ticket price
+            final AutoCompleteTextView password_tv = (AutoCompleteTextView)rootView.findViewById(R.id.password_actv_emp_act);
+            password_tv.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(TextView textView, int action, KeyEvent keyEvent) {
+                    if(action == EditorInfo.IME_ACTION_DONE){////DONE was pressed
+                        if(!Utils.isValidPassword(password_tv.getText().toString())){
+                            password_tv.setError("Passoword needs to be at least 6 characters.");
+                            return false;
+                        }
+                        password_tv.setError(null);
+
+                        View changePasswordView = ea.getLayoutInflater().inflate(R.layout.password_change_alert_view,null,false);
+                        final EditText curr_pass_tf = (EditText)changePasswordView.findViewById(R.id.editText_current_password_alertview);
+                        //create alert dialog
+                        new AlertDialog.Builder(ea).setTitle("Password Change Requested").setMessage("Enter your current password to update new password.")
+                                .setIcon(ea.getResources().getDrawable(android.R.drawable.ic_dialog_alert)).setView(changePasswordView).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                            }
+                        }).setPositiveButton("Update Password", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+
+                                String new_pass = Encryption.encryptPassword(password_tv.getText().toString());
+                                String curr_pass = Encryption.encryptPassword(curr_pass_tf.getText().toString());
+                                if(curr_pass.equals(ea.firebaseEmployee.getApp_password())){
+                                    final String styURL = "employees/";
+                                    final FirebaseEmployee fe = ea.firebaseEmployee;
+                                    fe.setApp_password(new_pass);/////change password
+                                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(styURL);
+                                    ref.runTransaction(new Transaction.Handler() {
+                                        @Override
+                                        public Transaction.Result doTransaction(MutableData mutableData) {
+                                            GenericTypeIndicator<Map<String,FirebaseEmployee>> gti = new GenericTypeIndicator<Map<String, FirebaseEmployee>>() {};
+                                            Map<String,FirebaseEmployee> map = null;
+                                            if(mutableData.getValue() == null){
+                                                map = new HashMap<String, FirebaseEmployee>();
+                                            }else{
+                                                map = mutableData.getValue(gti);
+                                            }
+                                            map.put(Utils.generateID(fe.getApp_username()),fe);//update object
+                                            mutableData.setValue(map);
+                                            return Transaction.success(mutableData);
+                                        }
+
+                                        @Override
+                                        public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                                            String msg = "";
+                                            if(databaseError!=null && databaseError.toException()!=null){
+                                                databaseError.toException().printStackTrace();
+                                                msg="Oops. Something went wrong. Contact ACBA password was not changed.";
+                                            }else{
+                                                msg = "Success! Password updated.";
+                                            }
+                                            Toast.makeText(ea,msg,Toast.LENGTH_LONG).show();
+                                        }
+                                    });
+                                }else{
+                                    Toast.makeText(ea,"Password does not match current password. Call ACBA for help if you need.",Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }).show();
+                    }
+
+                    return false;
+                }
             });
+
         }
 
         /**
          * UPDATES PHONE NUMBER FROM FIREBASE URL: stylists/store_number/sty_id/phone/
          * @param phone
          */
-        private void updatePhone(final CharSequence phone) {
+        private void updatePhone(final CharSequence phone, final TextView phone_tv) {
             new AlertDialog.Builder(this.ea).setTitle("Update Phone?").setMessage("This option will update the phone number for the app to: "+phone+".")
                     .setPositiveButton("Update", new DialogInterface.OnClickListener() {
                         @Override
@@ -439,7 +703,7 @@ public class EmployeeActivity extends AppCompatActivity {
                             ref.setValue(phone.toString()).addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-
+                                    phone_tv.setText(Utils.formatPhoneNumber(phone.toString()));
                                     Toast.makeText(ea,"Phone updated!",Toast.LENGTH_LONG).show();
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
@@ -481,27 +745,29 @@ public class EmployeeActivity extends AppCompatActivity {
                 swt.execute();
             }
         }*/
+
+        /**
+         * requestCode ==1 then upload stylist image
+         * requestCode == 2 then upload STORE image
+         * @param requestCode
+         * @param permissions
+         * @param grantResults
+         */
         @Override
         public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
            // Log.e("On Request Permission", "RequestCode: " + requestCode);
-            switch (requestCode) {
-                case 1: {
-                    // If request is cancelled, the result arrays are empty.
-                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        galleryIntent();
-                    } else {
-                        // permission denied, boo! Disable the
-                        // functionality that depends on this permission.
-                    }
-                    return;
-                }
-                // other 'case' lines to check for other
-                // permissions this app might request
+
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                galleryIntent(requestCode);
+            } else {
+                // permission denied, boo! Disable the
+                // functionality that depends on this permission.
             }
         }
 
-        public void openImageGallery() {
-            galleryIntent();
+        public void openImageGallery(int result) {
+            galleryIntent(result);
             if (Build.VERSION.SDK_INT >= 23) {
                 // Here, thisActivity is the current activity
                 if (ContextCompat.checkSelfPermission(this.ea.getApplicationContext(),
@@ -514,23 +780,28 @@ public class EmployeeActivity extends AppCompatActivity {
                     } else {
                         ActivityCompat.requestPermissions(ea,
                                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                                1);
+                                result);
                     }
                 } else {
-                    galleryIntent();
+                    galleryIntent(result);
                 }
             } else {
-                galleryIntent();
+                galleryIntent(result);
             }
         }
 
-        private void galleryIntent() {
+        /**
+         * result == 1 then this will update the STYLIST's image
+         * result == 2 then this will update the STORES image
+         * @param result
+         */
+        private void galleryIntent(int result) {
             Intent intent = new Intent();
 // Show only images, no videos or anything else
             intent.setType("image/*");
             intent.setAction(Intent.ACTION_GET_CONTENT);
 // Always show the chooser (if there are multiple options available)
-            ea.startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
+            ea.startActivityForResult(Intent.createChooser(intent, "Select Picture"), result);
 
         }
 
@@ -612,6 +883,10 @@ public class EmployeeActivity extends AppCompatActivity {
         }
         @Override
         public int getCount() {
+            if(ea.firebaseEmployee.getType().toUpperCase().equalsIgnoreCase(FirebaseEmployee.TYPE.OWNER.toString()))
+            {
+                return 3;
+            }
             // Show 2 total pages.
             return 2;
         }
@@ -623,6 +898,8 @@ public class EmployeeActivity extends AppCompatActivity {
                     return "Current Tickets";//"Today's Appointments";
                 case 1:
                     return "User Settings";//"Upcoming Appointments";
+                case 2:
+                    return "Store Settings";
                 /*case 2:
                     return "User Settings";*/
             }
@@ -682,6 +959,49 @@ public class EmployeeActivity extends AppCompatActivity {
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                        // Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        Toast.makeText(EmployeeActivity.this,"Picture uploaded!",Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
+
+                //   UploadImageWebTask u = new UploadImageWebTask(bitmap);
+                //  u.execute();
+                //stylist.setBitmap(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else if(requestCode == 2 && resultCode == RESULT_OK && data != null && data.getData() != null){
+
+            Uri uri = data.getData();
+
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                // Log.d(TAG, String.valueOf(bitmap));
+                Fragment pf = this.mCustomFragPageAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+                // Log.e("pageeee: ## ", String.valueOf(pf==null));
+                ImageView imageView = (ImageView) pf.getView().findViewById(R.id.imageView_store_pic);
+                imageView.setImageBitmap(bitmap);
+                StorageReference sr = FirebaseStorage.getInstance().getReference().child(this.firebaseEmployee.getStore_phone()+"/images/stylists/-1");
+                // Get the data from an ImageView as bytes
+                imageView.setDrawingCacheEnabled(true);
+                imageView.buildDrawingCache();
+                bitmap = imageView.getDrawingCache();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+                byte[] bytes = baos.toByteArray();
+
+                UploadTask uploadTask = sr.putBytes(bytes);
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        Toast.makeText(EmployeeActivity.this,"Something went wrong... :(",Toast.LENGTH_LONG).show();    // Handle unsuccessful uploads
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                        // Uri downloadUrl = taskSnapshot.getDownloadUrl();
                         Toast.makeText(EmployeeActivity.this,"Picture uploaded!",Toast.LENGTH_SHORT).show();
                     }
                 });

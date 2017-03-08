@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import java.text.DecimalFormat;
 
+import app.reservation.acbasoftare.com.reservation.Utils.Utils;
+
 /**
  * Created by user on 2017-02-11.
  * THIS IS FOR THE APP LOGIN. FOR STORE WORKER AND EMPLOYEES ACTIVITY. SEE EMPLOYEEACTIVITY.java. for more details.
@@ -112,6 +114,22 @@ public class FirebaseEmployee implements Parcelable {
         this.store_phone = store_phone;
     }
 
+    /**
+     * THIS constructor is used by the owner when creating a new stylist to the
+     * @param fe
+     * @param s
+     */
+    public FirebaseEmployee(FirebaseEmployee fe, Stylist s, String email){
+        this.app_username = email;
+        this.app_password = Encryption.encryptPassword(fe.getStore_phone());//default phone store
+        this.store_phone= fe.store_phone;
+        this.type = TYPE.EMPLOYEE.toString();
+        this.store_number = fe.store_number;
+        this.phone = "N/A";
+        this.name = s.getName();
+        this.id = Utils.generateID(email);
+
+}
 
     public String getName() {
         return name;
@@ -188,6 +206,10 @@ public class FirebaseEmployee implements Parcelable {
         this.app_username = user;
     }
 
+    @Override
+    public int hashCode(){
+        return this.app_username.hashCode();
+    }
     public String toString() {
         return this.name + " " + store_number + " id:" + id;
     }

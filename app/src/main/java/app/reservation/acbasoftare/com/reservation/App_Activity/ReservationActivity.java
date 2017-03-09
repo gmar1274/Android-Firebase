@@ -147,9 +147,9 @@ public class ReservationActivity extends AppCompatActivity {
                 taken_list.add(dl);
             }//end of loop have all todays reservations
             //gett abs_lower and upper bounds
-            Date open_hour = Utils.getDateFromAGivenTime(today, store.getOpen_time());//in format of date time
-            Date closing_hour = Utils.getDateFromAGivenTime(today, store.getClose_time());//end bounds
-            list_formatted = Utils.getAvailableTimes(open_hour, closing_hour, taken_list, salon_service.getDuration().getMilliSeconds());
+           // Date open_hour = Utils.getDateFromAGivenTime(today, store.getOpen_time());//in format of date time
+            //Date closing_hour = Utils.getDateFromAGivenTime(today, store.getClose_time());//end bounds
+            //list_formatted = Utils.getAvailableTimes(open_hour, closing_hour, taken_list, salon_service.getDuration().getMilliSeconds());
 
             ArrayAdapter<String> adpt = new ArrayAdapter<String>(this.getApplicationContext(), R.layout.spinner_layout_time, list_formatted);
             s.setAdapter(adpt);

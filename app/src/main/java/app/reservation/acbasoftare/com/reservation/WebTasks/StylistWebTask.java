@@ -215,8 +215,7 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
 
     private void displayErr() {
         showProgressBar(false,rootView);
-        final TextView tvv = (TextView)rootView.findViewById(R.id.ta2_tv_error);
-        tvv.setText("No staff to display.");
+
         ma.stylists_list=null;
         initListView();
         //rootView.setVisibility(View.GONE);

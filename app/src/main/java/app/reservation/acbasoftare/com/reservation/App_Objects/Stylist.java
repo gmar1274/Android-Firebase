@@ -12,6 +12,7 @@ public class Stylist implements Parcelable, Comparable<Stylist> {
     private String fname, mname, lname,id,phone;
     private int wait;
     private boolean available;
+    private double ticket_price;
   //  private Bitmap image;
    // private String image_bytes;//Base64.encode(byte[]);
     private String store_id;
@@ -19,6 +20,20 @@ public class Stylist implements Parcelable, Comparable<Stylist> {
    // private long storeID;
     private int psuedo_wait = 0;
     private String readyBy;
+
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public double getTicket_price() {
+        return ticket_price;
+    }
+
+    public void setTicket_price(double ticket_price) {
+        this.ticket_price = ticket_price;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -192,7 +207,7 @@ public Stylist(){
 }
 
 
-public void setWait(int wait){
+    public void setWait(int wait){
     this.wait=wait;
 }
 
@@ -254,6 +269,7 @@ public void setWait(int wait){
         dest.writeString(this.store_id);
         dest.writeInt(this.psuedo_wait);
         dest.writeString(readyBy);
+        dest.writeDouble(ticket_price);
     }
 
     protected Stylist(Parcel in) {
@@ -267,6 +283,7 @@ public void setWait(int wait){
         this.store_id = in.readString();
         this.psuedo_wait = in.readInt();
         this.readyBy = in.readString();
+        this.ticket_price = in.readDouble();
     }
 
     public static final Creator<Stylist> CREATOR = new Creator<Stylist>() {

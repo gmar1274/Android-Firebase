@@ -269,7 +269,7 @@ public class ShopRegristrationActivity extends FragmentActivity {
                             map = new ArrayList<FirebaseStore>();
                             //no shops here...
                         }else {
-                            Log.d("CLASS: ",dataSnapshot.getValue().toString()+"\n"+dataSnapshot.getValue().getClass().getClassLoader()+"<<class");
+                            //Log.d("CLASS: ",dataSnapshot.getValue().toString()+"\n"+dataSnapshot.getValue().getClass().getClassLoader()+"<<class");
                             map = dataSnapshot.getValue(gti);
                         }
 

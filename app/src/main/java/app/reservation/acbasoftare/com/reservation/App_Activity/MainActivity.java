@@ -56,8 +56,10 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -97,16 +99,22 @@ import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Recycleview.RVAdapter;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
+import static android.R.attr.data;
+import static android.R.attr.key;
+import static android.os.Build.VERSION_CODES.M;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.AD_AGE_DATE_STRING;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.sdf;
+import static app.reservation.acbasoftare.com.reservation.R.id.map;
+import static app.reservation.acbasoftare.com.reservation.Utils.Utils.testPeriodMap;
 import static com.google.api.client.http.HttpMethods.HEAD;
 
 //import com.google.android.gms.maps.model.LatLng;
 
 public class MainActivity extends AppCompatActivity {
 
-    public final static boolean ADTESTING=false;//false means LIVE ads
-    public static HashMap<String,Bitmap> stylist_bitmaps;
+    public final static boolean ADTESTING = false;//false means LIVE ads
+    private  final long IMAGE_DOWNLOAD_LIMIT = 1024 * 1024 * 10 ;
+    public static HashMap<String, Bitmap> stylist_bitmaps;
     /**
      * The {@link ViewPager} that will host the section contents.
      */
@@ -193,8 +201,8 @@ public class MainActivity extends AppCompatActivity {
                 com.google.android.gms.maps.model.LatLng myLoc = new com.google.android.gms.maps.model.LatLng(MainActivity.this.user_loc.getLatitude(), MainActivity.this.user_loc.getLongitude());
                 gm.addMarker(new MarkerOptions()
 
-                                     .position(myLoc)
-                                     .title("My Loctaion").alpha(.5f)).setTag(-1);
+                        .position(myLoc)
+                        .title("My Loctaion").alpha(.5f)).setTag(-1);
 
 
                 for (FirebaseStore s : store_list) {
@@ -242,11 +250,11 @@ public class MainActivity extends AppCompatActivity {
                 startReservationActivity(d, s, stylist_adapter.getStylist(), ss_adapter.getSalonService());
                 *//**MainActivity.a.setContentView(R.layout.fragment_reservation);//////////////update view to fragment
 
-                 ReservationFragment newFragment = new ReservationFragment();
-                 newFragment.init(d,stylist_adapter.getStylist(),s,ss_adapter.getSalonService());
-                 FragmentTransaction transaction = a.getFragmentManager().beginTransaction();
-                 transaction.add(newFragment,null).commit();
-                 *//*//////////////////////////////////////////
+         ReservationFragment newFragment = new ReservationFragment();
+         newFragment.init(d,stylist_adapter.getStylist(),s,ss_adapter.getSalonService());
+         FragmentTransaction transaction = a.getFragmentManager().beginTransaction();
+         transaction.add(newFragment,null).commit();
+         *//*//////////////////////////////////////////
 >>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
 
                 // transaction.commit();//activates oncreate() from testing ive done...
@@ -300,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
         outState.putSerializable("stylist_bitmaps", stylist_bitmaps);
         outState.putBoolean("STYLIST_BITMAPS_LOADED", STYLIST_BITMAPS_LOADED);
         outState.putSerializable("sty_hm", sty_hm);
-        outState.putParcelable("store",store);
+        outState.putParcelable("store", store);
     }
 
     @Override
@@ -308,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // LoginActivity.debugDisplayGPS(this);
-        GPSLocation gps=  this.getIntent().getParcelableExtra("gps");
+        GPSLocation gps = this.getIntent().getParcelableExtra("gps");
         user_loc = gps.getLocation();
         mv = null;
         gm = null;
@@ -374,13 +382,12 @@ public class MainActivity extends AppCompatActivity {
                 if (stylists_list != null && stylists_list.size() > 0) {
                     noStaff = false;
                 } else noStaff = true;
-                if (position == 0) {
+                if (position == 0) {////////////FIRST STORE VIEW TAB NOTHING TO DO
                     //Appointment.reset();
                     return;
                 } else if (position == 1) {//second tab or LIVE FEED TAB//0,1,2 page numbers
                     AdView mAdView = (AdView) MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.adView_liveFeed);
                     AdRequest adRequest = null;
-
 
                     if (ADTESTING) {
                         adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
@@ -397,20 +404,22 @@ public class MainActivity extends AppCompatActivity {
                     }
                     mAdView.loadAd(adRequest);
 
-
-                   if(stylist_bitmaps!=null){
-                       stylist_bitmaps.clear();
-                   }else {
-                       stylist_bitmaps = new HashMap<String, Bitmap>();
-                   }
-                    if (stylists_list !=null) {
+                    if (stylist_bitmaps != null) {
+                        stylist_bitmaps.clear();
+                        stylist_bitmaps = null;
+                        stylist_bitmaps = new HashMap<String, Bitmap>();
+                    } else {
+                        stylist_bitmaps = new HashMap<String, Bitmap>();
+                    }
+                    if (stylists_list != null) {
                         stylists_list.clear();
-                    }else{
+                        stylists_list = null;
+                        stylists_list = new ArrayList<Stylist>();
+                    } else {
                         stylists_list = new ArrayList<Stylist>();
                     }
-                        FirebaseStore s = store_list.get(selectedPosition);
-                        store = s;
-
+                    FirebaseStore s = store_list.get(selectedPosition);
+                    store = s;
                     loadFirebaseStylist(s);
 
                     //mv.onCreate(savedInstanceState);
@@ -432,7 +441,7 @@ public class MainActivity extends AppCompatActivity {
 
             private void setUpRV3rdTab() {
 
-                RecyclerView  recyclerView_stylists = (RecyclerView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.rv_stylist_view);
+                RecyclerView recyclerView_stylists = (RecyclerView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.rv_stylist_view);
 
                 recyclerView_stylists.setHasFixedSize(true);
                 recyclerView_stylists.setAdapter(new RVAdapter<Stylist>(MainActivity.this, Utils.getArrayListStylist(stylists_list), R.layout.rv_stylist, true));
@@ -461,9 +470,9 @@ public class MainActivity extends AppCompatActivity {
         final ProgressDialog pd = ProgressDialog.show(this, "Searching", "Please Wait...", true, false);
         pd.show();
 
-        if(sty_hm == null){
+        if (sty_hm == null) {
             this.sty_hm = new HashMap<>();
-        }else {
+        } else {
             this.sty_hm.clear();
         }
         if (stylists_list == null) {
@@ -473,8 +482,7 @@ public class MainActivity extends AppCompatActivity {
         }
         if (stylist_bitmaps != null) {
             stylist_bitmaps.clear();
-        }
-        else {
+        } else {
             stylist_bitmaps = new HashMap<String, Bitmap>();
         }
         DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("stylists/" + String.valueOf(store.getStore_number()));
@@ -499,14 +507,14 @@ public class MainActivity extends AppCompatActivity {
                 //got the stylists now need to get images
                 for (final Stylist sty : stylists_list) {
                     StorageReference sr = FirebaseStorage.getInstance().getReference().child(store.getPhone() + "/images/stylists/" + sty.getId());
-                    sr.getBytes(1024 * 1024 * 10).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    sr.getBytes(IMAGE_DOWNLOAD_LIMIT).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                         @Override
                         public void onSuccess(byte[] bytes) {
 
-                            Log.e("image success..","loaded success..");
-                            stylist_bitmaps.put( sty.getId(),Utils.convertBytesToBitmap(bytes));
+                            Log.e("image success..", "loaded success..");
+                            stylist_bitmaps.put(sty.getId(), Utils.convertBytesToBitmap(bytes));
                             if (stylists_list.size() == stylist_bitmaps.size()) {
-                                Log.e("all finished.","loaded all of pics...");
+                                Log.e("all finished.", "loaded all of pics...");
                                 pd.dismiss();
                                 predictTicketWait(store, stylists_list); //done with loading images
                             }
@@ -527,13 +535,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });//end getting data from firebase
 
-        DatabaseReference r = FirebaseDatabase.getInstance().getReference().child("user/"+store.getStore_number()+"/current_ticket");
+        DatabaseReference r = FirebaseDatabase.getInstance().getReference().child("user/" + store.getStore_number() + "/current_ticket");
         r.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.getValue() == null){
+                if (dataSnapshot.getValue() == null) {
                     store.setCurrent_ticket(1);
-                }else {
+                } else {
                     long ct = (long) dataSnapshot.getValue();
                     store.setCurrent_ticket(ct);
                 }
@@ -547,16 +555,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    public Fragment getCurrentFragmentDisplayFromMainAct(){
+
+    public Fragment getCurrentFragmentDisplayFromMainAct() {
         return this.mCustomFragPageAdapter.getCurrentFragmentView(this.mViewPager.getCurrentItem());
     }
 
     /***
      * THIS METHOD RUNS AFTER ALL STYLISTS AND BITMAPS ARE READY TO DISPLAY
-<<<<<<< HEAD
+     * <<<<<<< HEAD
+     * <p>
+     * =======
+     * >>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
      *
-=======
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
      * @param store
      * @param stylists_list
      */
@@ -567,14 +577,73 @@ public class MainActivity extends AppCompatActivity {
                 zeroOutStylsts(stylists_list);//reset wait to zero
                 if (dataSnapshot.getValue() == null) {
 
-                    initializeStylists(stylists_list,stylist_bitmaps);
+                    initializeStylists(stylists_list, stylist_bitmaps);
                     return;
                 }
                 GenericTypeIndicator<List<Ticket>> gti = new GenericTypeIndicator<List<Ticket>>() {
                 };
-/*
-<<<<<<< HEAD
+
+//<<<<<<< HEAD
                 try {
+                    List<Ticket> list = dataSnapshot.getValue(gti);
+
+                    if (list.size() == 0) {
+                        initializeStylists(stylists_list, stylist_bitmaps);
+                        return;
+                    }
+                    Ticket lastKnownTicket = list.get(list.size() - 1);
+                    TextView tv = (TextView) MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.nextAvailableTicket_tv);
+                    tv.setText(String.valueOf(lastKnownTicket.unique_id + 1));
+                    /////calculate algorithm for oredictive then display
+                    final Ticket user = new Ticket(lastKnownTicket);
+                    HashMap<String, PriorityQueue<Ticket>> queues = generateQueues(list, stylists_list, user);//every stylists should have sorted queue
+
+                    PriorityQueue<Ticket> no_pref = queues.get("-1");//-1 is a CONSTANT for STORE_NO_PREFERENCE STYLIST
+                    queues.remove("-1");//got what we needed now delete it
+                    boolean finished = false;
+                    while (no_pref.size() > 0 && finished == false) {//distrubute this queue to the rest of the stylists...
+                        for (String key : queues.keySet()) {
+                            Ticket no_p = no_pref.poll();
+                            if (no_p == null) {
+                                finished = true;
+                                break;
+                            } else {
+                                PriorityQueue<Ticket> pq = queues.get(key);
+                                pq.add(no_p);
+                                queues.put(key, pq);//update new queue
+                            }
+                        }
+                    }//at the end we should have sorted queues for each stylists
+                    int lowest_wait = Integer.MAX_VALUE;//used for no_preference to display approx wait time
+                    for (String key : queues.keySet()) {
+                        PriorityQueue<Ticket> pq = queues.get(key);
+                        Object[] o = pq.toArray();
+                        List<Ticket> relative = Arrays.asList(Arrays.copyOf(o, o.length, Ticket[].class));
+                        Collections.sort(relative);
+                        //Log.e("relative List:: ",relative.toString());
+                        int index = relative.indexOf(user);//is the wait for stylist
+                        Stylist temp = new Stylist(key);
+                        int sty_index = stylists_list.indexOf(temp);
+                        Stylist sty = stylists_list.get(sty_index);
+                        sty.setPsuedo_wait(index);////////////wait if user decides to chosse this stylist
+                        stylists_list.remove(sty_index);//update sty obbject
+                        stylists_list.add(sty_index, sty);
+                        if (sty.getPsuedo_wait() < lowest_wait) {
+                            lowest_wait = sty.getPsuedo_wait();
+                        }
+                    }
+                    Stylist s = stylists_list.get(0);/////get the store stylist
+                    s.setPsuedo_wait(lowest_wait);/////set the wait that is the lowest out of all stylists
+                    stylists_list.remove(0);//udpdate stylistlist
+                    stylists_list.add(0, s);
+                    sty_hm.put(s.getId(), s);
+                    initializeStylists(stylists_list, stylist_bitmaps);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                // FirebaseWebTasks.ListViewAdpaterStylist a = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this,0,stylists_list);
+//=======
+               /* try {
                     List<Ticket> list = dataSnapshot.getValue(gti);
 
                     if (list.size() == 0) {
@@ -631,79 +700,14 @@ public class MainActivity extends AppCompatActivity {
                     initializeStylists(stylists_list, stylist_bitmaps);
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
-                // FirebaseWebTasks.ListViewAdpaterStylist a = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this,0,stylists_list);
-=======*/
-               try {
-                   List<Ticket> list = dataSnapshot.getValue(gti);
+                }*/
 
-                   if (list.size() == 0) {
-                       initializeStylists(stylists_list, stylist_bitmaps);
-                       return;
-                   }
-                   Ticket lastKnownTicket = list.get(list.size() - 1);
-                   TextView tv = (TextView) MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.nextAvailableTicket_tv);
-                   tv.setText(String.valueOf(lastKnownTicket.unique_id + 1));
-                   /////calculate algorithm for oredictive then display
-                   final Ticket user = new Ticket(lastKnownTicket);
-                   HashMap<String, PriorityQueue<Ticket>> queues = generateQueues(list, stylists_list, user);//every stylists should have sorted queue
-
-                   PriorityQueue<Ticket> no_pref = queues.get("-1");//-1 is a CONSTANT for STORE_NO_PREFERENCE STYLIST
-                   queues.remove("-1");//got what we needed now delete it
-                   boolean finished = false;
-                   while (no_pref.size() > 0 && finished == false) {//distrubute this queue to the rest of the stylists...
-                       for (String key : queues.keySet()) {
-                           Ticket no_p = no_pref.poll();
-                           if (no_p == null) {
-                               finished = true;
-                               break;
-                           } else {
-                               PriorityQueue<Ticket> pq = queues.get(key);
-                               pq.add(no_p);
-                               queues.put(key, pq);//update new queue
-                           }
-                       }
-                   }//at the end we should have sorted queues for each stylists
-                   int lowest_wait= Integer.MAX_VALUE;
-                   for (String key : queues.keySet()) {
-                       PriorityQueue<Ticket> pq = queues.get(key);
-                       Object[] o = pq.toArray();
-                       List<Ticket> relative = Arrays.asList(Arrays.copyOf(o, o.length, Ticket[].class));
-                       Collections.sort(relative);
-                       //Log.e("relative List:: ",relative.toString());
-                       int index = relative.indexOf(user);//is the wait for stylist
-                       Stylist temp = new Stylist(key);
-                       int sty_index = stylists_list.indexOf(temp);
-                       Stylist sty = stylists_list.get(sty_index);
-                       sty.setPsuedo_wait(index);
-                       //sty.setWait(relative.size()-1);
-                       stylists_list.remove(sty_index);
-                       stylists_list.add(sty_index, sty);
-                       if(sty.getPsuedo_wait() < lowest_wait){
-                           lowest_wait = sty.getPsuedo_wait();
-                       }
-                   }
-                    Stylist s = stylists_list.get(0);
-                   s.setPsuedo_wait(lowest_wait);
-                   stylists_list.remove(0);
-                   stylists_list.add(0,s);
-                   sty_hm.put(s.getId(),s);
-                   initializeStylists(stylists_list, stylist_bitmaps);
-               }catch (Exception e ){
-                   e.printStackTrace();
-               }
-               // FirebaseWebTasks.ListViewAdpaterStylist a = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this,0,stylists_list);
-
-                /*ListView lv = (ListView)MainActivity.this.mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_livefeed_listview);
-                lv.setAdapter(null);
-                lv.setAdapter(a);*/
-                //store.setCurrent_ticket(list.get(0).getUnique_id());
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
-                initializeStylists(stylists_list,stylist_bitmaps);
+                initializeStylists(stylists_list, stylist_bitmaps);
             }
         });
 
@@ -712,10 +716,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void zeroOutStylsts(ArrayList<Stylist> stylists_list) {
         stylists_list.clear();
-        for (String id : this.sty_hm.keySet()){
+        for (String id : this.sty_hm.keySet()) {
             Stylist s = this.sty_hm.get(id);
             s.setWait(0);
-            this.sty_hm.put(id,s);
+            this.sty_hm.put(id, s);
             stylists_list.add(s);
         }
         Collections.sort(stylists_list);
@@ -724,26 +728,28 @@ public class MainActivity extends AppCompatActivity {
     /**
      * This method will maintain a sorted quuee for each stylist. We want this to then use in preparation for our predictive algorithm
      * We then will add a POTENTIAL TICKET that will act as if the user is already inthis list
-<<<<<<< HEAD
+     * <<<<<<< HEAD
+     * <p>
+     * =======
+     * >>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
      *
-=======
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
      * @param list
      * @param sty
      * @return
      */
 
-    private HashMap<String,PriorityQueue<Ticket>> generateQueues(List<Ticket> list, ArrayList<Stylist> sty, Ticket user){
-        HashMap<String,PriorityQueue<Ticket>> map = new HashMap<>();
+    private HashMap<String, PriorityQueue<Ticket>> generateQueues(List<Ticket> list, ArrayList<Stylist> sty, Ticket user) {
+        HashMap<String, PriorityQueue<Ticket>> map = new HashMap<>();
         //loop stylsits to populate all requested from the list of tickets..
-        for (Stylist s : sty){
+        for (Stylist s : sty) {
+            if(!s.isAvailable())continue;
             s.setWait(0);//zero out wait
-            this.sty_hm.put(s.getId(),s);
-            PriorityQueue<Ticket> pq  = new PriorityQueue<>();//add the user to each stylist to simulate the poostiion would be at
+            this.sty_hm.put(s.getId(), s);
+            PriorityQueue<Ticket> pq = new PriorityQueue<>();//add the user to each stylist to simulate the poostiion would be at
             pq.add(user);
-            map.put(s.getId(),pq);
+            map.put(s.getId(), pq);
         }
-        for(Ticket t : list){
+        for (Ticket t : list) {///////sort the tickets
             if (t != null) {
                 Stylist s = this.sty_hm.get(t.stylist_id);
                 s.incrementWait();
@@ -939,7 +945,7 @@ public class MainActivity extends AppCompatActivity {
 
         //dont even need the first parameter because when i check the lisckets i wi;; get the last of the ticekts in thye List<Ticket>
 
-        final Ticket t = new Ticket(store.getCurrent_ticket()+1, (sty.getWait() + 1) + "", cust_name, sty.getId(), sty.getName(), phone);//create the ticket
+        final Ticket t = new Ticket(store.getCurrent_ticket() + 1, (sty.getWait() + 1) + "", cust_name, sty.getId(), sty.getName(), phone);//create the ticket
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("tickets").child(String.valueOf(store.getStore_number()));
         /****
@@ -953,7 +959,7 @@ public class MainActivity extends AppCompatActivity {
                     };
                     List<Ticket> curr_values = mutableData.getValue(gti);//get all the entries that are in this url_path
 
-                    t.unique_id = curr_values.get(curr_values.size()-1).unique_id + 1; //get the lastest entry plus 1
+                    t.unique_id = curr_values.get(curr_values.size() - 1).unique_id + 1; //get the lastest entry plus 1
 
                     if (curr_values.contains(t)) {
                         t.unique_id += 1;//increment the store ticket
@@ -963,7 +969,7 @@ public class MainActivity extends AppCompatActivity {
                     mutableData.setValue(curr_values);
                 } else {//there was no entries in the url so create new List<Ticket> with the first entry
 
-                    t.unique_id = store.getCurrent_ticket()==0? 1: store.getCurrent_ticket();///first entry
+                    t.unique_id = store.getCurrent_ticket() == 0 ? 1 : store.getCurrent_ticket();///first entry
 
                     t.ticket_number = "1";
                     List<Ticket> l = new ArrayList<Ticket>();
@@ -988,7 +994,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-<<<<<<< HEAD
+     * <<<<<<< HEAD
      * This method will update the sale of the ticket and store it for the unique store by store_number.
      * FIREBASE: mobile-tickets/store_number/DATE/{hashMap or List of MOBILE TICKET RECIEPT..}
      *
@@ -1024,14 +1030,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-=======
->>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
+     * =======
+     * >>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
      * I want to restart all GUI for displaying stylists.
      *
      * @param list_stylist
      * @param stylist_bitmaps
      */
-    public void initializeStylists(ArrayList<Stylist> list_stylist, final HashMap<String,Bitmap> stylist_bitmaps) {
+    public void initializeStylists(ArrayList<Stylist> list_stylist, final HashMap<String, Bitmap> stylist_bitmaps) {
 
 
         stylists_list = new ArrayList<Stylist>(sty_hm.values());
@@ -1047,7 +1053,7 @@ public class MainActivity extends AppCompatActivity {
                 //Update selected stylist position  index
                 stylist_position = position;
 
-               final Stylist s = stylists_list.get(position);
+                final Stylist s = stylists_list.get(position);
 
 
                 ((FirebaseWebTasks.ListViewAdpaterStylist) adapterView.getAdapter()).notifyDataSetChanged();
@@ -1147,12 +1153,12 @@ public class MainActivity extends AppCompatActivity {
             else {
             }}*/
 
-      //  private void fragmentView2(View rootView) {
-      //      ma.rootView_Reservation = rootView;
+        //  private void fragmentView2(View rootView) {
+        //      ma.rootView_Reservation = rootView;
         //}
 
         private void fragmentView0(final View rootView) {
-          /// ma.rootView = rootView;
+            /// ma.rootView = rootView;
             final TextView miles = (TextView) rootView.findViewById(R.id.textView_distance);
             final SeekBar sb = (SeekBar) rootView.findViewById(R.id.seekBar_radius);
             sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -1234,7 +1240,7 @@ public class MainActivity extends AppCompatActivity {
             }
             Spinner spinner = (Spinner) rootView.findViewById(R.id.sortBySpinner);
             final String[] sort_arr = {"Distance", "Name"};
-            SpinnerDropDownAdapter a = new SpinnerDropDownAdapter(ma,R.id.spinnerDropDownTF,sort_arr);
+            SpinnerDropDownAdapter a = new SpinnerDropDownAdapter(ma, R.id.spinnerDropDownTF, sort_arr);
             //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(a);
             spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -1275,24 +1281,28 @@ public class MainActivity extends AppCompatActivity {
          * Then it populates the store list for program.
          */
         private void loadStoresFromFirebase() {
+            ma.store_list = new ArrayList<>();
             final ProgressDialog pd = ProgressDialog.show(ma, "Searching nearby stores", "Please wait...", true, false);
             pd.show();
             if (ma.store_list != null) {//empty list if not null
                 ma.store_list.clear();
             }
-            DatabaseReference db_ref = FirebaseDatabase.getInstance().getReference().child("user/");
+            DatabaseReference db_ref = FirebaseDatabase.getInstance().getReference().child("user");
             db_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Log.e("Values:",dataSnapshot.getValue().toString());
-                    if (dataSnapshot.getValue() == null) return;
-                    GenericTypeIndicator<List<FirebaseStore>> gti = new GenericTypeIndicator<List<FirebaseStore>>() {};
-                    List<FirebaseStore> map = dataSnapshot.getValue(gti);
-                    Log.e("DS VALUES:",map.size()+"");
+                    GenericTypeIndicator<List<FirebaseStore>> gti = new GenericTypeIndicator<List<FirebaseStore>>() {
+                    };
+                    List<FirebaseStore> map = null;
+                    if (dataSnapshot.getValue() == null) {
+                        map = new ArrayList<FirebaseStore>();
+                    } else {
+
+                        map = dataSnapshot.getValue(gti);
+                    }
                     ma.store_list = Utils.calculateDistance(ma.user_loc, map, ma.miles);
 
                     ListView lv = (ListView) ma.mCustomFragPageAdapter.getCurrentFragmentView(ma.mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_listview);
-
                     ListViewAdapter la = new ListViewAdapter(ma, ma.store_list);
                     lv.setAdapter(null);
                     lv.setAdapter(la);
@@ -1373,7 +1383,7 @@ public class MainActivity extends AppCompatActivity {
             TextView t = (TextView) rowView.findViewById(R.id.shopNameTextView);
             t.setText(store.getName());
             TextView tt = (TextView) rowView.findViewById(R.id.distanceTextView);
-            tt.setText(df.format(miles_away));
+            tt.setText(df.format(miles_away)+" mi");
             TextView ttt = (TextView) rowView.findViewById(R.id.hoursTextView);
             ttt.setText(store.formatHoursTo12hours());
 
@@ -1492,20 +1502,22 @@ public class MainActivity extends AppCompatActivity {
 
     static class SpinnerDropDownAdapter extends ArrayAdapter<String> {
 
-        public SpinnerDropDownAdapter(Context context,int tv,String[] objects) {
-            super(context,tv,objects);
+        public SpinnerDropDownAdapter(Context context, int tv, String[] objects) {
+            super(context, tv, objects);
         }
+
         @Override
-        public View getView(int pos, View view, ViewGroup vg){
-            View v = View.inflate( this.getContext(), R.layout.spinner_sort_by_layout,null);
-            TextView tv = (TextView)v.findViewById(R.id.spinnerDropDownTF);
+        public View getView(int pos, View view, ViewGroup vg) {
+            View v = View.inflate(this.getContext(), R.layout.spinner_sort_by_layout, null);
+            TextView tv = (TextView) v.findViewById(R.id.spinnerDropDownTF);
             tv.setText(this.getItem(pos));
             return v;
         }
+
         @Override
-        public View getDropDownView(int pos, View view, ViewGroup bg){
-            View v = View.inflate( this.getContext(), R.layout.spinner_sort_by_layout,null);
-            TextView tv = (TextView)v.findViewById(R.id.spinnerDropDownTF);
+        public View getDropDownView(int pos, View view, ViewGroup bg) {
+            View v = View.inflate(this.getContext(), R.layout.spinner_sort_by_layout, null);
+            TextView tv = (TextView) v.findViewById(R.id.spinnerDropDownTF);
             tv.setText(this.getItem(pos));
             return v;
         }

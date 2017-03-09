@@ -26,6 +26,7 @@ import org.json.JSONObject;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
@@ -195,27 +196,66 @@ public class CreditCardDialog {
 
     public void showCreditCardDialog() {
         alert = new AlertDialog.Builder(this.act);
-
         alert.setTitle("Contact Information");
 
         LayoutInflater inflater = this.act.getLayoutInflater();
-
         final View layout = inflater.inflate(R.layout.make_reservation_fragment, null);
-
         final AutoCompleteTextView email_et = (AutoCompleteTextView) layout.findViewById(R.id.reservation_phone);
        // phone_et.setText(phone);
         TextView amount = (TextView) layout.findViewById(R.id.textview_reservation_amount);
-        DecimalFormat df = new DecimalFormat("$0.00");
+        final DecimalFormat df = new DecimalFormat("$0.00");
         amount.setText(df.format(store.getTicket_price()));
         TextView store_tv = (TextView) layout.findViewById(R.id.store_reservation_textview);
         store_tv.setText("Shop: " + store.getName().toUpperCase());
-        TextView stylist_tv = (TextView) layout.findViewById(R.id.stylist_reservation_textview);
+        final TextView stylist_tv = (TextView) layout.findViewById(R.id.stylist_reservation_textview);
         stylist_tv.setText("Stylist: " + stylist.getName().toUpperCase());
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////MAIN BODY OF ALERT
+        final AutoCompleteTextView name = (AutoCompleteTextView) layout.findViewById(R.id.reservation_name);
+        ////////////////////////////////CREDIT CARD ONLY IF TICKET PRICE > 0
+        final EditText ccv = (EditText) layout.findViewById(R.id.reservation_ccv);
+        final EditText creditcard = (EditText) layout.findViewById(R.id.reservation_creditcard);
+        final EditText exp_month = (EditText) layout.findViewById(R.id.reservation_expmonth);
+        EditText exp_yr = (EditText) layout.findViewById(R.id.reservation_expyear);
+        //////////////////////////////////////////////////////////////////////////////////////
+        if(store.getTicket_price()==0 || stylist.getTicket_price() == 0 ){
+            ccv.setVisibility(View.GONE);
+            creditcard.setVisibility(View.GONE);
+            exp_month.setVisibility(View.GONE);
+            exp_yr.setVisibility(View.GONE);
+            amount.setVisibility(View.GONE);
+        }
+        double ticket_price = 0;///assume theres no ticket price
+        if(stylist.getTicket_price()>0){ /////////priority given to stylist
+            amount.setText(df.format(stylist.getTicket_price()));
+            ticket_price = stylist.getTicket_price();
+        }else if(store.getTicket_price()>0){ ///then if store is non empty
+            amount.setText(df.format(store.getTicket_price()));
+            ticket_price = store.getTicket_price();
+        }
 
+        //String amount_billed = amount.getText().subSequence(1, amount.getText().toString().length()).toString();
+        //amount_billed = amount_billed.replace("$", "");//$1.00->1.00
+        final int amount_b = new Double(ticket_price * 100).intValue();
+        String yr = exp_yr.getText().toString();
+        if (yr.length() == 2) {
+            Date d = new Date();
+            int yrr = d.getYear() + 1900;
+            yr = "" + ((yrr / 100) + parseInt(yr));//////////////////this could be huge error
+        }
         alert.setView(layout);
+        //////////////////////final variables
+        final double finalTicket_price = ticket_price;
 
+
+        final String finalYr = yr;
         alert.setPositiveButton("Grab a Ticket", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
+                if(finalTicket_price >0) {
+                    execute(creditcard.getText().toString(), ccv.getText().toString(), exp_month.getText().toString(), finalYr, name.getText().toString(), "" + amount_b, email_et.getText().toString());
+                }else{
+                    grabTicket(name.getText().toString(), email_et.getText().toString());
+                }
             }
         });
         alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -226,42 +266,21 @@ public class CreditCardDialog {
         });
         alertd = alert.create();
         alertd.setCancelable(false);
-        alertd.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialog) {
-                // if (success == false) {
-
-                Button button = alertd.getButton(DialogInterface.BUTTON_POSITIVE);////////on yes or ok
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        AutoCompleteTextView name = (AutoCompleteTextView) layout.findViewById(R.id.reservation_name);
-                        EditText ccv = (EditText) layout.findViewById(R.id.reservation_ccv);
-                        EditText creditcard = (EditText) layout.findViewById(R.id.reservation_creditcard);
-                        EditText exp_month = (EditText) layout.findViewById(R.id.reservation_expmonth);
-                        EditText exp_yr = (EditText) layout.findViewById(R.id.reservation_expyear);
-                        TextView amount = (TextView) layout.findViewById(R.id.textview_reservation_amount);
-                        String amount_billed = amount.getText().subSequence(1, amount.getText().toString().length()).toString();
-                        amount_billed = amount_billed.replace("$", "");//$1.00->1.00
-                        int amount_b = new Double(Double.parseDouble(amount_billed) * 100).intValue();
-                        String yr = exp_yr.getText().toString();
-                        if (yr.length() == 2) {
-                            Date d = new Date();
-                            int yrr = d.getYear() + 1900;
-                            yr = "" + ((yrr / 100) + parseInt(yr));//////////////////this could be huge error
-                        }
-                        execute(creditcard.getText().toString(), ccv.getText().toString(), exp_month.getText().toString(), yr, name.getText().toString(), "" + amount_b,email_et.getText().toString());
-
-                    }
-                });
-            }
-
-
-        });
         alertd.show();
-
-
     }
+
+    /**
+     *
+     * @param name - name specified by guest
+     * @param email - name specified by guest
+     */
+    private void grabTicket(String name, String email) {
+
+        final ProgressDialog pd = ProgressDialog.show(act,"Grabbing Ticket","Please Wait...",true,false);
+        pd.show();
+        act.sendTicket(store,stylist,name,null,pd);///needs phone number but not necessary...If needed can ask for permission to get number
+    }
+
     /**
      * TEST DEBUGGG CREDIT CARD DIALOG
      */

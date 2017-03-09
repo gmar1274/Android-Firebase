@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -154,7 +155,7 @@ public class EmployeeActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.log_out) {
             SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-            String PREF_USERNAME = this.getIntent().getStringExtra("PREF_USERNAME");
+            String PREF_USERNAME =  this.getIntent().getStringExtra("PREF_USERNAME");
             String PREF_PASSWORD = this.getIntent().getStringExtra("PREF_PASSWORD");
             pref.edit().putString(PREF_USERNAME, null).putString(PREF_PASSWORD, null).commit();//debug clear memory of use
             Intent i = new Intent(this, LoginActivity.class);
@@ -296,7 +297,7 @@ public class EmployeeActivity extends AppCompatActivity {
             });
             final ImageView store_pic = (ImageView)rootView.findViewById(R.id.imageView_store_pic);
             final String  storageURL= ea.firebaseEmployee.getPhone()+"/images/stylists/-1";
-            StorageReference sr = FirebaseStorage.getInstance().getReference().child(storageURL);
+            final StorageReference sr = FirebaseStorage.getInstance().getReference().child(storageURL);
             sr.getBytes(10*1024*1024).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                 @Override
                 public void onSuccess(byte[] bytes) {
@@ -306,10 +307,19 @@ public class EmployeeActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     e.printStackTrace();
+                   BitmapDrawable bd = (BitmapDrawable) ea.getResources().getDrawable(R.drawable.acba);
+                    sr.putBytes(Utils.convertBitmapToByteArray(bd.getBitmap())).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                            if(task.isSuccessful()){
+                                Log.e("Success","Stylist -1 added");
+                            }else{
+                                Log.e("ERR","Firebase uploading stylist -1 error");
+                            }
+                        }
+                    });
                 }
             });
-
-
         }////////////////////////////////////end method third tab
 
         /**
@@ -1017,6 +1027,9 @@ public class EmployeeActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * THIS CLASS DISPLAYS THE TICKET LIST FOR LIST VIEW OF ALL TICKETS OF SHOP
+     */
     static class EmployeeStoreTicketAdapter extends ArrayAdapter<Ticket> {
         private List<Ticket> list;
 
@@ -1039,8 +1052,11 @@ public class EmployeeActivity extends AppCompatActivity {
             TextView pref = (TextView) view.findViewById(R.id.stylist_pref_tv);
             pref.setText(t.stylist.toUpperCase());
             TextView name = (TextView) view.findViewById(R.id.client_name_tv);
-            name.setText(t.getName().toUpperCase());
-
+            if(t.getName().length()==0){
+                name.setText("N/A");
+            }else {
+                name.setText(t.getName().toUpperCase());
+            }
             return view;
         }
     }

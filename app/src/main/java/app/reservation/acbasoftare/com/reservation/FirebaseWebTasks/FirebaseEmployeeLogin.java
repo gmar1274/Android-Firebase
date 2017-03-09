@@ -111,8 +111,11 @@ public class FirebaseEmployeeLogin extends AsyncTask<String, Void, String> {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(c);
         LoginActivity la = (LoginActivity) c;
         pref.edit().putString(la.PREF_USERNAME,emp.getApp_username()).putString(la.PREF_PASSWORD, pass_orig).commit();
+
         Intent i = new Intent(c, EmployeeActivity.class);
         i.putExtra("employee",emp);
+        i.putExtra("PREF_USERNAME",la.PREF_USERNAME);
+        i.putExtra("PREF_PASSWORD",la.PREF_PASSWORD);
         c.startActivity(i);
 
     }

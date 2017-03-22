@@ -195,7 +195,7 @@ public class WebService {
             conn.setInstanceFollowRedirects(false);
             conn.setRequestProperty("Content-Length", String.valueOf(data.getBytes("UTF-8")));
             conn.connect();
-            Log.e("WEB URL IS:: ", "URL : " + conn.getURL());
+          //  Log.e("WEB URL IS:: ", "URL : " + conn.getURL());
 
             ///write
             OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
@@ -214,8 +214,8 @@ public class WebService {
                 break;
             }
             reader.close();
-            Log.e("POST PARAMS: ", "data: " + data + "\n\nRESPONSE CODE: " + conn.getResponseCode() + "\n");
-            Log.e("SERVER RESPONSE:: ", "" + sb.toString());
+           // Log.e("POST PARAMS: ", "data: " + data + "\n\nRESPONSE CODE: " + conn.getResponseCode() + "\n");
+            //Log.e("SERVER RESPONSE:: ", "" + sb.toString());
             return new JSONObject(sb.toString());
 
         } catch (IOException e1) {

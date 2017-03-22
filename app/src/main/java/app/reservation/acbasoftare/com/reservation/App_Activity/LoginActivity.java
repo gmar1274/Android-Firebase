@@ -128,7 +128,13 @@ public class LoginActivity extends AppCompatActivity  {
             @Override
             public void onSuccess(LoginResult loginResult) {
               //MainActivity.user_fb_profile= Profile.getCurrentProfile();
-               goToMainActivity();
+                Profile profile = Profile.getCurrentProfile();
+                Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                i.putExtra("fb_profile", profile);
+                i.putExtra("gps",gps);
+                LoginActivity.this.startActivity(i);
+                LoginActivity.this.finish();
+               //goToMainActivity();
             }
 
             @Override

@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -19,6 +20,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -35,6 +37,7 @@ import android.view.animation.AlphaAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
@@ -60,6 +63,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -92,9 +96,11 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
+import app.reservation.acbasoftare.com.reservation.App_Objects.UserMessageMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
 import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
 import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebTasks;
+import app.reservation.acbasoftare.com.reservation.ListAdapters.UserMessageMetaDataAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Recycleview.RVAdapter;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
@@ -113,7 +119,7 @@ import static com.google.api.client.http.HttpMethods.HEAD;
 public class MainActivity extends AppCompatActivity {
 
     public final static boolean ADTESTING = false;//false means LIVE ads
-    private  final long IMAGE_DOWNLOAD_LIMIT = 1024 * 1024 * 10 ;
+    public static final long IMAGE_DOWNLOAD_LIMIT = 1024 * 1024 * 10 ;
     public static HashMap<String, Bitmap> stylist_bitmaps;
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -361,6 +367,9 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        this.user_fb_profile= this.getIntent().getParcelableExtra("fb_profile");
+
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
         mCustomFragPageAdapter = new CustomFragPageAdapter(getSupportFragmentManager(), MainActivity.this);
@@ -1079,6 +1088,7 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private MainActivity ma;
+        private ArrayList<UserMessageMetaData> meta_data_list;
 
         public TabFragment() {
 
@@ -1112,7 +1122,7 @@ public class MainActivity extends AppCompatActivity {
                     //ma.rootView_LiveTab = rootView;
                     break;
                 case 2:
-                    rootView = inflater.inflate(R.layout.layout_appointment, container, false);
+                    rootView = inflater.inflate(R.layout.user_messaging_meta_data_layout, container, false);
                     break;
             }
             return displayView(rootView, page - 1);
@@ -1131,10 +1141,67 @@ public class MainActivity extends AppCompatActivity {
                     fragmentView1(rootView);
                     break;
                 case 2:
-                    //fragmentView2(rootView);
+                    fragmentView2(rootView);
                     break;
             }
             return rootView;
+        }
+
+        /**
+         * This method will load the meta data of all clients's messages from any stylists. Set a click
+         * listener on the list view and start a new activity for a messagig to display actually message history..
+         * @param rootView
+         */
+        private void fragmentView2(View rootView) {
+           final ListView lv = (ListView)rootView.findViewById(R.id.user_meta_data_listview);
+            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
+                    UserMessageMetaData meta = (UserMessageMetaData) adapterView.getItemAtPosition(pos);
+                    Intent i = new Intent(ma, MessagingActivity.class);
+                    i.putExtra("UserMessageMetaData",meta);
+                    i.putExtra("user_fb_profile",ma.user_fb_profile);
+                    ma.startActivity(i);
+                }
+            });
+            if(meta_data_list == null){//first time initiliazing...
+                Log.e("Init","Inititializing tab 3 messeages...");
+                final String path = "client_messages_meta_data/"+ma.user_fb_profile.getId();//get client's messages only
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
+                ref.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        GenericTypeIndicator<Map<String,UserMessageMetaData>> gti = new GenericTypeIndicator<Map<String, UserMessageMetaData>>() {};
+                        Map<String,UserMessageMetaData> map = null;
+                        if(dataSnapshot.getValue() == null){
+                            map = new HashMap<String, UserMessageMetaData>();
+                        }else{
+                            map = dataSnapshot.getValue(gti);
+                        }
+                        ArrayList<UserMessageMetaData> data_list = new ArrayList<UserMessageMetaData>(map.values());
+                        Collections.sort(data_list);
+                        meta_data_list = data_list;
+                        UserMessageMetaDataAdapter ad =null;
+                        if(lv.getAdapter() == null) {
+                            ad = new UserMessageMetaDataAdapter(ma, meta_data_list);
+                            lv.setAdapter(ad);
+                        }else{
+                            lv.deferNotifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                            Log.e("Cancelled ","messaging user tab .... errr");
+                    }
+                });
+
+            }else{
+
+            }
+
+
+
         }
 
        /* @Override
@@ -1459,6 +1526,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Show 3 total pages.
+            if(MainActivity.this.user_fb_profile != null && MainActivity.this.user_fb_profile.getId()!=null)return 3;
             return 2;
         }
 

@@ -9,4 +9,6 @@
     <color name="store_name">#ffffff</color>
     <color name="view">#ffffff</color>
     <color name="customBackground">#f6f6f6</color>
+    <color name="sender_text_msg">#44ff0000</color>
+    <color name="messaging_background_color">#e0e0e0</color>
 </resources>

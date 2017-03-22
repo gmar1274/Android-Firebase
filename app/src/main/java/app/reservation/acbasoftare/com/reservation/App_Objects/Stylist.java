@@ -7,6 +7,7 @@ import java.text.DecimalFormat;
 
 /**
  * Created by user on 2016-08-06.
+ * POJO for firebase json... stylists/store_number/sty_id/{}
  */
 public class Stylist implements Parcelable, Comparable<Stylist> {
     private String fname, mname, lname,id,phone;

@@ -39,7 +39,10 @@ public class UserMessageMetaDataAdapter extends ArrayAdapter<UserMessageMetaData
         this.images_downloaded = new ArrayList<>();
     }
 
-
+    public  Bitmap getBitmapStylist(int pos){
+        if(this.images_downloaded.size()<= pos)return null;
+        return this.images_downloaded.get(pos).getBitmap();
+    }
     @Override
     public View getView(final int position_item, View convertView, ViewGroup parent) {
         LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();

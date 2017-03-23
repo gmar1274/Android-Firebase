@@ -9,9 +9,10 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -20,7 +21,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -59,11 +59,8 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -75,6 +72,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -105,17 +105,14 @@ import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Recycleview.RVAdapter;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-import static android.R.attr.data;
-import static android.R.attr.key;
-import static android.os.Build.VERSION_CODES.M;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.AD_AGE_DATE_STRING;
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.sdf;
-import static app.reservation.acbasoftare.com.reservation.R.id.map;
-import static app.reservation.acbasoftare.com.reservation.Utils.Utils.testPeriodMap;
-import static com.google.api.client.http.HttpMethods.HEAD;
 
 //import com.google.android.gms.maps.model.LatLng;
 
+/**
+ * Line ~1,000 is for fragment views
+ */
 public class MainActivity extends AppCompatActivity {
 
     public final static boolean ADTESTING = false;//false means LIVE ads
@@ -130,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
     public ArrayList<Stylist> stylists_list = null;
     // public static ListView lv = null;
     // public static ListAdapter la = null;
-
+///
     public int stylist_position = 0;
     public TabLayout tabLayout;
     public Location user_loc;
@@ -1158,11 +1155,25 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
                     UserMessageMetaData meta = (UserMessageMetaData) adapterView.getItemAtPosition(pos);
+                    UserMessageMetaDataAdapter ad = (UserMessageMetaDataAdapter) lv.getAdapter();
+                    Bitmap sty = ad.getBitmapStylist(pos);
+                    Uri user_uri = ma.user_fb_profile.getLinkUri();
+                    ImageView iv = new ImageView(ma);
+                    iv.setImageURI(user_uri);
+                    Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
+
                     Intent i = new Intent(ma, MessagingActivity.class);
                     i.putExtra("UserMessageMetaData",meta);
-                    i.putExtra("user_fb_profile",ma.user_fb_profile);
+                    //i.putExtra("user_fb_profile",ma.user_fb_profile);
+                    Utils.saveFileToDisk(user,"user");
+                    Utils.saveFileToDisk(sty,"sty");
+                    ///////save the
                     ma.startActivity(i);
                 }
+
+
+
+
             });
             if(meta_data_list == null){//first time initiliazing...
                 Log.e("Init","Inititializing tab 3 messeages...");
@@ -1186,10 +1197,10 @@ public class MainActivity extends AppCompatActivity {
                             ad = new UserMessageMetaDataAdapter(ma, meta_data_list);
                             lv.setAdapter(ad);
                         }else{
-                            lv.deferNotifyDataSetChanged();
+                            ad = (UserMessageMetaDataAdapter) lv.getAdapter();
+                            ad.notifyDataSetChanged();
                         }
                     }
-
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
                             Log.e("Cancelled ","messaging user tab .... errr");
@@ -1203,6 +1214,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         }
+
+
 
        /* @Override
         public void setUserVisibleHint(boolean isVisibleToUser) {

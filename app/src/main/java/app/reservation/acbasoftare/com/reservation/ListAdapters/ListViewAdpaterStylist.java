@@ -1,25 +1,33 @@
 package app.reservation.acbasoftare.com.reservation.ListAdapters;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.QuickContactBadge;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.facebook.Profile;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
+import app.reservation.acbasoftare.com.reservation.App_Activity.MessagingActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
+import app.reservation.acbasoftare.com.reservation.App_Objects.UserMessageMetaData;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
-
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_bitmaps;
 
 /**
  * Created by user on 2017-02-16.
@@ -28,15 +36,18 @@ import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActiv
 public class ListViewAdpaterStylist  extends ArrayAdapter<Stylist> {
     private int indexSelected;
     private HashMap<String, Bitmap> bitmapHashMap;
-
-    public ListViewAdpaterStylist(Activity act, int list_view_live_feed, ArrayList<Stylist> values, HashMap<String, Bitmap> bitmapHashMap) {
+    private UserMessageMetaData user;
+    private Profile profile;
+    public ListViewAdpaterStylist(Activity act, int list_view_live_feed, ArrayList<Stylist> values, HashMap<String, Bitmap> bitmapHashMap, UserMessageMetaData user, Profile prof) {
         super(act, list_view_live_feed, values);
         this.indexSelected = 0;
         this.bitmapHashMap = bitmapHashMap;
+        this.user = user;
+        this.profile = prof;
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
-        Stylist s = getItem(position);
+        final Stylist s = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_view_live_feed, parent, false);
         RadioButton r = (RadioButton) convertView.findViewById(R.id.live_feed_radiobtn);
@@ -69,6 +80,25 @@ public class ListViewAdpaterStylist  extends ArrayAdapter<Stylist> {
         iv.setImageBitmap(bitmapHashMap.get(s.getId())); // iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
         iv.assignContactFromPhone(s.getPhone(), true);
         iv.setMode(ContactsContract.QuickContact.MODE_LARGE);
+
+        Button msg_btn = (Button) convertView.findViewById(R.id.msg_sty_btn);
+        msg_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Bitmap sty = bitmapHashMap.get(s.getId());
+                Uri user_uri = profile.getLinkUri();
+                ImageView iv = new ImageView(getContext());
+                iv.setImageURI(user_uri);
+                Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
+                Utils.saveFileToDisk(sty,"sty");
+                Utils.saveFileToDisk(user,"user");
+
+
+                Intent i = new Intent(getContext(), MessagingActivity.class);
+                i.putExtra("UserMessageMetaData",user);
+                getContext().startActivity(i);
+            }
+        });
 
         return convertView;
     }

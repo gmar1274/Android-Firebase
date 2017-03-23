@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
                                              xmlns:app="http://schemas.android.com/apk/res-auto"
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:orientation="vertical"
@@ -11,7 +12,11 @@
         android:layout_width="70dp"
         app:srcCompat="@drawable/acba_old"
         android:id="@+id/sender_imageView" android:layout_height="70dp"
-        tools:layout_editor_absoluteY="24dp" tools:layout_editor_absoluteX="8dp"/>
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginLeft="8dp" />
     <android.support.constraint.ConstraintLayout
         android:layout_width="0dp"
         android:layout_marginTop="8dp"
@@ -19,7 +24,7 @@
         app:layout_constraintLeft_toRightOf="@+id/sender_imageView" android:layout_marginLeft="8dp"
         android:layout_marginEnd="8dp" app:layout_constraintRight_toRightOf="parent"
         android:layout_marginRight="8dp" android:layout_height="wrap_content"
-        android:background="@color/sender_text_msg" android:id="@+id/constraintLayout2">
+        android:background="@color/sender_text_msg" android:id="@+id/constraintLayout_sender">
 
         <TextView
             android:text="TextView"
@@ -56,7 +61,7 @@
         android:layout_marginStart="8dp" app:layout_constraintLeft_toLeftOf="parent"
         android:layout_marginLeft="8dp"
         app:layout_constraintRight_toLeftOf="@+id/reciever_imageView" android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp" android:id="@+id/constraintLayout"
+        android:layout_marginRight="8dp" android:id="@+id/constraintLayout_rec"
         app:layout_constraintHorizontal_bias="0.25"
         android:layout_width="0dp" android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@+id/sender_imageView"
@@ -84,13 +89,5 @@
             android:layout_marginLeft="8dp" android:layout_marginBottom="8dp"
             android:layout_marginEnd="8dp" android:layout_marginRight="8dp"/>
     </android.support.constraint.ConstraintLayout>
-    <AutoCompleteTextView
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/message_autotext_field"
-        app:layout_constraintBottom_toBottomOf="parent" android:layout_marginBottom="8dp"
-        android:layout_marginStart="8dp" app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginLeft="8dp" android:layout_marginEnd="8dp"
-        app:layout_constraintRight_toRightOf="parent" android:layout_marginRight="8dp"
-        android:imeOptions="actionSend" android:hint="Enter message"/>
+
 </android.support.constraint.ConstraintLayout>

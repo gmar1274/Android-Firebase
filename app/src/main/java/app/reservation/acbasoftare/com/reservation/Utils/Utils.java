@@ -6,10 +6,16 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,8 +29,6 @@ import java.util.Map;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
-
-import static android.os.Build.VERSION_CODES.M;
 
 /**
  * Created by user on 12/6/16.
@@ -345,5 +349,45 @@ public class Utils {
         period.put(6 + "",  "5:00 AM-11:00 PM");
         period.put(7 + "",  "5:00 AM-11:00 PM");
         return period;
+    }
+
+    /**
+     * Static FINAL Path: sd/acba/filename_dynamic.png
+     * Then delete file location
+     * @param user
+     * @return
+     */
+    public static Bitmap getBitmapFromDisk(String user) {
+        Bitmap b = null;
+        try{
+            String path = Environment.getExternalStorageDirectory()+"/acba/"+user+".png";
+            b= BitmapFactory.decodeFile(path);
+            File f = new File(path);
+            f.delete();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return b;
+    }
+
+    /**
+     * Save bitmap to file temporarily for an intent transfer...will get deleted on intent activity
+     * @param bitmap
+     */
+    public static void saveFileToDisk(Bitmap bitmap,String img_name) {
+        File f = new File(Environment.getExternalStorageDirectory()+"/acba/");
+        if(!f.exists()){
+            f.mkdirs();
+        }
+        OutputStream os = null;
+        File file = new File(Environment.getExternalStorageDirectory()+"/acba/"+img_name+".png");
+        try{
+            os = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
+            os.close();
+            Log.e("file","temporarily written correctly");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 }

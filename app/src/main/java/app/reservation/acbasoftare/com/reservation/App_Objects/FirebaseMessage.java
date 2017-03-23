@@ -16,7 +16,12 @@ public class FirebaseMessage implements Comparable<FirebaseMessage> , Parcelable
     public FirebaseMessage(){
 
     }
-
+    public FirebaseMessage(String msg , String sender_id){
+        this.message = msg;
+        this.sender_id = sender_id;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        this.timestamp = sdf.format(new Date());
+    }
     protected FirebaseMessage(Parcel in) {
         message = in.readString();
         timestamp = in.readString();
@@ -62,11 +67,11 @@ public class FirebaseMessage implements Comparable<FirebaseMessage> , Parcelable
     @Override
     public boolean equals(Object o){
         FirebaseMessage msg = (FirebaseMessage)o;
-        return this.sender_id.equals(msg.sender_id);
+        return this.message.equals(msg.message) && this.timestamp.equals(msg.timestamp);
     }
     @Override
     public int hashCode(){
-        return sender_id.hashCode();
+        return message.hashCode();
     }
 
     @Override

@@ -92,6 +92,7 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Invoice;
 import app.reservation.acbasoftare.com.reservation.App_Objects.LatLng;
 import app.reservation.acbasoftare.com.reservation.App_Objects.MyIntent;
+import app.reservation.acbasoftare.com.reservation.App_Objects.ProfileFB;
 import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
@@ -141,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean isSuccess;//success payment ticket register
     public boolean STYLIST_BITMAPS_LOADED;
 
-    public Profile user_fb_profile;
+    public ProfileFB user_fb_profile_custom;
     public MyIntent myIntent;
 
     /**
@@ -312,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
         outState.putBoolean("STYLIST_BITMAPS_LOADED", STYLIST_BITMAPS_LOADED);
         outState.putSerializable("sty_hm", sty_hm);
         outState.putParcelable("store", store);
+        outState.putParcelable("fb",user_fb_profile_custom);
     }
 
     @Override
@@ -346,6 +348,7 @@ public class MainActivity extends AppCompatActivity {
             STYLIST_BITMAPS_LOADED = savedInstanceState.getBoolean("STYLIST_BITMAPS_LOADED");
             ticket_history = savedInstanceState.getParcelableArrayList("ticket_history");
             sty_hm = (HashMap<String, Stylist>) savedInstanceState.getSerializable("sty_hm");
+            this.user_fb_profile_custom = savedInstanceState.getParcelable("fb");
             store = savedInstanceState.getParcelable("store");
         } else {
             selectedPosition = 0;//initial pos
@@ -364,9 +367,9 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        this.user_fb_profile= this.getIntent().getParcelableExtra("fb_profile");
-
+        Log.d("fb","main");
+        this.user_fb_profile_custom= this.getIntent().getParcelableExtra("fb_profile");
+        Log.d("fb","main");
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
         mCustomFragPageAdapter = new CustomFragPageAdapter(getSupportFragmentManager(), MainActivity.this);
@@ -1157,7 +1160,7 @@ public class MainActivity extends AppCompatActivity {
                     UserMessageMetaData meta = (UserMessageMetaData) adapterView.getItemAtPosition(pos);
                     UserMessageMetaDataAdapter ad = (UserMessageMetaDataAdapter) lv.getAdapter();
                     Bitmap sty = ad.getBitmapStylist(pos);
-                    Uri user_uri = ma.user_fb_profile.getLinkUri();
+                    Uri user_uri = ma.user_fb_profile_custom.getLinkUri();
                     ImageView iv = new ImageView(ma);
                     iv.setImageURI(user_uri);
                     Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
@@ -1177,7 +1180,7 @@ public class MainActivity extends AppCompatActivity {
             });
             if(meta_data_list == null){//first time initiliazing...
                 Log.e("Init","Inititializing tab 3 messeages...");
-                final String path = "client_messages_meta_data/"+ma.user_fb_profile.getId();//get client's messages only
+                final String path = "client_messages_meta_data/"+ma.user_fb_profile_custom.getId();//get client's messages only
                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
                 ref.addValueEventListener(new ValueEventListener() {
                     @Override
@@ -1539,8 +1542,8 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Show 3 total pages.
-            if(MainActivity.this.user_fb_profile != null && MainActivity.this.user_fb_profile.getId()!=null)return 3;
-            return 2;
+           // if(MainActivity.this.user_fb_profile_custom !=null)return 3;
+            return  3;
         }
 
         @Override
@@ -1550,8 +1553,8 @@ public class MainActivity extends AppCompatActivity {
                     return "Store Location";
                 case 1:
                     return "Live Feed";
-                // case 2:
-                //   return "Make Reservation";
+                 case 2:
+                   return "Inbox"; //"Make Reservation";
             }
             return null;
         }

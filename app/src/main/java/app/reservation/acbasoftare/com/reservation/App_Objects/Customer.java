@@ -10,7 +10,7 @@ public class Customer {
     private String name,id,phone,email;
     public Customer(MainActivity ma){
         this.name=null;
-        this.id=ma.user_fb_profile == null? "-1":ma.user_fb_profile.getId();
+        this.id=ma.user_fb_profile_custom == null? "-1":ma.user_fb_profile_custom.getId();
     }
     public Customer(String name ,String phone,String email){
         this.name=name;

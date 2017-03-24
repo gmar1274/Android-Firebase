@@ -31,7 +31,7 @@ public class MessagingMetaData {
         if(user != null){
             return this.user.getClient_photo_uri();
         }else{
-            return this.sty.getClient_photo_uri()
+            return this.sty.getClient_photo_uri();
         }
     }
     public String client_id(){

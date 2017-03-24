@@ -45,11 +45,14 @@ public class MessagingActivity extends Activity {
         getActionBar().setDisplayHomeAsUpEnabled(true);
         //////////////
         Intent intent = getIntent();
-        StylistMessageMetaData sty_meta = intent.getParcelableExtra("StylistMessageMetaData");
-        final UserMessageMetaData usr_meta = intent.getParcelableExtra("UserMessageMetaData");
-        ;
+         StylistMessageMetaData sty_meta = intent.getParcelableExtra("StylistMessageMetaData");
+         UserMessageMetaData usr_meta = intent.getParcelableExtra("UserMessageMetaData");
         final MessagingMetaData meta = new MessagingMetaData(usr_meta, sty_meta);//will determine which object to use....one will be null
-
+        if(sty_meta == null){
+            sty_meta = new StylistMessageMetaData(usr_meta,meta);
+        }else{
+            usr_meta = new UserMessageMetaData(sty_meta,meta);
+        }
         //firebase url: client_messages/client_id/sty_id {list of messages}
         // url for stylist: stylist_messages/sty_id/client_id/{list of msgs}
 
@@ -63,6 +66,11 @@ public class MessagingActivity extends Activity {
         final String path_sty = "stylist_messages/" + meta.stylist_id() + "/" + meta.client_id();
         final DatabaseReference sty_ref = FirebaseDatabase.getInstance().getReference().child(path_sty);
         final DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
+        final String meta_client_path = "client_messages_meta_data/"+meta.client_id();
+        final String meta_stylist_path = "stylist_messages_meta_data/"+meta.stylist_id();
+        final DatabaseReference meta_ref_client = FirebaseDatabase.getInstance().getReference().child(meta_client_path);
+        final DatabaseReference meta_ref_sty = FirebaseDatabase.getInstance().getReference().child(meta_stylist_path);
+
         if (usr_meta != null) {
             createValueListener(ref,meta.client_id());
         }////////////case where the client is messaging...so add a listener to display
@@ -73,15 +81,21 @@ public class MessagingActivity extends Activity {
         ////CREATE METADATA for stylist and client if it does not exist already
 
         final AutoCompleteTextView msg = (AutoCompleteTextView) this.findViewById(R.id.message_autotext_field);
+        final UserMessageMetaData finalUsr_meta = usr_meta;
+        final UserMessageMetaData finalUsr_meta1 = usr_meta;
+        final StylistMessageMetaData finalSty_meta = sty_meta;
         msg.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
                 if (id == EditorInfo.IME_ACTION_SEND) {
-                    if(usr_meta!=null){
+                    if(finalUsr_meta !=null){
                         sendMessage(ref,msg.getText().toString(), meta.client_id()); //send message as client
                     }else {
                         sendMessage(sty_ref, msg.getText().toString(), meta.stylist_id());//send as stylist
-                    }return true;
+                    }
+                    createMetaDataFor(meta_ref_client, finalUsr_meta1);
+                    createMetaDataFor(meta_ref_sty, finalSty_meta);
+                    return true;
                 }
                 return false;
             }
@@ -103,6 +117,61 @@ public class MessagingActivity extends Activity {
 
 
     }////end on create
+
+    /**
+     * Create meta data in firebase url: client_messages_meta_data/client_id/{list of stylist meta messages}
+     * same thing for sylist...concept is similar
+     * @param ref_param
+     * @param meta
+     */
+    private void createMetaDataFor(DatabaseReference ref_param, final UserMessageMetaData meta) {
+        ref_param.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+             List<UserMessageMetaData> list = null;
+                GenericTypeIndicator<List<UserMessageMetaData>> gti = new GenericTypeIndicator<List<UserMessageMetaData>>() {};
+                if(mutableData.getValue() == null){
+                     list = new ArrayList<UserMessageMetaData>();
+                }else{
+                     list = mutableData.getValue(gti);
+                }
+                if(!list.contains(meta)){
+                    list.add(meta);
+                }
+                mutableData.setValue(list);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                Log.e("On comp","meta on complete user");
+            }
+        });
+    }
+    private void createMetaDataFor(DatabaseReference ref_param, final StylistMessageMetaData meta) {
+        ref_param.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                List<StylistMessageMetaData> list = null;
+                GenericTypeIndicator<List<StylistMessageMetaData>> gti = new GenericTypeIndicator<List<StylistMessageMetaData>>() {};
+                if(mutableData.getValue() == null){
+                    list = new ArrayList<StylistMessageMetaData>();
+                }else{
+                    list = mutableData.getValue(gti);
+                }
+                if(!list.contains(meta)){
+                    list.add(meta);
+                }
+                mutableData.setValue(list);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                Log.e("On comp","meta on complete sty");
+            }
+        });
+    }
 
     /**
      * Create a listener to update the GUI as the receiver.

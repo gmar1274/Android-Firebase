@@ -5,17 +5,28 @@ import android.os.Parcelable;
 
 import com.facebook.Profile;
 
+import app.reservation.acbasoftare.com.reservation.Interfaces.MessagingMetaData;
+
 /**
  * Created by user on 2017-03-21.
  * CLASS TO REPRESENT MESSAGE VIEWS.
  * FIREBASE REPRESENTATION Of: client_messages_meta_data/client_id/{store_name:,stylist_name:,stylist_id:,stylist_photo_uri:, is_new_message_notification,store_number}
  */
 public class UserMessageMetaData implements Parcelable, Comparable<UserMessageMetaData> {
-    private String store_name, store_id, stylist_id, stylist_photo_uri,stylist_name, client_photo_uri, client_id;
+    private String store_name, store_id, stylist_id, stylist_photo_uri,stylist_name, client_photo_uri, client_id,client_name;
     private boolean new_message_notification;
-    public UserMessageMetaData(){
-
+    public UserMessageMetaData(StylistMessageMetaData sty_meta, MessagingMetaData meta){
+        this.store_name = sty_meta.getStore_name();
+        this.stylist_id = meta.stylist_id();
+        this.stylist_photo_uri = meta.getStylistPhotoUri();
+        this.stylist_name  = sty_meta.getStylist_name();
+        //dont need store id
+        this.client_name = sty_meta.getClient_name();
+        this.client_photo_uri = sty_meta.getClient_photo_uri();
+        this.client_id  = sty_meta.getClient_id();
     }
+
+
     public UserMessageMetaData(FirebaseStore store, Stylist s, Profile prof){
         this.store_name = store.getName();
         this.store_id = String.valueOf(store.getStore_number());
@@ -25,6 +36,15 @@ public class UserMessageMetaData implements Parcelable, Comparable<UserMessageMe
         this.new_message_notification = false;
         this.client_photo_uri = prof.getLinkUri().toString();
         this.client_id = prof.getId();
+        this.client_name = prof.getName();
+    }
+
+    public String getClient_name() {
+        return client_name;
+    }
+
+    public void setClient_name(String client_name) {
+        this.client_name = client_name;
     }
 
     protected UserMessageMetaData(Parcel in) {
@@ -36,6 +56,7 @@ public class UserMessageMetaData implements Parcelable, Comparable<UserMessageMe
         new_message_notification = in.readByte() != 0;
         this.client_id = in.readString();
         this.client_photo_uri = in.readString();
+        client_name = in.readString();
     }
 
     public static final Creator<UserMessageMetaData> CREATOR = new Creator<UserMessageMetaData>() {
@@ -121,6 +142,7 @@ public class UserMessageMetaData implements Parcelable, Comparable<UserMessageMe
 
     @Override
     public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(client_name);
         parcel.writeString(store_name);
         parcel.writeString(store_id);
         parcel.writeString(stylist_id);

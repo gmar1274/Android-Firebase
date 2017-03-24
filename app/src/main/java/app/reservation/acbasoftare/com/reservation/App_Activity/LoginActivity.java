@@ -49,6 +49,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
+import app.reservation.acbasoftare.com.reservation.App_Objects.ProfileFB;
 import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
 import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseEmployeeLogin;
 import app.reservation.acbasoftare.com.reservation.R;
@@ -128,12 +129,26 @@ public class LoginActivity extends AppCompatActivity  {
             @Override
             public void onSuccess(LoginResult loginResult) {
               //MainActivity.user_fb_profile= Profile.getCurrentProfile();
-                Profile profile = Profile.getCurrentProfile();
-                Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                i.putExtra("fb_profile", profile);
-                i.putExtra("gps",gps);
-                LoginActivity.this.startActivity(i);
-                LoginActivity.this.finish();
+                mAuth.signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        Profile profile = Profile.getCurrentProfile();
+                        Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                        ProfileFB prof = new ProfileFB(profile);
+                        i.putExtra("fb_profile", prof);
+                        i.putExtra("gps",gps);
+                        Log.d("fb","login");
+                        LoginActivity.this.startActivity(i);
+                        LoginActivity.this.finish();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(LoginActivity.this,"Network error. :(",Toast.LENGTH_LONG).show();
+                    }
+                });
+
+
                //goToMainActivity();
             }
 

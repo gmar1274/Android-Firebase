@@ -1072,6 +1072,7 @@ public class MainActivity extends AppCompatActivity {
 
         FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, stylists_list,this.user_fb_profile);
         ListView lv = (ListView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_livefeed_listview);
+        if(lv==null)return;
         lv.setAdapter(null);
         lv.setAdapter(la);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {

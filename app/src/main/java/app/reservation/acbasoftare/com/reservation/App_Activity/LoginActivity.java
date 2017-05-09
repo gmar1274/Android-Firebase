@@ -22,17 +22,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
-
 import com.facebook.Profile;
+import com.facebook.ProfileTracker;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.doubleclick.PublisherAdRequest;
@@ -48,22 +47,22 @@ import com.google.firebase.auth.FirebaseUser;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
 import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseEmployeeLogin;
+import app.reservation.acbasoftare.com.reservation.Interfaces.ILogin;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.WebTasks.Login;
-
-import static com.google.api.client.http.HttpMethods.HEAD;
 
 
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity  {
+public class LoginActivity extends AppCompatActivity implements ILogin{
     public static final boolean ADTESTING = false;//false means live
-    public  final String PREF_USERNAME = "username";
-    public  final String PREF_PASSWORD = "password";
+    public final String PREF_USERNAME = "username";
+    public final String PREF_PASSWORD = "password";
 
     public static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
     public static final String AD_AGE_DATE_STRING = "01/01/2005";
@@ -80,20 +79,20 @@ public class LoginActivity extends AppCompatActivity  {
     private EditText mPasswordView;
     private SharedPreferences pref;
     private PublisherInterstitialAd mPublisherInterstitialAd;
-    public  GPSLocation gps;
+    public GPSLocation gps;
     private CallbackManager callbackManager;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private ProgressDialog pd;
+    private ProfileTracker profileTracker;
 
     private void requestNewInterstitial() {
         PublisherAdRequest adRequest = null;
-        if(ADTESTING){
+        if (ADTESTING) {
             adRequest = new PublisherAdRequest.Builder()
                     .addTestDevice("23B075DED4F5E3DB63757F55444BFF46")
                     .build();
-        }
-        else{
+        } else {
 
             try {
                 adRequest = new PublisherAdRequest.Builder().setBirthday(sdf.parse(AD_AGE_DATE_STRING))
@@ -109,43 +108,65 @@ public class LoginActivity extends AppCompatActivity  {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(this.profileTracker!=null)
+        {
+            this.profileTracker.stopTracking();
+        }
+    }
+
+    @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+       // FacebookSdk.sdkInitialize(getApplicationContext());
+        //AppEventsLogger.activateApp(this);
         mAuth = FirebaseAuth.getInstance();
         super.onCreate(savedInstanceState);
-
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        // AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_login);
+
         callbackManager = CallbackManager.Factory.create();
 
-        LoginButton loginButton = (LoginButton) findViewById(R.id.fb);
+        final LoginButton loginButton = (LoginButton) findViewById(R.id.fb);
+        loginButton.setReadPermissions("public_profile");
+
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
-              //MainActivity.user_fb_profile= Profile.getCurrentProfile();
-                Profile profile = Profile.getCurrentProfile();
-                Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                i.putExtra("fb_profile", profile);
-                i.putExtra("gps",gps);
-                LoginActivity.this.startActivity(i);
-                LoginActivity.this.finish();
-               //goToMainActivity();
+
+                Profile prof = Profile.getCurrentProfile();
+                if(prof!=null){
+                    LoginActivity.this.Login(prof);
+                    return;
+                }
+                profileTracker = new ProfileTracker() {
+                    @Override
+                    protected void onCurrentProfileChanged(
+                            Profile oldProfile,
+                            Profile currentProfile) {
+                      LoginActivity.this.Login(currentProfile);
+
+                    }
+                };
+
+
+
             }
 
             @Override
             public void onCancel() {
-                Log.d("onCancel","");
+                Log.d("onCancel", "");
                 // App code
             }
 
             @Override
             public void onError(FacebookException error) {
-                Log.d("onError",error.toString());
+                Log.d("onError", error.toString());
                 error.printStackTrace();
             }
 
@@ -158,7 +179,7 @@ public class LoginActivity extends AppCompatActivity  {
                     @Override
                     public void run() {
                         gps = new GPSLocation(LoginActivity.this);
-                        if(!gps.canGetLocation()){
+                        if (!gps.canGetLocation()) {
                             showSettingsAlert();
                         }
                     }
@@ -174,8 +195,8 @@ public class LoginActivity extends AppCompatActivity  {
             @Override
             public void onAdClosed() {
                 requestNewInterstitial();
-                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                i.putExtra("gps",gps);
+                Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                i.putExtra("gps", gps);
                 LoginActivity.this.startActivity(i);
                 LoginActivity.this.finish();
             }
@@ -186,16 +207,15 @@ public class LoginActivity extends AppCompatActivity  {
         MobileAds.initialize(getApplicationContext(), "ca-app-pub-9309556355508377~8508953646");
         AdView mAdView = (AdView) findViewById(R.id.adView);
         //mAdView.setAdUnitId("ca-app-pub-9309556355508377/8229752040");
-       // mAdView.setAdSize(AdSize.SMART_BANNER);
+        // mAdView.setAdSize(AdSize.SMART_BANNER);
         AdRequest adRequest = null;
-        if(ADTESTING){
-            adRequest  = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
-        }
-        else{
+        if (ADTESTING) {
+            adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+        } else {
             try {
                 adRequest = new AdRequest.Builder().setBirthday(sdf.parse(AD_AGE_DATE_STRING))
 
-                                    .build();
+                        .build();
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -205,13 +225,13 @@ public class LoginActivity extends AppCompatActivity  {
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         mPasswordView = (EditText) findViewById(R.id.password);
-       //////////
+        //////////
         pref = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
-       // pref.edit().putString(PREF_USERNAME,null).putString(PREF_PASSWORD,null).commit();//debug clear memory of use
+        // pref.edit().putString(PREF_USERNAME,null).putString(PREF_PASSWORD,null).commit();//debug clear memory of use
         String username = pref.getString(PREF_USERNAME, null);
         String password = pref.getString(PREF_PASSWORD, null);
         if (username != null && password != null) {
-            signIn(username,password);
+            signIn(username, password);
             //Login login = new Login(this);
             //login.execute(username, Encryption.encryptPassword(password));
             return;
@@ -236,14 +256,14 @@ public class LoginActivity extends AppCompatActivity  {
                             goToMainActivity();
                         } else {
                             Log.e("ON COMPLETE AUTH", "AUTH ERROR");
-                          if(pd!=null)  pd.dismiss();
+                            if (pd != null) pd.dismiss();
                         }
                     }
                 }).addOnFailureListener(LoginActivity.this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         e.printStackTrace();
-                        if(pd!=null)pd.dismiss();
+                        if (pd != null) pd.dismiss();
                     }
                 });
             }
@@ -263,19 +283,26 @@ public class LoginActivity extends AppCompatActivity  {
 
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-               if(pd==null)return;
-                if(mEmailView==null || mPasswordView==null || mEmailView.getText().length() == 0 || mPasswordView.getText().length() == 0 ){return;}
-                Log.e("FIREBASE LISTENER:","HERE IN LISTENER");
+                if (pd == null) return;
+                if (mEmailView == null || mPasswordView == null || mEmailView.getText().length() == 0 || mPasswordView.getText().length() == 0) {
+                    return;
+                }
+                Log.e("FIREBASE LISTENER:", "HERE IN LISTENER");
                 pd.dismiss();
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                if( user != null){
+                if (user != null) {
                     goToMainActivity();
-                }else{
+                } else {
                     errorWithSignIn();
                 }
             }
         };
         mAuth.addAuthStateListener(mAuthListener);
+
+
+        if(isLoggedIn()){
+            this.Login(Profile.getCurrentProfile());
+        }
     }
 
     private void test() {
@@ -285,13 +312,13 @@ public class LoginActivity extends AppCompatActivity  {
     }
 
     private void goToShopLogin() {
-        this.startActivity(new Intent(this,ShopLoginActivity.class));
+        this.startActivity(new Intent(this, ShopLoginActivity.class));
         this.finish();
 
     }
 
     private void debug() {
-        this.startActivity(new Intent(this,TicketScreenActivity.class));
+        this.startActivity(new Intent(this, TicketScreenActivity.class));
 
     }
 
@@ -342,45 +369,47 @@ public class LoginActivity extends AppCompatActivity  {
         } else {
 ////////sign in listener for firebase
             ///sign in if user in firebase otherwise sign in anon to check if stylist
-            signIn(email,password);
+            signIn(email, password);
 
         }
     }
 
-    private void signIn(final String email, final String password){
-        pd = ProgressDialog.show(this,"Authenticating","Please wait...",true,false);
+    private void signIn(final String email, final String password) {
+        pd = ProgressDialog.show(this, "Authenticating", "Please wait...", true, false);
         pd.show();
-       FirebaseAuth.getInstance().signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                        @Override
-                        public void onSuccess(AuthResult authResult) {
-                            FirebaseEmployeeLogin fe = new FirebaseEmployeeLogin(LoginActivity.this, email, password, mEmailView, mPasswordView, pd);
-                            fe.execute();
+        FirebaseAuth.getInstance().signInAnonymously().addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+            @Override
+            public void onSuccess(AuthResult authResult) {
+                FirebaseEmployeeLogin fe = new FirebaseEmployeeLogin(LoginActivity.this, email, password, mEmailView, mPasswordView, pd);
+                fe.execute();
 
-                            //LOGIN USING MY SERVER
-                            // myLogin(email,password);
-                        }
-                    });
+                //LOGIN USING MY SERVER
+                // myLogin(email,password);
+            }
+        });
     }
+
     private void myLogin(String email, String password) {
         Login login = new Login(this, mEmailView, mPasswordView, pref);
         login.execute(email, Encryption.encryptPassword(password));//sends sha1 encrypted password
     }
 
     @Override
-public void onStart(){
-    super.onStart();
-   if(mAuth!=null && mAuthListener!=null) mAuth.addAuthStateListener(this.mAuthListener);
-}
-@Override
-public void onStop(){
-    super.onStop();
-   if(this.mAuthListener != null){
-        mAuth.removeAuthStateListener(this.mAuthListener);
+    public void onStart() {
+        super.onStart();
+        if (mAuth != null && mAuthListener != null) mAuth.addAuthStateListener(this.mAuthListener);
     }
-}
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (this.mAuthListener != null) {
+            mAuth.removeAuthStateListener(this.mAuthListener);
+        }
+    }
 
     private void goToMainActivity() {
-        if(!gps.canGetLocation())gps.getLocation();
+        if (!gps.canGetLocation()) gps.getLocation();
 
         if (mPublisherInterstitialAd.isLoaded()) {
             mPublisherInterstitialAd.show();
@@ -389,27 +418,31 @@ public void onStop(){
             this.startActivity(intent);
         }*/
     }
+
     private void errorWithSignIn() {
         this.mEmailView.setError("Email/Username may be wrong");
         this.mPasswordView.setError("Password may be wrong");
     }
+
     @Override
     public void onBackPressed() {
         this.finish();
         return;
     }
+
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return (email.contains("@")&&email.contains(".")) || email.length()>3;
+        return (email.contains("@") && email.contains(".")) || email.length() > 3;
     }
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
         return password.length() >= 5;
     }
+
     /**
      * Function to show settings alert dialog
-     * */
+     */
     public void showSettingsAlert() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
         // Setting Dialog Title
@@ -441,8 +474,52 @@ public void onStop(){
         // Showing Alert Message
         alertDialog.show();
     }
-public  void debugDisplayGPS(Activity a){
-    Toast.makeText(a,"Updated GPS: "+gps.getLocation(),Toast.LENGTH_LONG).show();
-}
+
+    public void debugDisplayGPS(Activity a) {
+        Toast.makeText(a, "Updated GPS: " + gps.getLocation(), Toast.LENGTH_LONG).show();
+    }
+    public void loggedInFromFB(Profile profile){
+        // App code
+        CustomFBProfile custom = new CustomFBProfile(profile);
+        Intent i = new Intent(LoginActivity.this, MainActivity.class);
+        i.putExtra("fb_profile", custom);
+        i.putExtra("gps", gps);
+        LoginActivity.this.startActivity(i);
+        LoginActivity.this.finish();
+        //goToMainActivity();
+    }
+
+    @Override
+    public void Login() {
+        FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(LoginActivity.this,"No internet connection or server is down :(",Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+    @Override
+    public void Login(final Profile prof){
+        FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                LoginActivity.this.loggedInFromFB(prof);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(LoginActivity.this,"No internet connection or server is down :(",Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+    public boolean isLoggedIn(){
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        return accessToken != null;
+    }
 }
 

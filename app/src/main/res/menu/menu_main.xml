@@ -14,4 +14,7 @@
         android:orderInCategory="1"
         android:title="Account Settings"
         app:showAsAction="never" />
+    <item android:title="Sign Out"
+        android:orderInCategory="3"
+        android:id="@+id/sign_out" />
 </menu>

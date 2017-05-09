@@ -2,21 +2,18 @@ package app.reservation.acbasoftare.com.reservation.FirebaseWebTasks;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-
-import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.ProgressBar;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.QuickContactBadge;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -35,22 +32,19 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 
-import app.reservation.acbasoftare.com.reservation.App_Activity.InStoreTicketReservationActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
+import app.reservation.acbasoftare.com.reservation.App_Activity.MessagingActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.TicketScreenActivity;
+import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessagingUserMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
-import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
 import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_bitmaps;
-import static com.google.api.client.http.HttpMethods.HEAD;
 
 /**
  * Created by user on 1/16/17.
@@ -181,14 +175,23 @@ public class FirebaseWebTasks {
         }
 
     }
+
+    /**
+     *
+     * DISPLAYS THE STYLISTS for GUI.....FOR MAINACTIVITY
+     * CUREENT ACTIVE USAGE for LIVE PRODUCTION.
+     * POPULATES on the LIVEFEED tab
+     */
     public static class ListViewAdpaterStylist extends ArrayAdapter<Stylist> {
         private MainActivity ma;
         private HashMap<String, Boolean> loaded;
+        private CustomFBProfile profile;
         //private ArrayList<Stylist> list;
-        public ListViewAdpaterStylist(MainActivity ma, int list_view_live_feed, ArrayList<Stylist> values) {
+        public ListViewAdpaterStylist(MainActivity ma, int list_view_live_feed, ArrayList<Stylist> values, CustomFBProfile profile) {
             super(ma, list_view_live_feed, values);
             this.ma = ma;
             this.loaded = new HashMap<>();
+            this.profile = profile;
         }
 
         public View getView(final int position, View convertView, ViewGroup parent) {
@@ -219,7 +222,34 @@ public class FirebaseWebTasks {
             TextView tv4=(TextView)convertView.findViewById(R.id.textView4);
             TextView tv5=(TextView)convertView.findViewById(R.id.textView5);
             TextView tv6=(TextView)convertView.findViewById(R.id.textView6);
-
+            Button msg_btn = (Button) convertView.findViewById(R.id.msg_sty_btn);//messege stylist
+            if(s.getId().equalsIgnoreCase("-1")){
+                Log.e("Button hidden","id store");
+                msg_btn.setVisibility(View.GONE);
+            }///if this is the store then dont display button to message
+            msg_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Log.e("Button","Button clicked");
+                    if (profile == null){
+                        Toast.makeText(getContext(),"Must be logged in to use this feature.",Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    Bitmap sty = stylist_bitmaps.get(s.getId());
+                    Uri user_uri = profile.getUri();
+                    ImageView iv = new ImageView(getContext());
+                    iv.setImageURI(user_uri);
+                    Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
+                    Utils.saveFileToDisk(sty,Utils.SELECTED_USER);
+                    Utils.saveFileToDisk(user,Utils.USER);
+                    Intent i = new Intent(getContext(), MessagingActivity.class);
+                    FirebaseMessagingUserMetaData userMeta = new FirebaseMessagingUserMetaData(profile);
+                    FirebaseMessagingUserMetaData selectedUser = new FirebaseMessagingUserMetaData(ma.store,s);
+                    i.putExtra(Utils.USER, userMeta);
+                    i.putExtra(Utils.SELECTED_USER,selectedUser);
+                    getContext().startActivity(i);
+                }
+            });
             //Bitmap myBitmap = BitmapFactory.decodeFile("\\res\\drawable\\logo.png");
             QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.quickContactBadge);
             //if(s.getImage_bytes() == null){

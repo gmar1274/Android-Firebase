@@ -98,7 +98,10 @@
             android:layout_gravity="center_horizontal"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="79dp"/>
+            android:layout_marginTop="79dp"
+            xmlns:facebook="http://schemas.android.com/apk/res-auto"
+            facebook:com_facebook_login_text="Login with Facebook"
+            />
 
         <Button
             android:layout_width="198dp"

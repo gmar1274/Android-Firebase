@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,40 +17,39 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import com.facebook.Profile;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MessagingActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
-import app.reservation.acbasoftare.com.reservation.App_Objects.UserMessageMetaData;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
+
+import static app.reservation.acbasoftare.com.reservation.R.layout.list_view_live_feed;
 
 /**
  * Created by user on 2017-02-16.
  * used for MAIN TICKET INSTORE AND TICKETACTIVITY self kiosk.....main display
+ *
+ * USED ONLY FOR IN HOUSE KIOSK.
  */
 public class ListViewAdpaterStylist  extends ArrayAdapter<Stylist> {
     private int indexSelected;
     private HashMap<String, Bitmap> bitmapHashMap;
-    private UserMessageMetaData user;
     private Profile profile;
-    public ListViewAdpaterStylist(Activity act, int list_view_live_feed, ArrayList<Stylist> values, HashMap<String, Bitmap> bitmapHashMap, UserMessageMetaData user, Profile prof) {
+    public ListViewAdpaterStylist(Activity act, int list_view_live_feed, ArrayList<Stylist> values, HashMap<String, Bitmap> bitmapHashMap){//}, UserMessageMetaData user, Profile prof) {
         super(act, list_view_live_feed, values);
         this.indexSelected = 0;
         this.bitmapHashMap = bitmapHashMap;
-        this.user = user;
-        this.profile = prof;
+       // this.user = user;
+        //this.profile = prof;
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
         final Stylist s = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
-        convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_view_live_feed, parent, false);
+        convertView = LayoutInflater.from(getContext()).inflate(list_view_live_feed, parent, false);
         RadioButton r = (RadioButton) convertView.findViewById(R.id.live_feed_radiobtn);
         r.setChecked(position == indexSelected);
         r.setTag(position);
@@ -81,22 +81,28 @@ public class ListViewAdpaterStylist  extends ArrayAdapter<Stylist> {
         iv.assignContactFromPhone(s.getPhone(), true);
         iv.setMode(ContactsContract.QuickContact.MODE_LARGE);
 
-        Button msg_btn = (Button) convertView.findViewById(R.id.msg_sty_btn);
+        Button msg_btn = (Button) convertView.findViewById(R.id.msg_sty_btn);//messege stylist
+        if(s.getId()=="-1"){
+            msg_btn.setVisibility(View.GONE);
+            return convertView;
+        }///if this is the store then dont display button to message
         msg_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.e("Button","Button clicked");
                 Bitmap sty = bitmapHashMap.get(s.getId());
                 Uri user_uri = profile.getLinkUri();
                 ImageView iv = new ImageView(getContext());
                 iv.setImageURI(user_uri);
                 Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
-                Utils.saveFileToDisk(sty,"sty");
-                Utils.saveFileToDisk(user,"user");
+                Utils.saveFileToDisk(sty,Utils.SELECTED_USER);
+                Utils.saveFileToDisk(user,Utils.USER);
 
-
+                Log.e("Trying to save pic","saved image success. ListAdapter");
                 Intent i = new Intent(getContext(), MessagingActivity.class);
                 i.putExtra("UserMessageMetaData",user);
                 getContext().startActivity(i);
+                Log.e("Success","button success");
             }
         });
 

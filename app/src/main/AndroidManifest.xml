@@ -147,11 +147,16 @@
         <activity
             android:name=".App_Activity.MessagingActivity"
             android:label="@string/title_activity_messaging"
-            android:parentActivityName=".App_Activity.MainActivity">
+            android:parentActivityName=".App_Activity.MainActivity"
+
+            >
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity"/>
+                android:value=".App_Activity.MainActivity"/>
         </activity>
     </application>
+
+
 
 </manifest>

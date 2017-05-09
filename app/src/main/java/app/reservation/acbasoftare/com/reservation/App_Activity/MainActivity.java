@@ -11,7 +11,6 @@ import android.graphics.Bitmap;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -45,7 +44,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.Profile;
+import com.facebook.login.LoginManager;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -61,6 +60,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -72,9 +72,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -88,6 +85,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseInboxMetaData;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessagingUserMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Invoice;
 import app.reservation.acbasoftare.com.reservation.App_Objects.LatLng;
@@ -96,11 +96,11 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
-import app.reservation.acbasoftare.com.reservation.App_Objects.UserMessageMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
 import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
 import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebTasks;
-import app.reservation.acbasoftare.com.reservation.ListAdapters.UserMessageMetaDataAdapter;
+import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
+import app.reservation.acbasoftare.com.reservation.ListAdapters.InboxMessageListAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Recycleview.RVAdapter;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean isSuccess;//success payment ticket register
     public boolean STYLIST_BITMAPS_LOADED;
 
-    public Profile user_fb_profile;
+    public CustomFBProfile user_fb_profile;
     public MyIntent myIntent;
 
     /**
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity {
                 gm.addMarker(new MarkerOptions()
 
                         .position(myLoc)
-                        .title("My Loctaion").alpha(.5f)).setTag(-1);
+                        .title("My Location").alpha(.5f)).setTag(-1);
 
 
                 for (FirebaseStore s : store_list) {
@@ -314,11 +314,17 @@ public class MainActivity extends AppCompatActivity {
         outState.putParcelable("store", store);
     }
 
+    /**
+     * onCreate entry point to mainActivity
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // LoginActivity.debugDisplayGPS(this);
+
         GPSLocation gps = this.getIntent().getParcelableExtra("gps");
         user_loc = gps.getLocation();
         mv = null;
@@ -367,6 +373,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.user_fb_profile= this.getIntent().getParcelableExtra("fb_profile");
 
+
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
         mCustomFragPageAdapter = new CustomFragPageAdapter(getSupportFragmentManager(), MainActivity.this);
@@ -389,6 +396,7 @@ public class MainActivity extends AppCompatActivity {
                     noStaff = false;
                 } else noStaff = true;
                 if (position == 0) {////////////FIRST STORE VIEW TAB NOTHING TO DO
+
                     //Appointment.reset();
                     return;
                 } else if (position == 1) {//second tab or LIVE FEED TAB//0,1,2 page numbers
@@ -512,7 +520,9 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(stylists_list);
                 //got the stylists now need to get images
                 for (final Stylist sty : stylists_list) {
-                    StorageReference sr = FirebaseStorage.getInstance().getReference().child(store.getPhone() + "/images/stylists/" + sty.getId());
+                    String path = store.getPhone() + "/images/stylists/" + sty.getId();
+                   // Log.e("PATH STORAGE: ",path);
+                    StorageReference sr = FirebaseStorage.getInstance().getReference().child(path);
                     sr.getBytes(IMAGE_DOWNLOAD_LIMIT).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                         @Override
                         public void onSuccess(byte[] bytes) {
@@ -525,11 +535,16 @@ public class MainActivity extends AppCompatActivity {
                                 predictTicketWait(store, stylists_list); //done with loading images
                             }
                         }
-                    }).addOnFailureListener(new OnFailureListener() {
+                    }).addOnFailureListener(new OnFailureListener() {;
                         @Override
-
                         public void onFailure(@NonNull Exception e) {
-                            pd.dismiss();
+                            Bitmap acba = Utils.convertDrawableToBitmap(MainActivity.this,R.drawable.acba);
+                            stylist_bitmaps.put(sty.getId(), acba);
+                            if (stylists_list.size() == stylist_bitmaps.size()) {
+                                Log.e("all finished.", "loaded all of pics...");
+                                pd.dismiss();
+                                predictTicketWait(store, stylists_list); //done with loading images
+                            }
                         }
                     });
                 }
@@ -847,6 +862,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.ticket_history:
                 ticketHistoryActivity();
                 return true;
+            case R.id.sign_out:
+                FirebaseAuth.getInstance().signOut();
+                LoginManager.getInstance().logOut();
+                this.finish();
+                return true;
 
         }
         return super.onOptionsItemSelected(item);
@@ -1039,9 +1059,10 @@ public class MainActivity extends AppCompatActivity {
      * =======
      * >>>>>>> 5997ae533de6ab8c38fdf6326f2cb9bdef91a38a
      * I want to restart all GUI for displaying stylists.
-     *
+     *THIS WILL DISPLAY THE MODEL OR DATA STYLISTS_ARRAYLIST AND BIND TO A LISTVIEW TO CREATE A LISTADAPTER TO DISPLAY FOR GUI
      * @param list_stylist
      * @param stylist_bitmaps
+     * BINDS stylist and bitmaps of stylists to GUI a list adpater. NAMELY, ListViewAdapterStylist
      */
     public void initializeStylists(ArrayList<Stylist> list_stylist, final HashMap<String, Bitmap> stylist_bitmaps) {
 
@@ -1049,7 +1070,7 @@ public class MainActivity extends AppCompatActivity {
         stylists_list = new ArrayList<Stylist>(sty_hm.values());
         Collections.sort(stylists_list);
 
-        FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, stylists_list);
+        FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, stylists_list,this.user_fb_profile);
         ListView lv = (ListView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_livefeed_listview);
         lv.setAdapter(null);
         lv.setAdapter(la);
@@ -1085,7 +1106,7 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private MainActivity ma;
-        private ArrayList<UserMessageMetaData> meta_data_list;
+        private ArrayList<FirebaseInboxMetaData> meta_data_list;
 
         public TabFragment() {
 
@@ -1145,28 +1166,35 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /**
+         * MessagingTab
+         * Inbox
+         * MESSAGING Fragment
+         * TAB 3
          * This method will load the meta data of all clients's messages from any stylists. Set a click
          * listener on the list view and start a new activity for a messagig to display actually message history..
          * @param rootView
          */
         private void fragmentView2(View rootView) {
+          //  ma.TAB3 = true; //boolean that indicates dont load stylist or TAB2 again. reset on tab 1
            final ListView lv = (ListView)rootView.findViewById(R.id.user_meta_data_listview);
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
-                    UserMessageMetaData meta = (UserMessageMetaData) adapterView.getItemAtPosition(pos);
-                    UserMessageMetaDataAdapter ad = (UserMessageMetaDataAdapter) lv.getAdapter();
+                    IMessagingMetaData meta = (IMessagingMetaData) adapterView.getItemAtPosition(pos);
+                    InboxMessageListAdapter ad = (InboxMessageListAdapter) lv.getAdapter();
                     Bitmap sty = ad.getBitmapStylist(pos);
-                    Uri user_uri = ma.user_fb_profile.getLinkUri();
+                    Uri user_uri = ma.user_fb_profile.getUri();
                     ImageView iv = new ImageView(ma);
                     iv.setImageURI(user_uri);
                     Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
-
+                    FirebaseMessagingUserMetaData userMeta = new FirebaseMessagingUserMetaData(ma.user_fb_profile);
+                    FirebaseMessagingUserMetaData selectedUser = new FirebaseMessagingUserMetaData(meta);
                     Intent i = new Intent(ma, MessagingActivity.class);
-                    i.putExtra("UserMessageMetaData",meta);
+                    i.putExtra(Utils.USER, userMeta);
+                    i.putExtra(Utils.SELECTED_USER,selectedUser);
                     //i.putExtra("user_fb_profile",ma.user_fb_profile);
-                    Utils.saveFileToDisk(user,"user");
-                    Utils.saveFileToDisk(sty,"sty");
+                    Utils.saveFileToDisk(user,Utils.USER);
+                    Utils.saveFileToDisk(sty,Utils.SELECTED_USER);
                     ///////save the
                     ma.startActivity(i);
                 }
@@ -1177,27 +1205,27 @@ public class MainActivity extends AppCompatActivity {
             });
             if(meta_data_list == null){//first time initiliazing...
                 Log.e("Init","Inititializing tab 3 messeages...");
-                final String path = "client_messages_meta_data/"+ma.user_fb_profile.getId();//get client's messages only
+                final String path = "inbox/"+ma.user_fb_profile.getId();//get client's messages only
                 DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
                 ref.addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        GenericTypeIndicator<Map<String,UserMessageMetaData>> gti = new GenericTypeIndicator<Map<String, UserMessageMetaData>>() {};
-                        Map<String,UserMessageMetaData> map = null;
+                        GenericTypeIndicator<Map<String,FirebaseInboxMetaData>> gti = new GenericTypeIndicator<Map<String, FirebaseInboxMetaData>>() {};
+                        Map<String,FirebaseInboxMetaData> map = null;
                         if(dataSnapshot.getValue() == null){
-                            map = new HashMap<String, UserMessageMetaData>();
+                            map = new HashMap<String, FirebaseInboxMetaData>();
                         }else{
                             map = dataSnapshot.getValue(gti);
                         }
-                        ArrayList<UserMessageMetaData> data_list = new ArrayList<UserMessageMetaData>(map.values());
+                        ArrayList<FirebaseInboxMetaData> data_list = new ArrayList<FirebaseInboxMetaData>(map.values());
                         Collections.sort(data_list);
                         meta_data_list = data_list;
-                        UserMessageMetaDataAdapter ad =null;
+                        InboxMessageListAdapter ad =null;
                         if(lv.getAdapter() == null) {
-                            ad = new UserMessageMetaDataAdapter(ma, meta_data_list);
+                            ad = new InboxMessageListAdapter(ma, meta_data_list);
                             lv.setAdapter(ad);
                         }else{
-                            ad = (UserMessageMetaDataAdapter) lv.getAdapter();
+                            ad = (InboxMessageListAdapter) lv.getAdapter();
                             ad.notifyDataSetChanged();
                         }
                     }
@@ -1239,6 +1267,7 @@ public class MainActivity extends AppCompatActivity {
 
         private void fragmentView0(final View rootView) {
             /// ma.rootView = rootView;
+
             final TextView miles = (TextView) rootView.findViewById(R.id.textView_distance);
             final SeekBar sb = (SeekBar) rootView.findViewById(R.id.seekBar_radius);
             sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -1531,6 +1560,12 @@ public class MainActivity extends AppCompatActivity {
                     tf2.setMainActivity(ma);
                     map.put(position, tf2);
                     return tf2;
+                case 2:
+                    TabFragment tf3 = TabFragment.newInstance(position + 1);
+                    tf3.setMainActivity(ma);
+                    map.put(position, tf3);
+                    return tf3;
+
                 default:
                     return null;
             }
@@ -1539,7 +1574,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Show 3 total pages.
-            if(MainActivity.this.user_fb_profile != null && MainActivity.this.user_fb_profile.getId()!=null)return 3;
+             if(MainActivity.this.user_fb_profile != null)return 3;
             return 2;
         }
 
@@ -1547,11 +1582,11 @@ public class MainActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Store Location";
+                    return "Shop Location";
                 case 1:
                     return "Live Feed";
-                // case 2:
-                //   return "Make Reservation";
+                case 2:
+                    return "Messages";
             }
             return null;
         }
@@ -1602,5 +1637,29 @@ public class MainActivity extends AppCompatActivity {
             tv.setText(this.getItem(pos));
             return v;
         }
+    }
+    /////////////////////
+    /**
+     * Add sender(client) to storage bucket if doesnt exist. Either way, create a listener of recieving messages.
+     */
+    public void createFirebaseMessagingListener(final CustomFBProfile profile){
+        String messg_user_path = "messaging_users/"+profile.getId();
+        final DatabaseReference sender = FirebaseDatabase.getInstance().getReference().child(messg_user_path);
+        sender.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() == null){//value or key does not exist
+                    Utils.addUserToMessagingMetaData(profile,sender);
+                    return;
+                }else{
+
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }

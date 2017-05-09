@@ -225,6 +225,7 @@ public Stylist(){
     }
 
     public String getName() {
+        if(this.name!=null)return this.name;
         if (this.mname == null || this.mname.length() == 0)
             return this.fname + " " + this.lname;
         else return this.fname + " " + mname + " " + lname;
@@ -241,11 +242,7 @@ public Stylist(){
 
     @Override
     public int compareTo(Stylist stylist) {
-        int id = Integer.valueOf(this.id);
-        int id2 = Integer.valueOf(stylist.id);
-        if(id<id2)return  -1;
-        else if(id>id2)return 1;
-        return 0;
+        return this.id.compareTo(stylist.id);
     }
     @Override
     public boolean equals(Object o){
@@ -272,7 +269,6 @@ public Stylist(){
         dest.writeString(readyBy);
         dest.writeDouble(ticket_price);
     }
-
     protected Stylist(Parcel in) {
         this.fname = in.readString();
         this.mname = in.readString();
@@ -286,7 +282,6 @@ public Stylist(){
         this.readyBy = in.readString();
         this.ticket_price = in.readDouble();
     }
-
     public static final Creator<Stylist> CREATOR = new Creator<Stylist>() {
         @Override
         public Stylist createFromParcel(Parcel source) {

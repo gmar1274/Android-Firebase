@@ -22,19 +22,18 @@ import java.util.ArrayList;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.CircleImage;
-import app.reservation.acbasoftare.com.reservation.App_Objects.UserMessageMetaData;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseInboxMetaData;
+import app.reservation.acbasoftare.com.reservation.Interfaces.IFirebaseMessagingInbox;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
-
-import static android.support.design.R.styleable.View;
 
 /**
  * Created by user on 2017-03-21.
  */
-public class UserMessageMetaDataAdapter extends ArrayAdapter<UserMessageMetaData> {
+public class InboxMessageListAdapter extends ArrayAdapter<FirebaseInboxMetaData> {
 
     private ArrayList<CircleImage> images_downloaded;
-    public  UserMessageMetaDataAdapter(Context c, ArrayList<UserMessageMetaData> list){
+    public InboxMessageListAdapter(Context c, ArrayList<FirebaseInboxMetaData> list){
         super(c, R.layout.message_user_view_meta_data,list);
         this.images_downloaded = new ArrayList<>();
     }
@@ -47,7 +46,7 @@ public class UserMessageMetaDataAdapter extends ArrayAdapter<UserMessageMetaData
     public View getView(final int position_item, View convertView, ViewGroup parent) {
         LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
         // Creating store_list view of row.
-        UserMessageMetaData metaData = getItem(position_item);
+        IFirebaseMessagingInbox metaData = getItem(position_item);
         View rootView = inflater.inflate(R.layout.message_user_view_meta_data, parent, false);
         TextView sty_name = (TextView) rootView.findViewById(R.id.stylist_name_textfield);
         TextView store_name = (TextView) rootView.findViewById(R.id.store_name_textfield);
@@ -63,7 +62,7 @@ public class UserMessageMetaDataAdapter extends ArrayAdapter<UserMessageMetaData
 
             }
         }else {/////////////else the adapter has not loaded the stys images yet. Other words this is the first time this adapter has been called
-            StorageReference sr = FirebaseStorage.getInstance().getReference().child(metaData.getStylist_photo_uri());
+            StorageReference sr = FirebaseStorage.getInstance().getReference().child(metaData.getImage_storage_path());
             sr.getBytes(MainActivity.IMAGE_DOWNLOAD_LIMIT).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                 @Override
                 public void onSuccess(byte[] bytes) {

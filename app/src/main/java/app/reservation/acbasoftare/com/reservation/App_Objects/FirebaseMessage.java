@@ -6,11 +6,13 @@ import android.os.Parcelable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import app.reservation.acbasoftare.com.reservation.Interfaces.IFirebaseMessage;
+
 /**
  * Created by user on 2017-03-22.
  * Firebase representation of a message....used for both stylists and client communication
  */
-public class FirebaseMessage implements Comparable<FirebaseMessage> , Parcelable{
+public class FirebaseMessage implements Comparable<FirebaseMessage> , Parcelable, IFirebaseMessage{
     private String message, timestamp,sender_id; //timestamp = yyyy-MM-dd HH:mm:ss
 
     public FirebaseMessage(){
@@ -71,7 +73,7 @@ public class FirebaseMessage implements Comparable<FirebaseMessage> , Parcelable
     }
     @Override
     public int hashCode(){
-        return message.hashCode();
+        return timestamp.hashCode();
     }
 
     @Override

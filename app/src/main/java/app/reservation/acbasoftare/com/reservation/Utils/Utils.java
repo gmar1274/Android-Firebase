@@ -10,11 +10,16 @@ import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -26,6 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessagingUserMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
@@ -35,6 +42,9 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
  */
 public class Utils {
     public final static int DEFAULT_TIME = 35;
+    public final static String USER="user",SELECTED_USER="selectedUser";
+    public final static int WIDTH=50,HEIGHT=50;
+    public final static String EXT=".png";
     /*
     * Needs db analytics to gather intellignet wait per store...
     * Not in commission at this moment...
@@ -385,9 +395,44 @@ public class Utils {
             os = new FileOutputStream(file);
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, os);
             os.close();
-            Log.e("file","temporarily written correctly");
+            Log.e("file","temporarily written correctly. SUCCESS ON FILE WRITTING");
         }catch (Exception e){
             e.printStackTrace();
+            Log.e("ERROR","NO WRITTING WAS DONE FOR: "+img_name);
         }
+    }
+
+    public static Bitmap convertDrawableToBitmap(Context c, int id) {
+       return BitmapFactory.decodeResource(c.getResources(), id);
+    }
+
+    /**
+     * Create a user to reference for meta data when messaging in app. Example, Firebase.child/messaging_users/id/{METADATA}
+     * @param profile - meta_data_object
+     * @param sender - firebase path...
+     */
+    public static void addUserToMessagingMetaData(final CustomFBProfile profile, DatabaseReference sender) {
+        final FirebaseMessagingUserMetaData meta = new FirebaseMessagingUserMetaData(profile);
+        sender.runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                HashMap<String,FirebaseMessagingUserMetaData> map = null;
+                GenericTypeIndicator<HashMap<String,FirebaseMessagingUserMetaData>> gti = new GenericTypeIndicator<HashMap<String, FirebaseMessagingUserMetaData>>() {};
+                if(mutableData.getValue() == null){
+                    map = new HashMap<String, FirebaseMessagingUserMetaData>();
+                }else{
+                    map = mutableData.getValue(gti);
+                }
+                map.put(meta.getId(),meta);
+                return Transaction.success(mutableData);
+            }
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                Log.e("User added.","User added to f db");
+            }
+        });
+    }
+    public static String getStylistImagePath(FirebaseStore store, Stylist sty){
+        return store.getPhone()+"/images/stylists/"+sty.getId()+EXT;
     }
 }

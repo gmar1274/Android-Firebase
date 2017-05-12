@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,27 +27,26 @@ import org.json.JSONObject;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.ReservationActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.ACBAPackage;
+import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.ParamPair;
 import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
-import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
 import app.reservation.acbasoftare.com.reservation.R;
-import app.reservation.acbasoftare.com.reservation.WebTasks.LockDBPreserveSpot;
 import app.reservation.acbasoftare.com.reservation.WebTasks.WebService;
 
 import static java.lang.Integer.parseInt;
 
 /**
  * Created by user on 2016-08-09.
+ * Main screen to Grab ticket. This is usually called to request a ticket from firebase. By request, meaning to create a ticket.
  */
 public class CreditCardDialog {
     private WebService ws;
@@ -192,9 +192,11 @@ public class CreditCardDialog {
 
     /**
      * MAinActivity displayyy
+     * Default use for mainActivity...
+     * @param profile - custom Facebook details. Default public access.
      */
 
-    public void showCreditCardDialog() {
+    public void showCreditCardDialog(CustomFBProfile profile) {
         alert = new AlertDialog.Builder(this.act);
         alert.setTitle("Contact Information");
 
@@ -205,25 +207,31 @@ public class CreditCardDialog {
         TextView amount = (TextView) layout.findViewById(R.id.textview_reservation_amount);
         final DecimalFormat df = new DecimalFormat("$0.00");
         amount.setText(df.format(store.getTicket_price()));
-        TextView store_tv = (TextView) layout.findViewById(R.id.store_reservation_textview);
-        store_tv.setText("Shop: " + store.getName().toUpperCase());
-        final TextView stylist_tv = (TextView) layout.findViewById(R.id.stylist_reservation_textview);
-        stylist_tv.setText("Stylist: " + stylist.getName().toUpperCase());
+        TextView store_tv = (TextView) layout.findViewById(R.id.textViewSTORE);
+        store_tv.setText( store.getName().toUpperCase());
+        final TextView stylist_tv = (TextView) layout.findViewById(R.id.textViewSTYLIST);
+        stylist_tv.setText( stylist.getName().toUpperCase());
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////MAIN BODY OF ALERT
         final AutoCompleteTextView name = (AutoCompleteTextView) layout.findViewById(R.id.reservation_name);
+        if(profile!=null){
+            name.setText(profile.getName());
+            email_et.setText(profile.getEmail());
+        }
         ////////////////////////////////CREDIT CARD ONLY IF TICKET PRICE > 0
         final EditText ccv = (EditText) layout.findViewById(R.id.reservation_ccv);
         final EditText creditcard = (EditText) layout.findViewById(R.id.reservation_creditcard);
         final EditText exp_month = (EditText) layout.findViewById(R.id.reservation_expmonth);
         EditText exp_yr = (EditText) layout.findViewById(R.id.reservation_expyear);
         //////////////////////////////////////////////////////////////////////////////////////
+        RelativeLayout credit_layout = (RelativeLayout)layout.findViewById(R.id.credit_layout_id);
+        boolean free = false;
         if(store.getTicket_price()==0 || stylist.getTicket_price() == 0 ){
-            ccv.setVisibility(View.GONE);
-            creditcard.setVisibility(View.GONE);
-            exp_month.setVisibility(View.GONE);
-            exp_yr.setVisibility(View.GONE);
-            amount.setVisibility(View.GONE);
+            free=true;
+            credit_layout.setVisibility(View.GONE);
+        }else{
+            credit_layout.setVisibility(View.VISIBLE);
         }
         double ticket_price = 0;///assume theres no ticket price
         if(stylist.getTicket_price()>0){ /////////priority given to stylist
@@ -246,12 +254,13 @@ public class CreditCardDialog {
         alert.setView(layout);
         //////////////////////final variables
         final double finalTicket_price = ticket_price;
-
+        Log.e("TicketPrice:","ticket _ final => "+finalTicket_price+" free: "+free);
 
         final String finalYr = yr;
+        final boolean finalFree = free;
         alert.setPositiveButton("Grab a Ticket", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
-                if(finalTicket_price >0) {
+                if(finalFree == false) {
                     execute(creditcard.getText().toString(), ccv.getText().toString(), exp_month.getText().toString(), finalYr, name.getText().toString(), "" + amount_b, email_et.getText().toString());
                 }else{
                     grabTicket(name.getText().toString(), email_et.getText().toString());

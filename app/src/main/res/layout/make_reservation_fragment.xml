@@ -1,26 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="horizontal">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        >
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Store:"
+            android:text="Shop:"
             android:id="@+id/store_reservation_textview"
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:editable="false"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:fontFamily="sans-serif"/>
+            android:fontFamily="sans-serif"
+            android:textSize="22dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -31,8 +35,7 @@
             android:layout_below="@+id/store_reservation_textview"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"/>
+            android:textSize="22dp" />
         <AutoCompleteTextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -57,84 +60,127 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:hint="Email (Optional)"
-            android:layout_alignRight="@+id/reservation_expyear"
-            android:layout_alignEnd="@+id/reservation_expyear"
             android:maxLength="255" android:inputType="textEmailAddress"/>
 
-        <EditText
+        <TextView
+            android:text="TextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:ems="10"
-            android:id="@+id/reservation_creditcard"
+            android:layout_above="@+id/stylist_reservation_textview"
+            android:layout_toRightOf="@+id/stylist_reservation_textview"
+            android:layout_marginLeft="22dp"
+            android:layout_marginStart="22dp"
+            android:id="@+id/textViewSTORE"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="14dp"
+            android:textColor="@color/colorPrimary" />
+
+        <TextView
+            android:text="TextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/reservation_name"
+            android:layout_alignLeft="@+id/textViewSTORE"
+            android:layout_alignStart="@+id/textViewSTORE"
+            android:id="@+id/textViewSTYLIST"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:textSize="14dp"
+            android:textColor="@color/colorPrimaryDark" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_below="@+id/reservation_phone"
-            android:hint="Credit Card Number"
-            android:layout_alignRight="@+id/reservation_expyear"
-            android:layout_alignEnd="@+id/reservation_expyear"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:maxLength="19"/>
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingBottom="8dp"
+            android:id="@+id/credit_layout_id">
 
-        <EditText
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:ems="10"
-            android:id="@+id/reservation_ccv"
-            android:layout_below="@+id/reservation_expmonth"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignRight="@+id/reservation_expmonth"
-            android:layout_alignEnd="@+id/reservation_expmonth"
-            android:hint="CCV"
-            android:freezesText="false"
-            android:maxLength="3"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/reservation_creditcard"
+                android:hint="Credit Card Number"
+                android:maxLength="19"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
 
-        <EditText
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:ems="10"
-            android:id="@+id/reservation_expmonth"
-            android:layout_below="@+id/reservation_creditcard"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:hint="Expr Month"
-            android:maxLength="2"/>
+            <TextView
+                android:text="@string/FINAL_SALE"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView19"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
 
-        <EditText
-            android:layout_width="100dp"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:ems="10"
-            android:id="@+id/reservation_expyear"
-            android:layout_below="@+id/reservation_creditcard"
-            android:layout_centerHorizontal="true"
-            android:hint="Expr Year"
-            android:maxLength="2"/>
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/reservation_ccv"
+                android:hint="CCV"
+                android:freezesText="false"
+                android:maxLength="3"
+                android:layout_below="@+id/reservation_creditcard"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textview_reservation_amount"
-            android:textAlignment="center"
-            android:layout_alignRight="@+id/reservation_creditcard"
-            android:layout_alignEnd="@+id/reservation_creditcard"
-            android:layout_alignTop="@+id/reservation_ccv"
-            android:layout_alignLeft="@+id/reservation_expyear"
-            android:layout_alignStart="@+id/reservation_expyear"
-            android:layout_alignBottom="@+id/reservation_ccv"
-            android:textSize="30dp"
-            android:textColor="#ff0000"
-            android:visibility="visible"
-            android:editable="false"
-            android:maxLength="6"/>
-        <TextView
-            android:text="@string/FINAL_SALE"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:layout_below="@+id/reservation_ccv"
-            android:layout_alignParentLeft="true" android:layout_alignParentStart="true"
-            android:layout_marginTop="37dp" android:id="@+id/textView19"
-            android:layout_alignParentRight="true" android:layout_alignParentEnd="true"/>
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/reservation_expmonth"
+                android:hint="Expr Month"
+                android:maxLength="2"
+                android:layout_below="@+id/reservation_ccv"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                 />
+
+            <TextView
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/textview_reservation_amount"
+                android:textAlignment="center"
+                android:textSize="30dp"
+                android:textColor="#ff0000"
+                android:visibility="visible"
+                android:editable="false"
+                android:maxLength="6"
+                android:layout_below="@+id/reservation_expmonth"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                tools:text="$1.00" />
+
+            <EditText
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:ems="10"
+                android:id="@+id/reservation_expyear"
+                android:hint="Expr Year"
+                android:maxLength="2"
+                android:layout_below="@+id/reservation_ccv"
+                android:layout_toRightOf="@+id/reservation_expmonth"
+                android:layout_toEndOf="@+id/reservation_expmonth"
+                android:layout_marginLeft="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_width="wrap_content" />
+        </RelativeLayout>
     </RelativeLayout>
 </LinearLayout>

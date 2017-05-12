@@ -1,11 +1,9 @@
 package app.reservation.acbasoftare.com.reservation.App_Activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.app.NavUtils;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,7 +33,7 @@ import app.reservation.acbasoftare.com.reservation.ListAdapters.MessagingListAda
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-public class MessagingActivity extends Activity implements IMessaging {
+public class MessagingActivity extends AppCompatActivity implements IMessaging {
     private Bitmap user_bitmap;
     private ListView messagesListView;///////this is the messaging list view
     private Bitmap selectedUserBitmap;
@@ -57,9 +55,10 @@ public class MessagingActivity extends Activity implements IMessaging {
         setContentView(R.layout.activity_messaging);
 
         //////////////
-       Toolbar toolbar = (Toolbar)this.findViewById(R.id.toolbar2);
-        //getActionBar().setDisplayHomeAsUpEnabled(true);
-
+        //Toolbar toolbar = (Toolbar)this.findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+        setTitle("Messages");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
         messagesListView = (ListView) this.findViewById(R.id.message_listview);
@@ -253,7 +252,8 @@ public class MessagingActivity extends Activity implements IMessaging {
     public boolean onOptionsItemSelected(MenuItem item){
         switch (item.getItemId()){
             case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
+                //NavUtils.navigateUpFromSameTask(this);
+                this.finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -77,6 +77,11 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
+/**
+ *EmployeeActivity is responsibe for all Stylist account functionality. For example, Stylist customize their profile, read messages from clients, notifications  etc.
+ * 3 type of accounts- Owner of saloons, stylists, clients. The 2 former are all controlled here. The client is controlled by MainActivity,java class.
+ *
+ */
 
 public class EmployeeActivity extends AppCompatActivity {
    // private SectionsPagerAdapter mSectionsPagerAdapter;

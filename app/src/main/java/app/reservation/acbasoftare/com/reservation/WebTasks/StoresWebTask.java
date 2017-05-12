@@ -34,8 +34,8 @@ import static com.google.api.client.http.HttpMethods.HEAD;
 public class StoresWebTask extends AsyncTask<String, Void, String> {
     private ProgressBar progressBar;
     private View rootView;
-    //private MapView mv = MainActivity.mv;//static use for on create aka when screen oriteation is changed
-    //private GoogleMap gm = MainActivity.gm;
+    //private MapView mapview = MainActivity.mapview;//static use for on create aka when screen oriteation is changed
+    //private GoogleMap google_map = MainActivity.google_map;
 private MainActivity ma;
     public StoresWebTask(MainActivity ma, View root) {
         this.rootView = root;

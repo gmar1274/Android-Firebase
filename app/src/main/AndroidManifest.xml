@@ -148,13 +148,21 @@
             android:name=".App_Activity.MessagingActivity"
             android:label="@string/title_activity_messaging"
             android:parentActivityName=".App_Activity.MainActivity"
-
+            android:windowSoftInputMode="adjustPan"
+            android:screenOrientation="portrait"
             >
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".App_Activity.MainActivity"/>
         </activity>
+        <activity android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name"/>
+        <meta-data android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id"
+            />
+
+
     </application>
 
 

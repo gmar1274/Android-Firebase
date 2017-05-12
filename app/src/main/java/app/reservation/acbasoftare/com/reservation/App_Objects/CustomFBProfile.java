@@ -6,6 +6,8 @@ import android.os.Parcelable;
 
 import com.facebook.Profile;
 
+import java.util.HashMap;
+
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
 /**
@@ -13,12 +15,27 @@ import app.reservation.acbasoftare.com.reservation.Utils.Utils;
  */
 
 public class CustomFBProfile implements Parcelable{
-    private String name,id;
+    private String name,id,email;
     private Uri uri;
     public CustomFBProfile(Profile profile){
         this.name = profile.getName();
         this.id = profile.getId();
         this.uri = profile.getProfilePictureUri(Utils.WIDTH,Utils.HEIGHT);
+        this.email = "";
+    }
+    public CustomFBProfile(Profile profile, HashMap<String,String> extra){
+        this.name = profile.getName();
+        this.id = profile.getId();
+        this.uri = profile.getProfilePictureUri(Utils.WIDTH,Utils.HEIGHT);
+        this.email = extra.get("email");
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     protected CustomFBProfile(Parcel in) {

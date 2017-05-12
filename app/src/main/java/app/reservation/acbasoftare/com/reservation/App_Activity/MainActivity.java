@@ -21,9 +21,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -102,7 +99,6 @@ import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebT
 import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
 import app.reservation.acbasoftare.com.reservation.ListAdapters.InboxMessageListAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
-import app.reservation.acbasoftare.com.reservation.Recycleview.RVAdapter;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.AD_AGE_DATE_STRING;
@@ -132,15 +128,12 @@ public class MainActivity extends AppCompatActivity {
     public TabLayout tabLayout;
     public Location user_loc;
     public int miles = 10;
-    public GoogleMap gm;
-    public MapView mv;
-    public int selectedPosition;
-    public FirebaseStore store;
-    //public static Ticket TICKET;
+    public GoogleMap google_map;
+    public MapView mapview;
+    public int selectedPosition;///store selected index
+    public FirebaseStore store;//current selected store from store_list[selected_postition]...
     public String phone;//user phone number
     public boolean isSuccess;//success payment ticket register
-    public boolean STYLIST_BITMAPS_LOADED;
-
     public CustomFBProfile user_fb_profile;
     public MyIntent myIntent;
 
@@ -162,18 +155,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void showGoogleMaps(final View rootView, final ArrayList<FirebaseStore> store_list) {
 
-        if (mv == null)
-            mv = (MapView) rootView.findViewById(R.id.mapView);
+        if (mapview == null) {
+            mapview = (MapView) rootView.findViewById(R.id.mapView);
+        }
 
-        mv.onCreate(null);
+        mapview.onCreate(null);
 
         // Gets to GoogleMap from the MapView and does initialization stuff
-        mv.getMapAsync(new OnMapReadyCallback() {
+        mapview.getMapAsync(new OnMapReadyCallback() {
             /** Called when the user clicks a marker. */
             @Override
             public void onMapReady(GoogleMap googleMap) {
-                gm = googleMap;
-                gm.setOnMarkerClickListener(
+                google_map = googleMap;
+                google_map.getUiSettings().setAllGesturesEnabled(true);
+                google_map.setOnMarkerClickListener(
                         new GoogleMap.OnMarkerClickListener() {
                             public boolean onMarkerClick(final Marker marker) {
 
@@ -196,13 +191,13 @@ public class MainActivity extends AppCompatActivity {
 
                         }
                 );
-                gm.getUiSettings().setMyLocationButtonEnabled(false);
+                google_map.getUiSettings().setMyLocationButtonEnabled(false);
                 if (ActivityCompat.checkSelfPermission(rootView.getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(rootView.getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                     //Log.e("ERRRR,,", "ERRRRR GM permission gor google maps");
                     return;
                 }
                 com.google.android.gms.maps.model.LatLng myLoc = new com.google.android.gms.maps.model.LatLng(MainActivity.this.user_loc.getLatitude(), MainActivity.this.user_loc.getLongitude());
-                gm.addMarker(new MarkerOptions()
+                google_map.addMarker(new MarkerOptions()
 
                         .position(myLoc)
                         .title("My Location").alpha(.5f)).setTag(-1);
@@ -210,13 +205,13 @@ public class MainActivity extends AppCompatActivity {
 
                 for (FirebaseStore s : store_list) {
                     com.google.android.gms.maps.model.LatLng loc = new com.google.android.gms.maps.model.LatLng(s.getLocation().latitude, s.getLocation().longitude);
-                    gm.addMarker(new MarkerOptions().position(loc).title(s.getName())).setTag(s.getStore_number());
+                    google_map.addMarker(new MarkerOptions().position(loc).title(s.getName())).setTag(s.getStore_number());
                 }
 
                 // Updates the location and zoom of the MapView
                 CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(myLoc, 10);//20 is closeset 5 is largest
-                gm.animateCamera(cameraUpdate);
-                mv.onResume();
+                google_map.animateCamera(cameraUpdate);
+                mapview.onResume();
             }
 
         });
@@ -289,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
         // LockDBPreserveSpot db = new LockDBPreserveSpot();
         //db.execute(store_list.get(selectedPosition).getPhone());
         CreditCardDialog ccd = new CreditCardDialog(MainActivity.this, selectedPosition, stylist_position, phone);
-        ccd.showCreditCardDialog();
+        ccd.showCreditCardDialog(user_fb_profile);
     }
 
     public void onBackPressed() {
@@ -304,12 +299,12 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         outState.putInt("selected", selectedPosition);
         outState.putParcelableArrayList("store_list", store_list);
-        //  outState.putParcelable("ticket", TICKET); // mv.onSaveInstanceState(outState);
+        //  outState.putParcelable("ticket", TICKET); // mapview.onSaveInstanceState(outState);
         //outState.putInt("ticket_number", ticket_number);
         outState.putParcelableArrayList("ticket_history", ticket_history);
         outState.putBoolean("issSuccess", isSuccess);
         outState.putSerializable("stylist_bitmaps", stylist_bitmaps);
-        outState.putBoolean("STYLIST_BITMAPS_LOADED", STYLIST_BITMAPS_LOADED);
+      //  outState.putBoolean("STYLIST_BITMAPS_LOADED", STYLIST_BITMAPS_LOADED);
         outState.putSerializable("sty_hm", sty_hm);
         outState.putParcelable("store", store);
     }
@@ -326,9 +321,12 @@ public class MainActivity extends AppCompatActivity {
         // LoginActivity.debugDisplayGPS(this);
 
         GPSLocation gps = this.getIntent().getParcelableExtra("gps");
+        if (gps == null) {
+            gps = new GPSLocation(this);
+        }
         user_loc = gps.getLocation();
-        mv = null;
-        gm = null;
+        mapview = null;
+        google_map = null;
         mPublisherInterstitialAd = new PublisherInterstitialAd(this);
         mPublisherInterstitialAd.setAdUnitId("ca-app-pub-9309556355508377/7384464845");
         mPublisherInterstitialAd.setAdListener(new AdListener() {
@@ -349,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
             //ticket_number = savedInstanceState.getInt("ticket_number");
             isSuccess = savedInstanceState.getBoolean("isSuccess");
             stylist_bitmaps = (HashMap<String, Bitmap>) savedInstanceState.getSerializable("stylist_bitmaps"); //getParcelableArrayList("stylist_bitmaps");
-            STYLIST_BITMAPS_LOADED = savedInstanceState.getBoolean("STYLIST_BITMAPS_LOADED");
+           // STYLIST_BITMAPS_LOADED = savedInstanceState.getBoolean("STYLIST_BITMAPS_LOADED");
             ticket_history = savedInstanceState.getParcelableArrayList("ticket_history");
             sty_hm = (HashMap<String, Stylist>) savedInstanceState.getSerializable("sty_hm");
             store = savedInstanceState.getParcelable("store");
@@ -362,7 +360,7 @@ public class MainActivity extends AppCompatActivity {
             stylist_position = 0;
             noStaff = true;
             stylist_bitmaps = new HashMap<>();
-            STYLIST_BITMAPS_LOADED = false;
+           // STYLIST_BITMAPS_LOADED = false;
             ticket_history = new ArrayList<>();
             sty_hm = new HashMap<>();
         }
@@ -383,7 +381,39 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.setAdapter(mCustomFragPageAdapter);
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-        mViewPager.setOffscreenPageLimit(3);
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                switch (position){
+                    case 0:
+                        displayToast(MainActivity.this,"Page: "+position+". IS GM null? "+Boolean.valueOf(MainActivity.this.google_map ==null));
+                        mapview.onResume();
+                        break;
+                    case 1:
+                        displayToast(MainActivity.this,"Page: "+position);
+                        displayLiveFeed(stylists_list);
+                        break;
+                    case 2:
+                        displayToast(MainActivity.this,"Page: "+position);
+                        break;
+                    default:
+                        Toast.makeText(MainActivity.this,"Error switch cases.",Toast.LENGTH_LONG).show();
+                        break;
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+        //mViewPager.setOffscreenPageLimit(3);
+        /*
         mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -436,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
                     store = s;
                     loadFirebaseStylist(s);
 
-                    //mv.onCreate(savedInstanceState);
+                    //mapview.onCreate(savedInstanceState);
                 } /*else if (position == 2) {//the third tab . aka Reservation Appointment
                     updateTab3();
                     if (stylists_list == null || stylists_list.size() == 0) {
@@ -451,32 +481,76 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }*/
+
+    }
+
+    /**
+     * Displays all GUI elements for Tab 2 or live feed.
+     * Fetches stylists for each shop if neccesarry by making a api web call using firebase.
+     * @param stylists_list
+     */
+    private void displayLiveFeed(ArrayList<Stylist> stylists_list) {
+        AdView mAdView = (AdView) MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.adView_liveFeed);
+        AdRequest adRequest = null;
+
+        if (ADTESTING) {
+            adRequest = new AdRequest.Builder().addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+        } else {
+            //adRequest = new AdRequest.Builder().build(); //addTestDevice("23B075DED4F5E3DB63757F55444BFF46").build();
+
+            try {
+                adRequest = new AdRequest.Builder().setBirthday(sdf.parse(AD_AGE_DATE_STRING))
+                        .build();
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
 
-            private void setUpRV3rdTab() {
-
-                RecyclerView recyclerView_stylists = (RecyclerView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.rv_stylist_view);
-
-                recyclerView_stylists.setHasFixedSize(true);
-                recyclerView_stylists.setAdapter(new RVAdapter<Stylist>(MainActivity.this, Utils.getArrayListStylist(stylists_list), R.layout.rv_stylist, true));
-                LinearLayoutManager ll = new LinearLayoutManager(mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getContext());
-                ll.setOrientation(ll.HORIZONTAL);
-                recyclerView_stylists.setLayoutManager(ll);
-                DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView_stylists.getContext(), ll.getOrientation());
-                recyclerView_stylists.addItemDecoration(dividerItemDecoration);
-                recyclerView_stylists.getAdapter().notifyDataSetChanged();
+        }
+        mAdView.loadAd(adRequest);
+        mAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
             }
 
             @Override
-            public void onPageScrollStateChanged(int state) {
+            public void onAdFailedToLoad(int i) {
+                Log.e("Loading AD: ","Error on ad load.");
+                super.onAdFailedToLoad(i);
+            }
 
+            @Override
+            public void onAdLeftApplication() {
+                super.onAdLeftApplication();
+            }
+
+            @Override
+            public void onAdOpened() {
+                super.onAdOpened();
+            }
+
+            @Override
+            public void onAdLoaded() {
+                Log.e("Ad loaded","Ad loaded!");
+                super.onAdLoaded();
             }
         });
-        // MainActivity.a = this;
+        if(stylists_list==null){//new store selected so populate stylist
+            stylist_bitmaps=null;
+            FirebaseStore s = store_list.get(selectedPosition);
+            store = s;
+            loadFirebaseStylist(s);
+        }
+
+
+
     }
 
     /**
      * Fetch the stylist pictures from the database.
+     * NOTE*:: this method is super unstable in terms of modularity. Because this function is relying on 1) stylists_list and bitmaps arraylist
+     * from MainActivity...need to create a new method later but for now this will populate both arraylists once it makes a firebase
+     * call.
      */
     private void loadFirebaseStylist(final FirebaseStore store) {
         if (store == null) return;
@@ -492,7 +566,7 @@ public class MainActivity extends AppCompatActivity {
         if (stylists_list == null) {
             stylists_list = new ArrayList<>();
         } else {
-            this.stylists_list.clear(); //store_list.clear();
+            stylists_list.clear(); //store_list.clear();
         }
         if (stylist_bitmaps != null) {
             stylist_bitmaps.clear();
@@ -515,7 +589,6 @@ public class MainActivity extends AppCompatActivity {
                 };
                 Map<String, Stylist> map = dataSnapshot.getValue(gti);
                 sty_hm = new HashMap<String, Stylist>(map);
-
                 stylists_list = new ArrayList<Stylist>(sty_hm.values());
                 Collections.sort(stylists_list);
                 //got the stylists now need to get images
@@ -865,6 +938,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.sign_out:
                 FirebaseAuth.getInstance().signOut();
                 LoginManager.getInstance().logOut();
+                Toast.makeText(this,"Looged out!",Toast.LENGTH_LONG).show();
                 this.finish();
                 return true;
 
@@ -884,8 +958,8 @@ public class MainActivity extends AppCompatActivity {
     //@Override
     public void onResume() {
         super.onResume();
-        if (mv != null)
-            mv.onResume();
+        if (mapview != null)
+            mapview.onResume();
     }
 
     //@Override
@@ -898,25 +972,25 @@ public class MainActivity extends AppCompatActivity {
         //delete.execute(store_list.get(selectedPosition).getPhone(), ticket_number + "");///remove ticket
         //takes only 2 params, store and ticketnumber
         //}
-        if (mv != null) mv.onPause();
+        if (mapview != null) mapview.onPause();
     }
 
     //  @Override
     public void onDestroy() {
         super.onDestroy();
-        if (mv != null) mv.onDestroy();
+        if (mapview != null) mapview.onDestroy();
     }
 
     //@Override
     public void onLowMemory() {
         super.onLowMemory();
-        if (mv != null)
-            mv.onLowMemory();
+        if (mapview != null)
+            mapview.onLowMemory();
     }
 
     public void onStop() {
         super.onStop();// ATTENTION: This was auto-generated to implement the App Indexing API.
-        if (mv != null) mv.onStop();
+        if (mapview != null) mapview.onStop();
 
     }
 
@@ -924,18 +998,18 @@ public class MainActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();// ATTENTION: This was auto-generated to implement the App Indexing API.
 
-        if (mv != null)
-            mv.onStart();
+        if (mapview != null)
+            mapview.onStart();
 
     }
 
     public final void onExitAmbient() {
-        if (mv != null)
-            mv.onExitAmbient();
+        if (mapview != null)
+            mapview.onExitAmbient();
     }
 
     public final void onEnterAmbient(Bundle ambientDetails) {
-        if (mv != null) mv.onEnterAmbient(ambientDetails);
+        if (mapview != null) mapview.onEnterAmbient(ambientDetails);
     }
 
     ///////////////////////////end google maps
@@ -1269,6 +1343,8 @@ public class MainActivity extends AppCompatActivity {
         private void fragmentView0(final View rootView) {
             /// ma.rootView = rootView;
 
+
+
             final TextView miles = (TextView) rootView.findViewById(R.id.textView_distance);
             final SeekBar sb = (SeekBar) rootView.findViewById(R.id.seekBar_radius);
             sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -1338,15 +1414,18 @@ public class MainActivity extends AppCompatActivity {
             if (ma.store_list == null) {//first time running
                /* StoresWebTask swt = new StoresWebTask(rootView); //old style fetch from my database
                 swt.execute(sb.getProgress() + "");*/
+                ma.store_list = new ArrayList<>();
                 loadStoresFromFirebase();
+
 
             } else {///could be here because of screen orient change so update ui
 
                 ListView lv = (ListView) rootView.findViewById(R.id.fragment_listview);
-                ListViewAdapter la = new ListViewAdapter(ma, ma.store_list);
-                lv.setAdapter(null);
-                lv.setAdapter(la);
-                ma.showGoogleMaps(rootView, ma.store_list);
+                if(lv.getAdapter()==null) {
+                    ListViewAdapter la = new ListViewAdapter(ma, ma.store_list);
+                    lv.setAdapter(la);
+                }
+                ma.mapview.onResume();
             }
             Spinner spinner = (Spinner) rootView.findViewById(R.id.sortBySpinner);
             final String[] sort_arr = {"Distance", "Name"};
@@ -1447,6 +1526,7 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
+
         }
 
         @Override
@@ -1509,7 +1589,7 @@ public class MainActivity extends AppCompatActivity {
                     ma.selectedPosition = (Integer) view.getTag();
                     if (ma.selectedPosition != LAST_PICKED) {
                         // Log.e("DIFF CHOICE::","sp: "+ma.selectedPosition+" <> lastpicked: "+LAST_PICKED);
-                        ma.STYLIST_BITMAPS_LOADED = false;
+                       // ma.STYLIST_BITMAPS_LOADED = false;
                         if (ma.stylists_list != null) ma.stylists_list.clear();
                         if (stylist_bitmaps != null) stylist_bitmaps.clear();
                         stylist_bitmaps = null;
@@ -1520,8 +1600,8 @@ public class MainActivity extends AppCompatActivity {
                     // Updates the location and zoom of the MapView
                     com.google.android.gms.maps.model.LatLng l = new com.google.android.gms.maps.model.LatLng(myLoc.latitude, myLoc.longitude);
                     CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(l, 14);//20 is closeset 5 is largest
-                    ma.gm.animateCamera(cameraUpdate);
-                    ma.mv.onResume();
+                    ma.google_map.animateCamera(cameraUpdate);
+                    ma.mapview.onResume();
                 }
             });
             return rowView;
@@ -1662,5 +1742,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+    public void displayToast(Context c, String msg){
+        Toast.makeText(c,msg,Toast.LENGTH_LONG).show();
     }
 }

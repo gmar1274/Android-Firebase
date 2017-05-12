@@ -23,11 +23,15 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.ads.AdListener;
@@ -46,6 +50,8 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.List;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
@@ -63,10 +69,10 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
     public static final boolean ADTESTING = false;//false means live
     public final String PREF_USERNAME = "username";
     public final String PREF_PASSWORD = "password";
-
     public static final SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
     public static final String AD_AGE_DATE_STRING = "01/01/2005";
-
+    private final List<String> PERMISSIONS_READ = Arrays.asList("public_profile","email");
+    private final List<String> PERMISSIONS_PUBLISH = Arrays.asList("");//email","publish_stream");
     /**
      * Id to identity READ_CONTACTS permission request.
      * cntrl alt L for formatting
@@ -124,8 +130,8 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-       // FacebookSdk.sdkInitialize(getApplicationContext());
-        //AppEventsLogger.activateApp(this);
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
         mAuth = FirebaseAuth.getInstance();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
@@ -133,11 +139,13 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
         callbackManager = CallbackManager.Factory.create();
 
         final LoginButton loginButton = (LoginButton) findViewById(R.id.fb);
-        loginButton.setReadPermissions("public_profile");
-
+        loginButton.setReadPermissions(PERMISSIONS_READ);//Arrays.asList("public_profile","email"));//,"user_birthday"));
+        //loginButton.setPublishPermissions(PERMISSIONS_PUBLISH);
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
+                //LoginManager.getInstance().logInWithPublishPermissions(LoginActivity.this, PERMISSIONS_PUBLISH);//extra..
+                LoginManager.getInstance().logInWithReadPermissions(LoginActivity.this, PERMISSIONS_READ);//extra..
 
                 Profile prof = Profile.getCurrentProfile();
                 if(prof!=null){
@@ -478,15 +486,48 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
     public void debugDisplayGPS(Activity a) {
         Toast.makeText(a, "Updated GPS: " + gps.getLocation(), Toast.LENGTH_LONG).show();
     }
-    public void loggedInFromFB(Profile profile){
-        // App code
-        CustomFBProfile custom = new CustomFBProfile(profile);
-        Intent i = new Intent(LoginActivity.this, MainActivity.class);
-        i.putExtra("fb_profile", custom);
-        i.putExtra("gps", gps);
-        LoginActivity.this.startActivity(i);
-        LoginActivity.this.finish();
-        //goToMainActivity();
+
+    /**
+     * Creates the intent to package FB attributes to pass to MainActivity
+     * @param profile
+     */
+    public void loggedInFromFB(final Profile profile){
+
+        AccessTokenTracker track = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
+                //Toast.makeText(LoginActivity.this,"Token: "+currentAccessToken.getToken()+" declined: "+currentAccessToken.getPermissions(),Toast.LENGTH_LONG).show();
+               // Log.e("LOG... ", currentAccessToken+"");
+               /* GraphRequest req =  GraphRequest.newMeRequest(currentAccessToken,new GraphRequest.GraphJSONObjectCallback(){
+                    @Override
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        Toast.makeText(LoginActivity.this,"R: "+response.toString(),Toast.LENGTH_LONG).show();
+                        // App code
+                        String gender ="";
+                        String age_range="";
+                        Log.e("HERE:: ","Resp: "+response);
+                        try{
+                            age_range =  object.get("age_range").toString();
+                            gender = object.getString("gender");
+                            Log.e("Success API"," age_range: "+age_range+" gender: "+gender+"\nResponse: "+response);
+                        }catch (Exception ee){
+                            ee.printStackTrace();
+                            Log.e("API err","API err...response: "+ response.toString());
+                        }
+
+                    }
+                });*/
+                CustomFBProfile custom = new CustomFBProfile(profile);
+                Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                i.putExtra("fb_profile", custom);
+                i.putExtra("gps", gps);
+                LoginActivity.this.startActivity(i);
+                LoginActivity.this.finish();
+            }
+        };
+        //Bundle param = new Bundle();
+        //param.putString("fields","id,name,link,age_rang");
+
     }
 
     @Override
@@ -508,6 +549,7 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
         FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
+
                 LoginActivity.this.loggedInFromFB(prof);
             }
         }).addOnFailureListener(new OnFailureListener() {

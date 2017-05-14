@@ -3,6 +3,8 @@ package app.reservation.acbasoftare.com.reservation.App_Objects;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.Arrays;
+
 import app.reservation.acbasoftare.com.reservation.Interfaces.IFirebaseMessagingInbox;
 import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
 
@@ -118,5 +120,9 @@ public class FirebaseInboxMetaData implements Parcelable, Comparable<FirebaseInb
         parcel.writeString(id);
         parcel.writeString(image_storage_path);
         parcel.writeByte((byte) (isRead ? 1 : 0));
+    }
+    @Override
+    public String toString(){
+        return Arrays.asList(this.name,this.getId(),this.image_storage_path).toString();
     }
 }

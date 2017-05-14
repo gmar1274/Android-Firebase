@@ -57,8 +57,6 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
         //////////////
         //Toolbar toolbar = (Toolbar)this.findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
-        setTitle("Messages");
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
         messagesListView = (ListView) this.findViewById(R.id.message_listview);
@@ -66,6 +64,8 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
 
         this.selectedUserMeta = intent.getParcelableExtra(Utils.SELECTED_USER);
         this.userMeta = intent.getParcelableExtra(Utils.USER);
+        setTitle(selectedUserMeta.getName().toUpperCase());
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
        this.loadConversation(this.userMeta, this.selectedUserMeta);
@@ -177,11 +177,11 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
      */
     @Override
     public List<FirebaseMessage> loadConversation(IMessagingMetaData user, IMessagingMetaData selectedUser) {
-        Log.e("In messaging app", "IS NULL? INTERFACE user: "+Boolean.valueOf(user==null)+" selectedUser: "+Boolean.valueOf(selectedUser==null));
+       // Log.e("In messaging app", "IS NULL? INTERFACE user: "+Boolean.valueOf(user==null)+" selectedUser: "+Boolean.valueOf(selectedUser==null));
 
         this.userMeta = (FirebaseMessagingUserMetaData) user;
         this.selectedUserMeta = (FirebaseMessagingUserMetaData) selectedUser;
-        Log.e("In messaging app", "IS NULL? user: "+Boolean.valueOf(userMeta==null)+" selectedUser: "+Boolean.valueOf(selectedUserMeta==null));
+        //Log.e("In messaging app", "IS NULL? user: "+Boolean.valueOf(userMeta==null)+" selectedUser: "+Boolean.valueOf(selectedUserMeta==null));
 
        // this.conversation = new ArrayList<>();
         String path = "messages/" + user.getId() + "/" + selectedUser.getId().toString();

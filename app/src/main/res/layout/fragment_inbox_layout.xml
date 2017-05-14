@@ -6,7 +6,7 @@
 
     <ListView
         android:layout_width="match_parent"
-        android:layout_height="match_parent" android:id="@+id/user_meta_data_listview"
+        android:layout_height="match_parent" android:id="@+id/inbox_meta_data_listview"
         android:layout_marginBottom="?android:attr/actionBarSize"
     />
 </LinearLayout>

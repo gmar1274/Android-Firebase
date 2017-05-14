@@ -1,25 +1,32 @@
 package app.reservation.acbasoftare.com.reservation.Utils;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.util.Base64;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -36,6 +43,7 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessaging
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.TimeSet;
+import app.reservation.acbasoftare.com.reservation.R;
 
 /**
  * Created by user on 12/6/16.
@@ -434,5 +442,48 @@ public class Utils {
     }
     public static String getStylistImagePath(FirebaseStore store, Stylist sty){
         return store.getPhone()+"/images/stylists/"+sty.getId()+EXT;
+    }
+
+    /**
+     *
+     * @param sr Storage Reference firebase.
+     * @param s Stylist Object
+     * @param loc Location that maps id to file location
+     * @throws IOException
+     */
+    public static void createFileFromFirebaseToDevice(StorageReference sr, final Stylist s, final HashMap<String,String> loc) throws IOException {
+        final File temp = File.createTempFile(s.getId(),EXT);
+        sr.getFile(temp).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                loc.put(s.getId(),temp.getAbsolutePath());
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /**
+     * Uses BitmapFactory.decodeFile(path:string)
+     * uses deafualt logo for id==-1 or shop.
+     * @param filepath
+     * @return
+     */
+    public static Bitmap decodeFileToBitmap(String filepath){
+        if( filepath==null || filepath.contains("-1"))return BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.acba);
+        return BitmapFactory.decodeFile(filepath);
+    }
+
+    public static Bitmap setDefaultBitmap(Context context) {
+        return BitmapFactory.decodeResource(context.getResources(),R.drawable.acba);
+    }
+
+    public static Bitmap decodeFileToBitmap(Context context, String path) {
+        Bitmap file = decodeFileToBitmap(path);
+        if(file==null)return setDefaultBitmap(context);
+        return file;
     }
 }

@@ -39,7 +39,6 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_bitmaps;
 
 /**
  * Created by user on 2016-08-06.
@@ -273,7 +272,7 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
            // setListener(tv6,r);
             //Bitmap myBitmap = BitmapFactory.decodeFile("\\res\\drawable\\logo.png");
             QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.quickContactBadge);
-
+/*
             if(stylist_bitmaps!=null && stylist_bitmaps.size()>= position+1) {
                 iv.setImageBitmap(stylist_bitmaps.get(position));//Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
                if(position==0) {
@@ -281,7 +280,7 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
                }else{
                    iv.assignContactFromPhone(s.getPhone(),true);
                }
-            }
+            }*/
 
             iv.setMode(ContactsContract.QuickContact.MODE_LARGE);
             // iv.setVisibility(View.VISIBLE);

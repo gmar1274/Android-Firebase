@@ -23,7 +23,6 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
-import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -31,7 +30,6 @@ import com.facebook.FacebookSdk;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
 import com.facebook.appevents.AppEventsLogger;
-import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.ads.AdListener;
@@ -145,7 +143,7 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
             @Override
             public void onSuccess(LoginResult loginResult) {
                 //LoginManager.getInstance().logInWithPublishPermissions(LoginActivity.this, PERMISSIONS_PUBLISH);//extra..
-                LoginManager.getInstance().logInWithReadPermissions(LoginActivity.this, PERMISSIONS_READ);//extra..
+                //LoginManager.getInstance().logInWithReadPermissions(LoginActivity.this, PERMISSIONS_READ);//extra..
 
                 Profile prof = Profile.getCurrentProfile();
                 if(prof!=null){
@@ -486,13 +484,7 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
     public void debugDisplayGPS(Activity a) {
         Toast.makeText(a, "Updated GPS: " + gps.getLocation(), Toast.LENGTH_LONG).show();
     }
-
-    /**
-     * Creates the intent to package FB attributes to pass to MainActivity
-     * @param profile
-     */
-    public void loggedInFromFB(final Profile profile){
-
+/*
         AccessTokenTracker track = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
@@ -517,19 +509,16 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
 
                     }
                 });*/
-                CustomFBProfile custom = new CustomFBProfile(profile);
-                Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                i.putExtra("fb_profile", custom);
-                i.putExtra("gps", gps);
-                LoginActivity.this.startActivity(i);
-                LoginActivity.this.finish();
-            }
-        };
+     //       }
+      //  };
         //Bundle param = new Bundle();
         //param.putString("fields","id,name,link,age_rang");
 
-    }
+    //}
 
+    /**
+     * Login as a free user.
+     */
     @Override
     public void Login() {
         FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -544,13 +533,22 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
             }
         });
     }
+
+    /**
+     * Signs in anonymously to Firebase Authentication then proceeds to
+     * @param prof
+     */
     @Override
     public void Login(final Profile prof){
         FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-
-                LoginActivity.this.loggedInFromFB(prof);
+                CustomFBProfile custom = new CustomFBProfile(prof);
+                Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                i.putExtra("fb_profile", custom);
+                i.putExtra("gps", gps);
+                LoginActivity.this.startActivity(i);
+                LoginActivity.this.finish();
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -559,6 +557,11 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
             }
         });
     }
+
+    /**
+     *
+     * @return true if already logged in. Looks at FB sdk's access token.
+     */
     public boolean isLoggedIn(){
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         return accessToken != null;

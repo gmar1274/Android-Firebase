@@ -66,9 +66,12 @@ import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -113,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
 
     public final static boolean ADTESTING = false;//false means LIVE ads
     public static final long IMAGE_DOWNLOAD_LIMIT = 1024 * 1024 * 10 ;
-    public static HashMap<String, Bitmap> stylist_bitmaps;
+    public  HashMap<String, String> stylist_bitmaps;//file loaction. Will create a temp file path on local device from firebase containing imagees.
     /**
      * The {@link ViewPager} that will host the section contents.
      */
@@ -346,7 +349,7 @@ public class MainActivity extends AppCompatActivity {
             //TICKET = savedInstanceState.getParcelable("ticket");
             //ticket_number = savedInstanceState.getInt("ticket_number");
             isSuccess = savedInstanceState.getBoolean("isSuccess");
-            stylist_bitmaps = (HashMap<String, Bitmap>) savedInstanceState.getSerializable("stylist_bitmaps"); //getParcelableArrayList("stylist_bitmaps");
+            stylist_bitmaps = (HashMap<String, String>) savedInstanceState.getSerializable("stylist_bitmaps"); //getParcelableArrayList("stylist_bitmaps");
            // STYLIST_BITMAPS_LOADED = savedInstanceState.getBoolean("STYLIST_BITMAPS_LOADED");
             ticket_history = savedInstanceState.getParcelableArrayList("ticket_history");
             sty_hm = (HashMap<String, Stylist>) savedInstanceState.getSerializable("sty_hm");
@@ -387,19 +390,29 @@ public class MainActivity extends AppCompatActivity {
 
             }
 
+            /**
+             * TAB postions: 0 ,1, 2
+             * 0 = shop search
+             * 1 = live feed, active stylists etc..
+             * 2 = inbox all messages
+             * I THINK I CAN JUST RELY on this instead of inflating the view on custom fragment...idk for know both are implemented..All logic
+             * is mainly contained here.
+             * @param position
+             */
             @Override
             public void onPageSelected(int position) {
+                Fragment frag = mCustomFragPageAdapter.getCurrentFragmentView(position);
+
                 switch (position){
                     case 0:
-                        displayToast(MainActivity.this,"Page: "+position+". IS GM null? "+Boolean.valueOf(MainActivity.this.google_map ==null));
+                       displayToast(MainActivity.this,"IS GM null? "+Boolean.valueOf(MainActivity.this.google_map ==null)+" is mv null? "+Boolean.valueOf(mapview==null));
                         mapview.onResume();
                         break;
                     case 1:
-                        displayToast(MainActivity.this,"Page: "+position);
-                        displayLiveFeed(stylists_list);
+                        displayLiveFeed(frag,stylists_list);
                         break;
                     case 2:
-                        displayToast(MainActivity.this,"Page: "+position);
+                        displayInbox(frag,user_fb_profile,store,stylists_list,stylist_bitmaps);
                         break;
                     default:
                         Toast.makeText(MainActivity.this,"Error switch cases.",Toast.LENGTH_LONG).show();
@@ -484,13 +497,71 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void displayInbox(final Fragment frag, CustomFBProfile cust_prof , FirebaseStore store, ArrayList<Stylist> stylists_list,HashMap<String,String>
+                              stylist_bitmaps) {
+        if(store==null || stylists_list==null || stylists_list.size()==0){//no info to display. Nothing to do.
+            return;
+        }
+
+        View rootView = frag.getView();
+        if(rootView==null)return;
+        final ListView inbox_listview = (ListView) rootView.findViewById(R.id.inbox_meta_data_listview);
+
+        InboxMessageListAdapter adapter = null;
+
+        if(inbox_listview.getAdapter() == null) {
+           adapter = new InboxMessageListAdapter(frag.getContext(),new ArrayList<FirebaseInboxMetaData>(),stylist_bitmaps);
+        }else {
+           adapter = (InboxMessageListAdapter) inbox_listview.getAdapter();
+        }
+        String path = "messages/"+cust_prof.getId();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
+        final InboxMessageListAdapter finalAdapter = adapter;
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue() == null){//no data..
+                    return ;
+                }
+                for(DataSnapshot child : dataSnapshot.getChildren()){//id of all conversations with the key...
+                    if(finalAdapter.contains(child.getKey())){Log.e("CONTAINS: ","Already there: true");continue;}
+                    String meta_path = "message_meta_data/"+child.getKey();//path to a firebaseInboxMetaData object
+                    DatabaseReference inbox_ref = FirebaseDatabase.getInstance().getReference().child(meta_path);
+                    inbox_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.getValue() == null){return;}
+                            //GenericTypeIndicator<FirebaseInboxMetaData> gti = new GenericTypeIndicator<FirebaseInboxMetaData>() {};
+                            FirebaseInboxMetaData inbox_meta = dataSnapshot.getValue(FirebaseInboxMetaData.class);
+                            finalAdapter.add(inbox_meta);
+                            inbox_listview.setAdapter(finalAdapter);
+
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     /**
      * Displays all GUI elements for Tab 2 or live feed.
      * Fetches stylists for each shop if neccesarry by making a api web call using firebase.
      * @param stylists_list
      */
-    private void displayLiveFeed(ArrayList<Stylist> stylists_list) {
-        AdView mAdView = (AdView) MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.adView_liveFeed);
+    private void displayLiveFeed(Fragment frag, ArrayList<Stylist> stylists_list) {
+        AdView mAdView = (AdView) frag.getActivity().findViewById(R.id.adView_liveFeed);//MainActivity.this.getCurrentFragmentDisplayFromMainAct().getView().findViewById(R.id.adView_liveFeed);
         AdRequest adRequest = null;
 
         if (ADTESTING) {
@@ -571,7 +642,7 @@ public class MainActivity extends AppCompatActivity {
         if (stylist_bitmaps != null) {
             stylist_bitmaps.clear();
         } else {
-            stylist_bitmaps = new HashMap<String, Bitmap>();
+            stylist_bitmaps = new HashMap<String, String>();
         }
         DatabaseReference db = FirebaseDatabase.getInstance().getReference().child("stylists/" + String.valueOf(store.getStore_number()));
         db.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -593,10 +664,44 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(stylists_list);
                 //got the stylists now need to get images
                 for (final Stylist sty : stylists_list) {
+                    if(sty.getId().equalsIgnoreCase("-1")){stylist_bitmaps.put(sty.getId(),sty.getId());continue;}
                     String path = store.getPhone() + "/images/stylists/" + sty.getId();
                    // Log.e("PATH STORAGE: ",path);
                     StorageReference sr = FirebaseStorage.getInstance().getReference().child(path);
-                    sr.getBytes(IMAGE_DOWNLOAD_LIMIT).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                    File temp = null;
+                    try {
+
+                        temp = File.createTempFile(sty.getId(), Utils.EXT);
+                        stylist_bitmaps.put(sty.getId(),temp.getAbsolutePath());
+                        final File finalTemp = temp;
+                        sr.getFile(temp).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                Log.e("Success","Temp created: "+ finalTemp.getAbsolutePath()+"\nsty_bm: "+stylist_bitmaps+"\nsty_l: "+stylists_list);
+
+                                if(stylist_bitmaps.size()==stylists_list.size()){
+                                    pd.dismiss();
+                                    initializeStylists(stylists_list,stylist_bitmaps);
+                                }
+
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.e("Failure","sty_bm: "+stylist_bitmaps+"\nsty_l: "+stylists_list);
+
+                                if(stylist_bitmaps.size()==stylists_list.size()){
+                                    pd.dismiss();
+                                    initializeStylists(stylists_list,stylist_bitmaps);
+                                }
+                                e.printStackTrace();
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                   /* sr.getBytes(IMAGE_DOWNLOAD_LIMIT).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                         @Override
                         public void onSuccess(byte[] bytes) {
 
@@ -619,7 +724,7 @@ public class MainActivity extends AppCompatActivity {
                                 predictTicketWait(store, stylists_list); //done with loading images
                             }
                         }
-                    });
+                    });*/
                 }
             }
 
@@ -979,6 +1084,7 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         if (mapview != null) mapview.onDestroy();
+        FirebaseAuth.getInstance().signOut();//guareentee to sign off
     }
 
     //@Override
@@ -1138,13 +1244,11 @@ public class MainActivity extends AppCompatActivity {
      * @param stylist_bitmaps
      * BINDS stylist and bitmaps of stylists to GUI a list adpater. NAMELY, ListViewAdapterStylist
      */
-    public void initializeStylists(ArrayList<Stylist> list_stylist, final HashMap<String, Bitmap> stylist_bitmaps) {
-
-
+    public void initializeStylists(ArrayList<Stylist> list_stylist, final HashMap<String, String> stylist_bitmaps) {
         stylists_list = new ArrayList<Stylist>(sty_hm.values());
         Collections.sort(stylists_list);
 
-        FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, stylists_list,this.user_fb_profile);
+        FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, stylists_list,this.user_fb_profile,stylist_bitmaps);
         ListView lv = (ListView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_livefeed_listview);
         if(lv==null)return;
         lv.setAdapter(null);
@@ -1215,7 +1319,7 @@ public class MainActivity extends AppCompatActivity {
                     //ma.rootView_LiveTab = rootView;
                     break;
                 case 2:
-                    rootView = inflater.inflate(R.layout.user_messaging_meta_data_layout, container, false);
+                    rootView = inflater.inflate(R.layout.fragment_inbox_layout, container, false);
                     break;
             }
             return displayView(rootView, page - 1);
@@ -1251,19 +1355,29 @@ public class MainActivity extends AppCompatActivity {
          */
         private void fragmentView2(View rootView) {
           //  ma.TAB3 = true; //boolean that indicates dont load stylist or TAB2 again. reset on tab 1
-           final ListView lv = (ListView)rootView.findViewById(R.id.user_meta_data_listview);
+           final ListView lv = (ListView)rootView.findViewById(R.id.inbox_meta_data_listview);
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
                     IMessagingMetaData meta = (IMessagingMetaData) adapterView.getItemAtPosition(pos);
                     InboxMessageListAdapter ad = (InboxMessageListAdapter) lv.getAdapter();
-                    Bitmap sty = ad.getBitmapStylist(pos);
+                    FirebaseInboxMetaData meta_inbox = ad.getMessage(pos);
+
+                    if(meta_inbox.isRead()==false){
+                       // String path = "message_meta_data/"+ma.user_fb_profile.getId()+"/"+meta_inbox.getId()/
+                        //DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
+                        meta_inbox.setRead(true);
+                        ad.notifyDataSetChanged();
+                    }
+
+                    Bitmap sty = ad.getBitmapStylist(meta.getId());
                     Uri user_uri = ma.user_fb_profile.getUri();
                     ImageView iv = new ImageView(ma);
                     iv.setImageURI(user_uri);
                     Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
                     FirebaseMessagingUserMetaData userMeta = new FirebaseMessagingUserMetaData(ma.user_fb_profile);
                     FirebaseMessagingUserMetaData selectedUser = new FirebaseMessagingUserMetaData(meta);
+
                     Intent i = new Intent(ma, MessagingActivity.class);
                     i.putExtra(Utils.USER, userMeta);
                     i.putExtra(Utils.SELECTED_USER,selectedUser);
@@ -1278,38 +1392,9 @@ public class MainActivity extends AppCompatActivity {
 
 
             });
-            if(meta_data_list == null){//first time initiliazing...
-                Log.e("Init","Inititializing tab 3 messeages...");
-                final String path = "inbox/"+ma.user_fb_profile.getId();//get client's messages only
-                DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
-                ref.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        GenericTypeIndicator<Map<String,FirebaseInboxMetaData>> gti = new GenericTypeIndicator<Map<String, FirebaseInboxMetaData>>() {};
-                        Map<String,FirebaseInboxMetaData> map = null;
-                        if(dataSnapshot.getValue() == null){
-                            map = new HashMap<String, FirebaseInboxMetaData>();
-                        }else{
-                            map = dataSnapshot.getValue(gti);
-                        }
-                        ArrayList<FirebaseInboxMetaData> data_list = new ArrayList<FirebaseInboxMetaData>(map.values());
-                        Collections.sort(data_list);
-                        meta_data_list = data_list;
-                        InboxMessageListAdapter ad =null;
-                        if(lv.getAdapter() == null) {
-                            ad = new InboxMessageListAdapter(ma, meta_data_list);
-                            lv.setAdapter(ad);
-                        }else{
-                            ad = (InboxMessageListAdapter) lv.getAdapter();
-                            ad.notifyDataSetChanged();
-                        }
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                            Log.e("Cancelled ","messaging user tab .... errr");
-                    }
-                });
-
+            if(meta_data_list == null) {//first time initiliazing...
+                Log.e("Init", "Inititializing tab 3 messeages...");
+                ma.displayInbox(this,ma.user_fb_profile,ma.store,ma.stylists_list,ma.stylist_bitmaps);
             }else{
 
             }
@@ -1425,7 +1510,7 @@ public class MainActivity extends AppCompatActivity {
                     ListViewAdapter la = new ListViewAdapter(ma, ma.store_list);
                     lv.setAdapter(la);
                 }
-                ma.mapview.onResume();
+               // ma.mapview.onResume();
             }
             Spinner spinner = (Spinner) rootView.findViewById(R.id.sortBySpinner);
             final String[] sort_arr = {"Distance", "Name"};
@@ -1587,12 +1672,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                     int LAST_PICKED = ma.selectedPosition;
                     ma.selectedPosition = (Integer) view.getTag();
-                    if (ma.selectedPosition != LAST_PICKED) {
+                    if (ma.selectedPosition != LAST_PICKED) {/////different SHOP delete bitmaps saved when loaded
                         // Log.e("DIFF CHOICE::","sp: "+ma.selectedPosition+" <> lastpicked: "+LAST_PICKED);
                        // ma.STYLIST_BITMAPS_LOADED = false;
                         if (ma.stylists_list != null) ma.stylists_list.clear();
-                        if (stylist_bitmaps != null) stylist_bitmaps.clear();
-                        stylist_bitmaps = null;
+                        if (ma.stylist_bitmaps != null) {
+                            deleteFiles(ma.stylist_bitmaps);
+                            ma.stylist_bitmaps.clear();
+                        }
+                        ma.stylist_bitmaps = null;
                         ma.stylists_list = null;
                     }
                     notifyDataSetChanged();//updates the button click isset
@@ -1603,9 +1691,28 @@ public class MainActivity extends AppCompatActivity {
                     ma.google_map.animateCamera(cameraUpdate);
                     ma.mapview.onResume();
                 }
+
+                /**
+                 * Helper method to delete temp files created wen downloading from tab2 of a shop.
+                 * @param stylist_bitmaps
+                 */
+                private void deleteFiles(HashMap<String, String> stylist_bitmaps) {
+                    for(String id:stylist_bitmaps.keySet()){
+                        File temp = new File(stylist_bitmaps.get(id));
+                        if(temp.exists()){
+                            if(temp.delete()){
+                                Log.e("delete:","temp successfully deleted");
+                            }else{
+                                Log.e("Errr","no delete");
+                            }
+                        }
+                    }
+                }
             });
             return rowView;
         }
+
+
     }
 
     /**

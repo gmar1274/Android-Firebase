@@ -1,7 +1,5 @@
 package app.reservation.acbasoftare.com.reservation.Recycleview;
 
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,9 +13,7 @@ import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.R;
-import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
-import static app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity.stylist_bitmaps;
 
 /**
  * Created by user on 12/6/16.
@@ -76,8 +72,8 @@ public class RVAdapter<E> extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         if (holder.stylist) {
             Stylist s = (Stylist) list.get(position);
             rb.setText(s.getName().toUpperCase());
-            Drawable d = new BitmapDrawable(ma.getResources(), Utils.resize(stylist_bitmaps.get(position),100,100));//Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())),80,80));
-            rb.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
+            //Drawable d = new BitmapDrawable(ma.getResources(), Utils.resize(stylist_bitmaps.get(position),100,100));//Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())),80,80));
+            //rb.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
 
         } else {//do service
             DecimalFormat df = new DecimalFormat("$ ###,##0.00");

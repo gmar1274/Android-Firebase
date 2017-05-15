@@ -33,7 +33,7 @@ public class MessagingListAdapter extends ArrayAdapter<FirebaseMessage> implemen
     private Bitmap userBM, selectedBM;
     private List<FirebaseMessage> messages;
     public MessagingListAdapter(Context context, List<FirebaseMessage> objects,IMessagingMetaData user, IMessagingMetaData selectedUser, Bitmap userBM,Bitmap selectedBM){//,ArrayList<Bitmap> bm,String receiver) {
-        super(context, R.layout.message_user_view_meta_data, objects);
+        super(context, R.layout.inbox_message_view_layout, objects);
         //this.images = bm;
         //this.receiver = receiver;
         this.user = user;

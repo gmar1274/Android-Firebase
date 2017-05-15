@@ -1,15 +1,12 @@
 package app.reservation.acbasoftare.com.reservation.App_Activity;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -33,9 +30,7 @@ import android.view.animation.AlphaAnimation;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -72,13 +67,11 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -90,7 +83,6 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseInboxMeta
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessagingUserMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Invoice;
-import app.reservation.acbasoftare.com.reservation.App_Objects.LatLng;
 import app.reservation.acbasoftare.com.reservation.App_Objects.MyIntent;
 import app.reservation.acbasoftare.com.reservation.App_Objects.SalonService;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
@@ -101,6 +93,7 @@ import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
 import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebTasks;
 import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
 import app.reservation.acbasoftare.com.reservation.ListAdapters.InboxMessageListAdapter;
+import app.reservation.acbasoftare.com.reservation.ListAdapters.StoreListViewAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
@@ -176,16 +169,16 @@ public class MainActivity extends AppCompatActivity {
                             public boolean onMarkerClick(final Marker marker) {
 
                                 // Retrieve the data from the marker.
-                                Long storePos = (Long) marker.getTag();
-
+                                String store_id = (String) marker.getTag();
                                 // Check if a click count was set, then display the click count.
-                                if (storePos != null) {
-                                    if (storePos == -1) return false;//user position -1 by default
-                                    // clickCount = clickCount + 1;
-                                    // marker.setTag(clickCount);
-                                    // Toast.makeText(MainActivity.a, marker.getTitle() + " has been clicked " + storePos,Toast.LENGTH_SHORT).show();
+                                if (store_id != null) {
+                                    if (store_id.equals("-1")) return false;//user position -1 by default
+                                    ListView store_list = (ListView)rootView.findViewById(R.id.fragment_listview);
+                                    StoreListViewAdapter adapter = (StoreListViewAdapter) store_list.getAdapter();
+                                    int pos = adapter.getPositionFromStoreID(store_id);
+                                    adapter.selectRadioButtonFor(pos);
+                                    store_list.setSelection(pos);
                                 }
-
                                 // Return false to indicate that we have not consumed the event and that we wish
                                 // for the default behavior to occur (which is for the camera to move such that the
                                 // marker is centered and for the marker's info window to open, if it has one).
@@ -208,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
 
                 for (FirebaseStore s : store_list) {
                     com.google.android.gms.maps.model.LatLng loc = new com.google.android.gms.maps.model.LatLng(s.getLocation().latitude, s.getLocation().longitude);
-                    google_map.addMarker(new MarkerOptions().position(loc).title(s.getName())).setTag(s.getStore_number());
+                    google_map.addMarker(new MarkerOptions().position(loc).title(s.getName())).setTag(s.getGoogle_place_id());
                 }
 
                 // Updates the location and zoom of the MapView
@@ -373,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         this.user_fb_profile= this.getIntent().getParcelableExtra("fb_profile");
-
+        Utils.createFileFromFB(this,user_fb_profile.getId(),stylist_bitmaps,user_fb_profile.getPic_url());
 
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
@@ -405,7 +398,7 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (position){
                     case 0:
-                       displayToast(MainActivity.this,"IS GM null? "+Boolean.valueOf(MainActivity.this.google_map ==null)+" is mv null? "+Boolean.valueOf(mapview==null));
+                       //displayToast(MainActivity.this,"IS GM null? "+Boolean.valueOf(MainActivity.this.google_map ==null)+" is mv null? "+Boolean.valueOf(mapview==null));
                         mapview.onResume();
                         break;
                     case 1:
@@ -677,19 +670,16 @@ public class MainActivity extends AppCompatActivity {
                         sr.getFile(temp).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                             @Override
                             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                Log.e("Success","Temp created: "+ finalTemp.getAbsolutePath()+"\nsty_bm: "+stylist_bitmaps+"\nsty_l: "+stylists_list);
-
+                                //Log.e("Success","Temp created: "+ finalTemp.getAbsolutePath()+"\nsty_bm: "+stylist_bitmaps+"\nsty_l: "+stylists_list);
                                 if(stylist_bitmaps.size()==stylists_list.size()){
                                     pd.dismiss();
                                     initializeStylists(stylists_list,stylist_bitmaps);
                                 }
-
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-                                Log.e("Failure","sty_bm: "+stylist_bitmaps+"\nsty_l: "+stylists_list);
-
+                                Log.e("Failure","storage bucket was not found..");
                                 if(stylist_bitmaps.size()==stylists_list.size()){
                                     pd.dismiss();
                                     initializeStylists(stylists_list,stylist_bitmaps);
@@ -1043,7 +1033,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.sign_out:
                 FirebaseAuth.getInstance().signOut();
                 LoginManager.getInstance().logOut();
-                Toast.makeText(this,"Looged out!",Toast.LENGTH_LONG).show();
+                Toast.makeText(this,"Logged out!",Toast.LENGTH_LONG).show();
                 this.finish();
                 return true;
 
@@ -1370,21 +1360,16 @@ public class MainActivity extends AppCompatActivity {
                         ad.notifyDataSetChanged();
                     }
 
-                    Bitmap sty = ad.getBitmapStylist(meta.getId());
-                    Uri user_uri = ma.user_fb_profile.getUri();
-                    ImageView iv = new ImageView(ma);
-                    iv.setImageURI(user_uri);
-                    Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
+
+                   // Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
                     FirebaseMessagingUserMetaData userMeta = new FirebaseMessagingUserMetaData(ma.user_fb_profile);
                     FirebaseMessagingUserMetaData selectedUser = new FirebaseMessagingUserMetaData(meta);
 
                     Intent i = new Intent(ma, MessagingActivity.class);
                     i.putExtra(Utils.USER, userMeta);
                     i.putExtra(Utils.SELECTED_USER,selectedUser);
-                    //i.putExtra("user_fb_profile",ma.user_fb_profile);
-                    Utils.saveFileToDisk(user,Utils.USER);
-                    Utils.saveFileToDisk(sty,Utils.SELECTED_USER);
-                    ///////save the
+                    i.putExtra(Utils.USER_BITMAP_LOCATION,ma.stylist_bitmaps.get(ma.user_fb_profile.getId()));
+                    i.putExtra(Utils.SELECTED_USER_BITMAP_LOCATION,selectedUser.getId());
                     ma.startActivity(i);
                 }
 
@@ -1396,7 +1381,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Init", "Inititializing tab 3 messeages...");
                 ma.displayInbox(this,ma.user_fb_profile,ma.store,ma.stylists_list,ma.stylist_bitmaps);
             }else{
-
+                //should be loaded
             }
 
 
@@ -1501,16 +1486,17 @@ public class MainActivity extends AppCompatActivity {
                 swt.execute(sb.getProgress() + "");*/
                 ma.store_list = new ArrayList<>();
                 loadStoresFromFirebase();
-
-
             } else {///could be here because of screen orient change so update ui
 
                 ListView lv = (ListView) rootView.findViewById(R.id.fragment_listview);
                 if(lv.getAdapter()==null) {
-                    ListViewAdapter la = new ListViewAdapter(ma, ma.store_list);
+                    StoreListViewAdapter la = new StoreListViewAdapter(ma, ma.store_list);
                     lv.setAdapter(la);
                 }
-               // ma.mapview.onResume();
+                ma.google_map = null;
+                ma.mapview = null;
+                Log.d("on load: ","frag 1");
+               ma.showGoogleMaps(rootView,ma.store_list);
             }
             Spinner spinner = (Spinner) rootView.findViewById(R.id.sortBySpinner);
             final String[] sort_arr = {"Distance", "Name"};
@@ -1523,24 +1509,22 @@ public class MainActivity extends AppCompatActivity {
                     String item = adapterView.getItemAtPosition(i).toString();
                     ListView lv = (ListView) rootView.findViewById(R.id.fragment_listview);
                     if (lv == null || lv.getAdapter() == null) return;//nothing to do
-                    ListViewAdapter la = (ListViewAdapter) lv.getAdapter(); //new ListViewAdapter(ma, ma.store_list);
-
+                    StoreListViewAdapter la = (StoreListViewAdapter) lv.getAdapter(); //new StoreListViewAdapter(ma, ma.store_list);
+                    int last_curr = la.getCurrentPosition();//snapshot
+                    FirebaseStore store = la.getItem(last_curr);
                     switch (item.toLowerCase()) {
                         case "distance":
-                            Collections.sort(la.list);
+                            la.sortByDistance();
                             break;
                         case "name":
-                            Collections.sort(la.list, new Comparator<FirebaseStore>() {
-                                @Override
-                                public int compare(FirebaseStore s, FirebaseStore ss) {
-                                    return s.getName().compareTo(ss.getName());
-                                }
-                            });
+                           la.sortByName();
                             break;
                         default:
                             break;
                     }//end swtich
-                    la.notifyDataSetChanged();
+                    int index = la.getPosition(store);
+                    la.selectRadioButtonFor(index);
+                    lv.setSelection(index);
                 }
 
                 @Override
@@ -1577,7 +1561,7 @@ public class MainActivity extends AppCompatActivity {
                     ma.store_list = Utils.calculateDistance(ma.user_loc, map, ma.miles);
 
                     ListView lv = (ListView) ma.mCustomFragPageAdapter.getCurrentFragmentView(ma.mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_listview);
-                    ListViewAdapter la = new ListViewAdapter(ma, ma.store_list);
+                    StoreListViewAdapter la = new StoreListViewAdapter(ma, ma.store_list);
                     lv.setAdapter(null);
                     lv.setAdapter(la);
                     pd.dismiss();
@@ -1625,95 +1609,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * This is for Store list.
-     * ArrayAdpater for stores.
-     */
-    public static class ListViewAdapter extends ArrayAdapter<FirebaseStore> {
-        private MainActivity ma;
-        private ArrayList<FirebaseStore> list;
-
-        public ListViewAdapter(MainActivity ma, ArrayList<FirebaseStore> values) {
-            super(ma, R.layout.list_view_layout, values);
-            this.list = values;
-
-            this.ma = ma;
-        }
-
-        /**
-         * Implement getView method for customizing row of list view.
-         * this method creates store_list single view that correponds to the data being passed in.
-         * get the STORE data by getItem(position)
-         */
-        public View getView(final int position_item, View convertView, ViewGroup parent) {
-            LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
-            // Creating store_list view of row.
-            final FirebaseStore store = getItem(position_item);
-            View rowView = inflater.inflate(R.layout.list_view_layout, parent, false);
-            RadioButton r = (RadioButton) rowView.findViewById(R.id.radio_button);
-            double miles_away = store.getMiles_away();
-            DecimalFormat df = new DecimalFormat("0.##");
-
-            // r.setText("Shop: " + store.getName() + "\n" + "Miles away: " + df.format(miles_away) + "\nHours: " + store.formatHoursTo12hours() + "\n" + store.displayIsAvailable());//+"\n" + "Address: " + store.getAddress().toUpperCase() + "\n" + store.getCitystate().toUpperCase());
-            TextView t = (TextView) rowView.findViewById(R.id.shopNameTextView);
-            t.setText(store.getName());
-            TextView tt = (TextView) rowView.findViewById(R.id.distanceTextView);
-            tt.setText(df.format(miles_away)+" mi");
-            TextView ttt = (TextView) rowView.findViewById(R.id.hoursTextView);
-            ttt.setText(store.formatHoursTo12hours());
-
-            r.setChecked(position_item == ma.selectedPosition);
-            r.setTag(position_item);
-            r.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (position_item != ma.selectedPosition) {//new store...go get the stylists from that db
-                        ma.stylists_list = null;//new store null stylists
-                    }
-                    int LAST_PICKED = ma.selectedPosition;
-                    ma.selectedPosition = (Integer) view.getTag();
-                    if (ma.selectedPosition != LAST_PICKED) {/////different SHOP delete bitmaps saved when loaded
-                        // Log.e("DIFF CHOICE::","sp: "+ma.selectedPosition+" <> lastpicked: "+LAST_PICKED);
-                       // ma.STYLIST_BITMAPS_LOADED = false;
-                        if (ma.stylists_list != null) ma.stylists_list.clear();
-                        if (ma.stylist_bitmaps != null) {
-                            deleteFiles(ma.stylist_bitmaps);
-                            ma.stylist_bitmaps.clear();
-                        }
-                        ma.stylist_bitmaps = null;
-                        ma.stylists_list = null;
-                    }
-                    notifyDataSetChanged();//updates the button click isset
-                    LatLng myLoc = store.getLocation();
-                    // Updates the location and zoom of the MapView
-                    com.google.android.gms.maps.model.LatLng l = new com.google.android.gms.maps.model.LatLng(myLoc.latitude, myLoc.longitude);
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(l, 14);//20 is closeset 5 is largest
-                    ma.google_map.animateCamera(cameraUpdate);
-                    ma.mapview.onResume();
-                }
-
-                /**
-                 * Helper method to delete temp files created wen downloading from tab2 of a shop.
-                 * @param stylist_bitmaps
-                 */
-                private void deleteFiles(HashMap<String, String> stylist_bitmaps) {
-                    for(String id:stylist_bitmaps.keySet()){
-                        File temp = new File(stylist_bitmaps.get(id));
-                        if(temp.exists()){
-                            if(temp.delete()){
-                                Log.e("delete:","temp successfully deleted");
-                            }else{
-                                Log.e("Errr","no delete");
-                            }
-                        }
-                    }
-                }
-            });
-            return rowView;
-        }
-
-
-    }
 
     /**
      * A {@link FragmentPagerAdapter} that returns store_list fragment corresponding to

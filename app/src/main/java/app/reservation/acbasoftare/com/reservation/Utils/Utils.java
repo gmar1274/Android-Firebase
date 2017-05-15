@@ -1,13 +1,14 @@
 package app.reservation.acbasoftare.com.reservation.Utils;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Base64;
 import android.util.Log;
@@ -25,9 +26,11 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -53,6 +56,8 @@ public class Utils {
     public final static String USER="user",SELECTED_USER="selectedUser";
     public final static int WIDTH=50,HEIGHT=50;
     public final static String EXT=".png";
+    public static final String USER_BITMAP_LOCATION = "USER_BITMAP_LOCATION";
+    public static final String SELECTED_USER_BITMAP_LOCATION = "SELECTED_USER_BITMAP_LOCATION" ;
     /*
     * Needs db analytics to gather intellignet wait per store...
     * Not in commission at this moment...
@@ -447,16 +452,16 @@ public class Utils {
     /**
      *
      * @param sr Storage Reference firebase.
-     * @param s Stylist Object
+     * @param id user id
      * @param loc Location that maps id to file location
      * @throws IOException
      */
-    public static void createFileFromFirebaseToDevice(StorageReference sr, final Stylist s, final HashMap<String,String> loc) throws IOException {
-        final File temp = File.createTempFile(s.getId(),EXT);
+    public static void createFileFromFirebaseToDevice(StorageReference sr, final String id, final HashMap<String,String> loc) throws IOException {
+        final File temp = File.createTempFile(id,EXT);
         sr.getFile(temp).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                loc.put(s.getId(),temp.getAbsolutePath());
+                loc.put(id,temp.getAbsolutePath());
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -472,18 +477,101 @@ public class Utils {
      * @param filepath
      * @return
      */
-    public static Bitmap decodeFileToBitmap(String filepath){
-        if( filepath==null || filepath.contains("-1"))return BitmapFactory.decodeResource(Resources.getSystem(), R.drawable.acba);
-        return BitmapFactory.decodeFile(filepath);
+    public static Bitmap decodeFileToBitmap(Context c, String filepath){
+        if( filepath==null || filepath.contains("-1"))return setDefaultBitmap(c);
+        return getBitmapFromFilePath(c,filepath);
     }
-
     public static Bitmap setDefaultBitmap(Context context) {
         return BitmapFactory.decodeResource(context.getResources(),R.drawable.acba);
     }
+    /*public static Bitmap getUserFbProfilePic(Context c, String fb_id){
+        Bitmap img = null;
+        try {
+            URL url = new URL("https://graph.facebook.com/"+fb_id+"/profile_pic");
+            img = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("UTIL class: ","pic not found. API call returned exception...");
+            img = setDefaultBitmap(c);
+        }
+        return img;
+    }*/
 
-    public static Bitmap decodeFileToBitmap(Context context, String path) {
-        Bitmap file = decodeFileToBitmap(path);
-        if(file==null)return setDefaultBitmap(context);
-        return file;
+    public static Bitmap getBitmapFromURI(Context c, Uri uri){
+        try {
+            return MediaStore.Images.Media.getBitmap(c.getContentResolver(),uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;//setDefaultBitmap(c);
     }
+
+    /**
+     *
+     * @param c context
+     * @param id user_id
+     * @param file_location location of id
+     * @return
+     */
+    public static Bitmap getBitmap(Context c,String id, HashMap<String,String> file_location){
+        String path = file_location.get(id);
+        Bitmap img = BitmapFactory.decodeFile(path);
+        if(img == null)return setDefaultBitmap(c);
+        return img;
+    }
+
+    /**
+     * Try and delete file locations saved from download from client_bitmaps.
+     * @param c - context
+     * @param client_bitmaps id-key value=file_loaction
+     */
+    public static void deleteTempFiles(Context c, HashMap<String, String> client_bitmaps) {
+        for(String path: client_bitmaps.values()){
+            File file = new File(path);
+            file.delete();
+        }
+    }
+
+    public static void createFileFromFB(Context c, String id, HashMap<String, String> bitmaps,String url) {
+
+        Bitmap img = fbAPICall(c,url);//getUserFbProfilePic(c,id);
+        FileOutputStream out = null;
+        try{
+            out = c.openFileOutput(id,Context.MODE_PRIVATE);
+            img.compress(Bitmap.CompressFormat.PNG,100,out);
+            out.close();
+            bitmaps.put(id,c.getFilesDir().getAbsolutePath()+"/"+id+Utils.EXT);
+            //Log.e("success","USER stored pic at: "+bitmaps.get(id));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static Bitmap fbAPICall(Context c,String path_url) {
+        Bitmap img = null;
+        try {
+            URL url = new URL(path_url);
+            img = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("UTIL class: ","pic not found. API call returned exception...");
+            img = setDefaultBitmap(c);
+        }
+        return img;
+    }
+
+    /**
+     *
+     * @param c
+     * @param user_file_location abs path.
+     * @return
+     */
+    public static Bitmap getBitmapFromFilePath(Context c, String user_file_location) {
+        Bitmap img = BitmapFactory.decodeFile(user_file_location);
+        if (img==null)return  setDefaultBitmap(c);
+        return img;
+    }
+
 }

@@ -5,8 +5,6 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
-import android.widget.TextView;
-
 import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
@@ -24,9 +22,8 @@ import java.util.ArrayList;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
+import app.reservation.acbasoftare.com.reservation.ListAdapters.StoreListViewAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
-
-import static com.google.api.client.http.HttpMethods.HEAD;
 
 /**
  * Created by user on 2016-08-06.
@@ -130,7 +127,7 @@ private MainActivity ma;
 
             //}
            // if (MainActivity.la == null) {
-             MainActivity.ListViewAdapter la = new MainActivity.ListViewAdapter(ma, ma.store_list);
+             StoreListViewAdapter la = new StoreListViewAdapter(ma, ma.store_list);
                lv.setAdapter(la);
             //}
 

@@ -23,13 +23,15 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.facebook.Profile;
 import com.facebook.ProfileTracker;
-import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.ads.AdListener;
@@ -45,6 +47,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -128,14 +132,19 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        AppEventsLogger.activateApp(this);
+        //FacebookSdk.sdkInitialize(getApplicationContext());
+        //AppEventsLogger.activateApp(this);
         mAuth = FirebaseAuth.getInstance();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
         callbackManager = CallbackManager.Factory.create();
-
+        AccessTokenTracker t = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
+                AccessToken.setCurrentAccessToken(currentAccessToken);
+            }
+        };t.startTracking();
         final LoginButton loginButton = (LoginButton) findViewById(R.id.fb);
         loginButton.setReadPermissions(PERMISSIONS_READ);//Arrays.asList("public_profile","email"));//,"user_birthday"));
         //loginButton.setPublishPermissions(PERMISSIONS_PUBLISH);
@@ -143,7 +152,7 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
             @Override
             public void onSuccess(LoginResult loginResult) {
                 //LoginManager.getInstance().logInWithPublishPermissions(LoginActivity.this, PERMISSIONS_PUBLISH);//extra..
-                //LoginManager.getInstance().logInWithReadPermissions(LoginActivity.this, PERMISSIONS_READ);//extra..
+                LoginManager.getInstance().logInWithReadPermissions(LoginActivity.this, PERMISSIONS_READ);//extra..
 
                 Profile prof = Profile.getCurrentProfile();
                 if(prof!=null){
@@ -540,15 +549,29 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
      */
     @Override
     public void Login(final Profile prof){
+
         FirebaseAuth.getInstance().signInAnonymously().addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                CustomFBProfile custom = new CustomFBProfile(prof);
-                Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                i.putExtra("fb_profile", custom);
-                i.putExtra("gps", gps);
-                LoginActivity.this.startActivity(i);
-                LoginActivity.this.finish();
+               /* Log.e("Prof pic: ","URI: "+prof.getProfilePictureUri(50,50).toString());
+                Log.e("URI: ", Boolean.valueOf(Utils.getBitmapFromURI(LoginActivity.this,prof.getProfilePictureUri(50,50))==null).toString());
+                Log.e("Graph Req:","HTTPS graph request: "+ Utils.getUserFbProfilePic(LoginActivity.this,prof.getId()).toString());
+               */
+                GraphRequest req = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        Log.e("RESPONSE: ",response.toString());
+                        CustomFBProfile custom = new CustomFBProfile(response);
+                        Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                        i.putExtra("fb_profile", custom);
+                        i.putExtra("gps", gps);
+                        LoginActivity.this.startActivity(i);
+                        LoginActivity.this.finish();
+                    }
+                });
+                req.executeAsync();
+
+
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override

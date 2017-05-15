@@ -66,14 +66,19 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseEmployee;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseInboxMetaData;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
+import app.reservation.acbasoftare.com.reservation.ListAdapters.InboxMessageListAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
@@ -99,15 +104,25 @@ public class EmployeeActivity extends AppCompatActivity {
     //  public static View tab3, tab2;
     //public static ExpandableListViewAdapter lva;
     private FirebaseEmployee firebaseEmployee;
-    public static Bitmap empBitmap;
-
+   // public static Bitmap empBitmap;
+    public HashMap<String,String> client_bitmaps;
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable("employee", this.firebaseEmployee);
+        outState.putSerializable("bitmaps",client_bitmaps);//all bitmap file locations for key id.
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_employee);
 
-        this.firebaseEmployee = this.getIntent().getParcelableExtra("employee");
-        //Log.e("Emppp:",firebaseEmployee.toString());
+        if(savedInstanceState != null){
+            this.firebaseEmployee = savedInstanceState.getParcelable("employee");
+            this.client_bitmaps = (HashMap<String, String>) savedInstanceState.getSerializable("bitmaps");
+        }else {
+            this.client_bitmaps = new HashMap<>();
+            this.firebaseEmployee = this.getIntent().getParcelableExtra("employee");
+        }//Log.e("Emppp:",firebaseEmployee.toString());
         // employeeActivity=this;
         // store_id=getIntent().getStringExtra("store_id");
         // stylist_id=getIntent().getStringExtra("stylist_id");
@@ -216,12 +231,14 @@ public class EmployeeActivity extends AppCompatActivity {
                     rootView = inflater.inflate(R.layout.fragment_employee_activity_settings_layout, container, false);  //rootView = inflater.inflate(R.layout.fragment_employee_upcoming_layout, container, false);
                     break;
                 case 2:
+                    rootView = inflater.inflate(R.layout.fragment_inbox_layout, container, false);  //rootView = inflater.inflate(R.layout.fragment_employee_upcoming_layout, container, false);
+                    break;
+                case 3:
                     rootView = inflater.inflate(R.layout.fragment_employee_activity_store_settings_layout, container, false);
                     break;
             }
             return displayView(rootView, page - 1);
         }
-
         /*This method is responsible for displaying the appropriate Views
               * I guess the layouts are formed before even switching to a tab, so on startup up...
               * */
@@ -235,12 +252,126 @@ public class EmployeeActivity extends AppCompatActivity {
                     fragmentView2(rootView);
                     break;
                 case 2:
+                    fragmentViewInbox(rootView);
+                    break;
+                case 3:
                     fragmentViewStoreSettings(rootView);
                     break;
             }
             return rootView;
         }
 
+        /**
+         * Display Messages from users.
+         * @param rootView
+         */
+        private void fragmentViewInbox(View rootView) {
+            final String user_id = ea.firebaseEmployee.getId();
+            final ListView inbox_listview = (ListView) rootView.findViewById(R.id.inbox_meta_data_listview);
+            InboxMessageListAdapter adapter = null;
+            if(inbox_listview.getAdapter() == null) {
+                adapter = new InboxMessageListAdapter(getContext(),new ArrayList<FirebaseInboxMetaData>(),ea.client_bitmaps);
+            }else {
+                adapter = (InboxMessageListAdapter) inbox_listview.getAdapter();
+            }
+            String path = "messages/"+user_id;
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
+            final InboxMessageListAdapter finalAdapter = adapter;
+            ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.getValue() == null){//no data..
+                        return ;
+                    }
+                    for(DataSnapshot child : dataSnapshot.getChildren()){//id of all conversations with the key...
+                        if(finalAdapter.contains(child.getKey())){Log.e("CONTAINS: ","Already there: true");continue;}
+                        String meta_path = "message_meta_data/"+child.getKey();//path to a firebaseInboxMetaData object
+                        DatabaseReference inbox_ref = FirebaseDatabase.getInstance().getReference().child(meta_path);
+                        inbox_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if(dataSnapshot.getValue() == null){return;}
+                                //GenericTypeIndicator<FirebaseInboxMetaData> gti = new GenericTypeIndicator<FirebaseInboxMetaData>() {};
+                                FirebaseInboxMetaData inbox_meta = dataSnapshot.getValue(FirebaseInboxMetaData.class);
+                                finalAdapter.add(inbox_meta);
+                                inbox_listview.setAdapter(finalAdapter);
+
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+        }
+        private void displayInbox(final Fragment frag, CustomFBProfile cust_prof , FirebaseStore store, ArrayList<Stylist> stylists_list, HashMap<String,String>
+                stylist_bitmaps) {
+            if(store==null || stylists_list==null || stylists_list.size()==0){//no info to display. Nothing to do.
+                return;
+            }
+
+            View rootView = frag.getView();
+            if(rootView==null)return;
+            final ListView inbox_listview = (ListView) rootView.findViewById(R.id.inbox_meta_data_listview);
+
+            InboxMessageListAdapter adapter = null;
+
+            if(inbox_listview.getAdapter() == null) {
+                adapter = new InboxMessageListAdapter(frag.getContext(),new ArrayList<FirebaseInboxMetaData>(),stylist_bitmaps);
+            }else {
+                adapter = (InboxMessageListAdapter) inbox_listview.getAdapter();
+            }
+            String path = "messages/"+cust_prof.getId();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
+            final InboxMessageListAdapter finalAdapter = adapter;
+            ref.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.getValue() == null){//no data..
+                        return ;
+                    }
+                    for(DataSnapshot child : dataSnapshot.getChildren()){//id of all conversations with the key...
+                        if(finalAdapter.contains(child.getKey())){Log.e("CONTAINS: ","Already there: true");continue;}
+                        String meta_path = "message_meta_data/"+child.getKey();//path to a firebaseInboxMetaData object
+                        DatabaseReference inbox_ref = FirebaseDatabase.getInstance().getReference().child(meta_path);
+                        inbox_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if(dataSnapshot.getValue() == null){return;}
+                                //GenericTypeIndicator<FirebaseInboxMetaData> gti = new GenericTypeIndicator<FirebaseInboxMetaData>() {};
+                                FirebaseInboxMetaData inbox_meta = dataSnapshot.getValue(FirebaseInboxMetaData.class);
+                                finalAdapter.add(inbox_meta);
+                                inbox_listview.setAdapter(finalAdapter);
+
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }
         private void fragmentViewStoreSettings(View rootView) {
             final String storeURL = "user/"+ea.firebaseEmployee.getStore_number();
             final DecimalFormat df = new DecimalFormat("$0.00");
@@ -517,14 +648,22 @@ public class EmployeeActivity extends AppCompatActivity {
 
             if (ea.firebaseEmployee != null) {
                 StorageReference sr = FirebaseStorage.getInstance().getReference().child(ea.firebaseEmployee.getStore_phone() + "/images/stylists/" + ea.firebaseEmployee.getId());
-                sr.getBytes(1024 * 1024 * 10).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                try {
+                    Utils.createFileFromFirebaseToDevice(sr,ea.firebaseEmployee.getId(),ea.client_bitmaps);
+                    Bitmap img = Utils.getBitmap(ea,ea.firebaseEmployee.getId(),ea.client_bitmaps);
+                    ImageView iv = (ImageView) rootView.findViewById(R.id.imageView_employee_activity);
+                    iv.setImageBitmap(img);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                /* sr.getBytes(1024 * 1024 * 10).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                     @Override
                     public void onSuccess(byte[] bytes) {
                          EmployeeActivity.empBitmap = Utils.convertBytesToBitmap(bytes);
                         ImageView iv = (ImageView) rootView.findViewById(R.id.imageView_employee_activity);
                         iv.setImageBitmap(EmployeeActivity.empBitmap);
                     }
-                });
+                });*/
             }
 
             TextView tv = (TextView) rootView.findViewById(R.id.textView_tab3_employee_activity);
@@ -900,20 +1039,22 @@ public class EmployeeActivity extends AppCompatActivity {
         public int getCount() {
             if(ea.firebaseEmployee.getType().toUpperCase().equalsIgnoreCase(FirebaseEmployee.TYPE.OWNER.toString()))
             {
-                return 3;
+                return 4;
             }
             // Show 2 total pages.
-            return 2;
+            return 3;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Current Tickets";//"Today's Appointments";
+                    return "Current Tickets";//
                 case 1:
-                    return "User Settings";//"Upcoming Appointments";
+                    return "User Settings";//
                 case 2:
+                    return "Messages";
+                case 3:
                     return "Store Settings";
                 /*case 2:
                     return "User Settings";*/
@@ -1064,5 +1205,10 @@ public class EmployeeActivity extends AppCompatActivity {
             }
             return view;
         }
+    }
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        Utils.deleteTempFiles(this,client_bitmaps);
     }
 }

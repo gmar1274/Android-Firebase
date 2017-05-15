@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -14,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.QuickContactBadge;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -141,7 +139,7 @@ public class FirebaseWebTasks {
             String name = s.getId();
             StorageReference sr = FirebaseStorage.getInstance().getReference().child(store.getPhone() + "/images/stylists/" + name);
             try {
-                Utils.createFileFromFirebaseToDevice(sr, s, stylist_bitmaps);
+                Utils.createFileFromFirebaseToDevice(sr, s.getId(), stylist_bitmaps);
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.e("error", "error from downLoadImages FWT class");
@@ -244,21 +242,23 @@ public class FirebaseWebTasks {
                         Toast.makeText(getContext(), "Must be logged in to use this feature.", Toast.LENGTH_LONG).show();
                         return;
                     }
-                    Bitmap sty = Utils.decodeFileToBitmap(stylist_bitmaps.get(s.getId()));
+                    Bitmap sty = Utils.decodeFileToBitmap(getContext(),stylist_bitmaps.get(s.getId()));
                     if(sty == null){
                         sty = BitmapFactory.decodeResource(getContext().getResources(),R.drawable.acba);
                     }
-                    Uri user_uri = profile.getUri();
-                    ImageView iv = new ImageView(getContext());
-                    iv.setImageURI(user_uri);
-                    Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
-                    Utils.saveFileToDisk(sty, Utils.SELECTED_USER);
-                    Utils.saveFileToDisk(user, Utils.USER);
+                   // Uri user_uri = profile.getUri();
+                   // ImageView iv = new ImageView(getContext());
+                   // iv.setImageURI(user_uri);
+                   // Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
+                   // Utils.saveFileToDisk(sty, Utils.SELECTED_USER);
+                   // Utils.saveFileToDisk(user, Utils.USER);
                     Intent i = new Intent(getContext(), MessagingActivity.class);
                     FirebaseMessagingUserMetaData userMeta = new FirebaseMessagingUserMetaData(profile);
                     FirebaseMessagingUserMetaData selectedUser = new FirebaseMessagingUserMetaData(ma.store, s);
                     i.putExtra(Utils.USER, userMeta);
                     i.putExtra(Utils.SELECTED_USER, selectedUser);
+                    i.putExtra(Utils.USER_BITMAP_LOCATION,ma.stylist_bitmaps.get(ma.user_fb_profile.getId()));
+                    i.putExtra(Utils.SELECTED_USER_BITMAP_LOCATION,selectedUser.getId());
                     getContext().startActivity(i);
                 }
             });

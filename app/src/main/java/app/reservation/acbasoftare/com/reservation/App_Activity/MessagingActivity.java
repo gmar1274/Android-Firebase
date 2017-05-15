@@ -64,6 +64,10 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
 
         this.selectedUserMeta = intent.getParcelableExtra(Utils.SELECTED_USER);
         this.userMeta = intent.getParcelableExtra(Utils.USER);
+
+        String user_file = intent.getStringExtra(Utils.USER_BITMAP_LOCATION);
+        String selected_user_file = intent.getStringExtra(Utils.SELECTED_USER_BITMAP_LOCATION);
+
         setTitle(selectedUserMeta.getName().toUpperCase());
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -72,8 +76,8 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
         //firebase url: client_messages/client_id/sty_id {list of messages}
         // url for stylist: stylist_messages/sty_id/client_id/{list of msgs}
 
-        user_bitmap = this.loadUserImage();
-        selectedUserBitmap = this.loadSelectedUserImage();
+        user_bitmap = Utils.getBitmapFromFilePath(this,user_file);
+        selectedUserBitmap = Utils.getBitmapFromFilePath(this,selected_user_file);
 
 
 

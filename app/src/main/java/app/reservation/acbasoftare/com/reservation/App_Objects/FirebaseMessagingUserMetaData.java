@@ -23,7 +23,7 @@ public class FirebaseMessagingUserMetaData implements Parcelable, IMessagingMeta
     }
     public FirebaseMessagingUserMetaData(CustomFBProfile profile){
         this.id = profile.getId();
-        this.image_storage_path = profile.getUri().getPath();
+        this.image_storage_path = profile.getPic_url(); //.getUri().getPath();
         this.name = profile.getName();
     }
     public FirebaseMessagingUserMetaData(IMessagingMetaData selectedUser){

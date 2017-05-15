@@ -30,7 +30,7 @@ public class InboxMessageListAdapter extends ArrayAdapter<FirebaseInboxMetaData>
     private HashMap<String,String> file_loc;
 
     public InboxMessageListAdapter(Context c, ArrayList<FirebaseInboxMetaData> list, HashMap<String,String> file_loc){
-        super(c, R.layout.message_user_view_meta_data,list);
+        super(c, R.layout.inbox_message_view_layout,list);
        // this.images_downloaded = new HashMap<>();
         this.list = list;
         this.file_loc = file_loc;
@@ -49,7 +49,7 @@ public class InboxMessageListAdapter extends ArrayAdapter<FirebaseInboxMetaData>
         LayoutInflater inflater = ((Activity) getContext()).getLayoutInflater();
         // Creating store_list view of row.
         final IFirebaseMessagingInbox metaData = getItem(position_item);
-        View rootView = inflater.inflate(R.layout.message_user_view_meta_data, parent, false);
+        View rootView = inflater.inflate(R.layout.inbox_message_view_layout, parent, false);
         TextView sty_name = (TextView) rootView.findViewById(R.id.stylist_name_textfield);
         TextView store_name = (TextView) rootView.findViewById(R.id.store_name_textfield);
         ConstraintLayout notification = (ConstraintLayout)rootView.findViewById(R.id.message_notification_user_view_layout);

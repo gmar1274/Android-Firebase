@@ -9,7 +9,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +26,9 @@ public class FirebaseStore implements  Comparable<FirebaseStore>, Parcelable{
     private long current_ticket;
     private List<String> period; //google's naming of key: DAY - VALUE: X:XX AM/PM - Y:YY AM/PM
 
+    public FirebaseStore(String google_id){
+        this.google_place_id = google_id;
+    }
     protected FirebaseStore(Parcel in) {
         name = in.readString();
         address = in.readString();
@@ -289,7 +291,7 @@ public class FirebaseStore implements  Comparable<FirebaseStore>, Parcelable{
     @Override
     public  boolean equals(Object o){
         FirebaseStore s = (FirebaseStore) o;
-        return  this.name.equalsIgnoreCase(s.name) && this.store_number==s.store_number && this.google_place_id.equalsIgnoreCase(s.google_place_id);
+        return this.google_place_id.equals(s.google_place_id); //this.name.equalsIgnoreCase(s.name) && this.store_number==s.store_number && this.google_place_id.equalsIgnoreCase(s.google_place_id);
     }
     public String toString(){
         return "Store ID: "+store_number+" peroid: "+period;

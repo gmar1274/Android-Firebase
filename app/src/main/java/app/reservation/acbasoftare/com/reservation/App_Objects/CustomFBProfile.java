@@ -1,14 +1,15 @@
 package app.reservation.acbasoftare.com.reservation.App_Objects;
 
-import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.facebook.GraphResponse;
 import com.facebook.Profile;
 
-import java.util.HashMap;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import app.reservation.acbasoftare.com.reservation.Utils.Utils;
+import java.util.HashMap;
 
 /**
  * Created by user on 4/14/17.
@@ -16,18 +17,38 @@ import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
 public class CustomFBProfile implements Parcelable{
     private String name,id,email;
-    private Uri uri;
+    private String pic_url;
     public CustomFBProfile(Profile profile){
         this.name = profile.getName();
         this.id = profile.getId();
-        this.uri = profile.getProfilePictureUri(Utils.WIDTH,Utils.HEIGHT);
+        //this.uri = profile.getProfilePictureUri(Utils.WIDTH,Utils.HEIGHT);
         this.email = "";
+        this.pic_url = profile.getProfilePictureUri(50,50).getPath();
     }
     public CustomFBProfile(Profile profile, HashMap<String,String> extra){
         this.name = profile.getName();
         this.id = profile.getId();
-        this.uri = profile.getProfilePictureUri(Utils.WIDTH,Utils.HEIGHT);
+        //this.uri = profile.getProfilePictureUri(Utils.WIDTH,Utils.HEIGHT);
         this.email = extra.get("email");
+        this.pic_url = null;
+    }
+
+    /**
+     *
+     * @param response FB API graph call
+     */
+    public CustomFBProfile(GraphResponse response) {
+        JSONObject obj = response.getJSONObject();
+        try {
+            this.id = obj.getString("id");
+            this.name = obj.getString("name");
+            this.email = obj.getString("email");
+            this.pic_url = obj.getJSONObject("picture").getJSONObject("data").getString("url");
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public String getEmail() {
@@ -41,7 +62,9 @@ public class CustomFBProfile implements Parcelable{
     protected CustomFBProfile(Parcel in) {
         name = in.readString();
         id = in.readString();
-        uri = in.readParcelable(Uri.class.getClassLoader());
+        //uri = in.readParcelable(Uri.class.getClassLoader());
+        this.email = in.readString();
+        this.pic_url = in.readString();
     }
 
     public static final Creator<CustomFBProfile> CREATOR = new Creator<CustomFBProfile>() {
@@ -65,7 +88,9 @@ public class CustomFBProfile implements Parcelable{
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(name);
         parcel.writeString(id);
-        parcel.writeParcelable(uri, i);
+        parcel.writeString(email);
+        parcel.writeString(pic_url);
+       // parcel.writeParcelable(uri, i);
     }
 
     public String getName() {
@@ -84,11 +109,20 @@ public class CustomFBProfile implements Parcelable{
         this.id = id;
     }
 
-    public Uri getUri() {
+   /* public Uri getUri() {
         return uri;
+    }*/
+
+   /* public void setUri(Uri uri) {
+        this.uri = uri;
+    }*/
+
+    public String getPic_url() {
+        return pic_url;
     }
 
-    public void setUri(Uri uri) {
-        this.uri = uri;
+    public void setPic_url(String pic_url) {
+        this.pic_url = pic_url;
     }
 }
+

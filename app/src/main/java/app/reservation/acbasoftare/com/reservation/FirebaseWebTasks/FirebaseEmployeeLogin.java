@@ -14,20 +14,16 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
-
-import java.util.Map;
 
 import app.reservation.acbasoftare.com.reservation.App_Activity.EmployeeActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseEmployee;
 
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
-
 /**
  * Created by user on 2017-02-11.
+ * Firebase connection. Query firebase searching for the username and password match.
  */
 public class FirebaseEmployeeLogin extends AsyncTask<String, Void, String> {
     private String user,pass,pass_orig;
@@ -62,11 +58,10 @@ public class FirebaseEmployeeLogin extends AsyncTask<String, Void, String> {
     }
     @Override
     public void onPostExecute(String result){
-
+      //searching async
     }
     @Override
     protected String doInBackground(String... voids) {
-
         return searchEmployee();
     }
 
@@ -76,8 +71,8 @@ public class FirebaseEmployeeLogin extends AsyncTask<String, Void, String> {
      * @return
      */
     private String searchEmployee(){
-
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("employees/");
+        String hashedID = String.valueOf(user.toString().hashCode());
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child("employees/"+hashedID);
         ref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -86,13 +81,13 @@ public class FirebaseEmployeeLogin extends AsyncTask<String, Void, String> {
                     showError();
                     return;
                 }
-                FirebaseEmployee temp = new FirebaseEmployee(user,pass);
-                GenericTypeIndicator<Map<String,FirebaseEmployee>> gti= new GenericTypeIndicator<Map<String,FirebaseEmployee>>(){};
-                Map<String,FirebaseEmployee> map = dataSnapshot.getValue(gti);
-
+                //FirebaseEmployee temp = new FirebaseEmployee(user,pass);
+                //GenericTypeIndicator<Map<String,FirebaseEmployee>> gti= new GenericTypeIndicator<Map<String,FirebaseEmployee>>(){};
+               // Map<String,FirebaseEmployee> map = dataSnapshot.getValue(gti);
+                FirebaseEmployee stylist = dataSnapshot.getValue(FirebaseEmployee.class);
                 pd.dismiss();
-                FirebaseEmployee stylist = map.get(String.valueOf(user.toString().hashCode()));
-                if(stylist != null &&  stylist.getApp_password().equals(temp.getApp_password())){
+               // FirebaseEmployee stylist = map.get(String.valueOf(user.toString().hashCode()));
+                if(stylist != null && user.equals(stylist.getApp_username()) &&  stylist.getApp_password().equals(pass)){
                     loginSucces(stylist);
                 }else{
                     showError();
@@ -111,13 +106,11 @@ public class FirebaseEmployeeLogin extends AsyncTask<String, Void, String> {
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(c);
         LoginActivity la = (LoginActivity) c;
         pref.edit().putString(la.PREF_USERNAME,emp.getApp_username()).putString(la.PREF_PASSWORD, pass_orig).commit();
-
         Intent i = new Intent(c, EmployeeActivity.class);
         i.putExtra("employee",emp);
         i.putExtra("PREF_USERNAME",la.PREF_USERNAME);
         i.putExtra("PREF_PASSWORD",la.PREF_PASSWORD);
         c.startActivity(i);
-
     }
     private void showError() {
         emailView.setError("Username may be incorrect");

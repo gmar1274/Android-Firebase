@@ -282,12 +282,13 @@ public class MainActivity extends AppCompatActivity {
         CreditCardDialog ccd = new CreditCardDialog(MainActivity.this, selectedPosition, stylist_position, phone);
         ccd.showCreditCardDialog(user_fb_profile);
     }
-
+@Override
     public void onBackPressed() {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
+        /*Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        this.startActivity(intent);
+        this.startActivity(intent);*/
+        super.finish();
         return;
     }
 
@@ -490,6 +491,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Logic: go to firebase messaging/{id} get all the childs-{id} fetch data from message_meta_data/{id's}
+     * @param frag
+     * @param cust_prof
+     * @param store
+     * @param stylists_list
+     * @param stylist_bitmaps
+     */
     private void displayInbox(final Fragment frag, CustomFBProfile cust_prof , FirebaseStore store, ArrayList<Stylist> stylists_list,HashMap<String,String>
                               stylist_bitmaps) {
         if(store==null || stylists_list==null || stylists_list.size()==0){//no info to display. Nothing to do.
@@ -517,8 +526,16 @@ public class MainActivity extends AppCompatActivity {
                     return ;
                 }
                 for(DataSnapshot child : dataSnapshot.getChildren()){//id of all conversations with the key...
-                    if(finalAdapter.contains(child.getKey())){Log.e("CONTAINS: ","Already there: true");continue;}
-                    String meta_path = "message_meta_data/"+child.getKey();//path to a firebaseInboxMetaData object
+                    String id  = child.getKey();
+                    FirebaseInboxMetaData obj = finalAdapter.getMetaData(id);
+                    if(obj != null){
+
+                        Log.e("CONTAINS: ","Already meta data here there: true");
+                        obj.setRead(false);
+                        finalAdapter.notifyDataSetChanged();
+                        continue;
+                    }
+                    String meta_path = "message_meta_data/"+id;//path to a firebaseInboxMetaData object
                     DatabaseReference inbox_ref = FirebaseDatabase.getInstance().getReference().child(meta_path);
                     inbox_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
@@ -526,6 +543,7 @@ public class MainActivity extends AppCompatActivity {
                             if(dataSnapshot.getValue() == null){return;}
                             //GenericTypeIndicator<FirebaseInboxMetaData> gti = new GenericTypeIndicator<FirebaseInboxMetaData>() {};
                             FirebaseInboxMetaData inbox_meta = dataSnapshot.getValue(FirebaseInboxMetaData.class);
+                            //inbox_meta.setRead(false);
                             finalAdapter.add(inbox_meta);
                             inbox_listview.setAdapter(finalAdapter);
 
@@ -1353,7 +1371,7 @@ public class MainActivity extends AppCompatActivity {
                     InboxMessageListAdapter ad = (InboxMessageListAdapter) lv.getAdapter();
                     FirebaseInboxMetaData meta_inbox = ad.getMessage(pos);
 
-                    if(meta_inbox.isRead()==false){
+                    if(meta_inbox.isRead()==false){///check if not read then turn off notification
                        // String path = "message_meta_data/"+ma.user_fb_profile.getId()+"/"+meta_inbox.getId()/
                         //DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
                         meta_inbox.setRead(true);
@@ -1378,7 +1396,7 @@ public class MainActivity extends AppCompatActivity {
 
             });
             if(meta_data_list == null) {//first time initiliazing...
-                Log.e("Init", "Inititializing tab 3 messeages...");
+               // Log.e("Init", "Inititializing tab 3 messeages...");
                 ma.displayInbox(this,ma.user_fb_profile,ma.store,ma.stylists_list,ma.stylist_bitmaps);
             }else{
                 //should be loaded

@@ -3,6 +3,7 @@ package app.reservation.acbasoftare.com.reservation.Utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
@@ -12,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.util.Base64;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -58,6 +60,7 @@ public class Utils {
     public final static String EXT=".png";
     public static final String USER_BITMAP_LOCATION = "USER_BITMAP_LOCATION";
     public static final String SELECTED_USER_BITMAP_LOCATION = "SELECTED_USER_BITMAP_LOCATION" ;
+    public static enum TICKET{WAITING,ACTIVE,PASSED};//default is waiting, active means in progress, passed means used already
     /*
     * Needs db analytics to gather intellignet wait per store...
     * Not in commission at this moment...
@@ -470,6 +473,29 @@ public class Utils {
             }
         });
     }
+    /**
+     *
+     * @param sr Storage Reference firebase.
+     * @param id user id
+     * @param loc Location that maps id to file location
+     * @param iv ImageView to display once fetch from firebase
+     * @throws IOException
+     */
+    public static void createFileFromFirebaseToDevice(StorageReference sr, final String id, final HashMap<String,String> loc, final ImageView iv) throws IOException {
+        final File temp = File.createTempFile(id,EXT);
+        sr.getFile(temp).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                loc.put(id,temp.getAbsolutePath());
+                iv.setImageBitmap(BitmapFactory.decodeFile(temp.getAbsolutePath()));
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
     /**
      * Uses BitmapFactory.decodeFile(path:string)
@@ -511,12 +537,18 @@ public class Utils {
      * @param c context
      * @param id user_id
      * @param file_location location of id
-     * @return
+     * @return null if no file is saved.
      */
-    public static Bitmap getBitmap(Context c,String id, HashMap<String,String> file_location){
+    public static Bitmap getBitmap(Context c,String id, HashMap<String,String> file_location) {
         String path = file_location.get(id);
-        Bitmap img = BitmapFactory.decodeFile(path);
-        if(img == null)return setDefaultBitmap(c);
+        File temp = new File(c.getCacheDir(), id);
+        Bitmap img = null;
+        if (temp.exists()) {
+            img = BitmapFactory.decodeFile(temp.getAbsolutePath());
+        }else{
+            img = BitmapFactory.decodeFile(path);
+        }
+        //if(img == null)return setDefaultBitmap(c);
         return img;
     }
 
@@ -572,6 +604,12 @@ public class Utils {
         Bitmap img = BitmapFactory.decodeFile(user_file_location);
         if (img==null)return  setDefaultBitmap(c);
         return img;
+    }
+    public static Bitmap normalizePicture(Bitmap source,int degrees){
+        Matrix m = new Matrix();
+        m.postRotate(degrees);
+        Bitmap rotated_bm = Bitmap.createBitmap(source,0,0,source.getWidth(),source.getHeight(),m,true);
+        return rotated_bm;
     }
 
 }

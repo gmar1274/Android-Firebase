@@ -32,7 +32,13 @@ public class FirebaseInboxMetaData implements Parcelable, Comparable<FirebaseInb
         this.isRead = false;
     }*/
 
-
+    /**
+     * DUMMY class to compare to. Main purposr to cast a child.Key from dataSnapshot convert to object.
+     * @param id
+     */
+    public FirebaseInboxMetaData(String id){
+        this.id = id;
+    }
     protected FirebaseInboxMetaData(Parcel in) {
         name = in.readString();
         id = in.readString();

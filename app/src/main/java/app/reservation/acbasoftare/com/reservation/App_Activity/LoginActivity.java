@@ -385,10 +385,14 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
 ////////sign in listener for firebase
             ///sign in if user in firebase otherwise sign in anon to check if stylist
             signIn(email, password);
-
         }
     }
 
+    /**
+     * Connects to Firebase endpoint.
+     * @param email
+     * @param password
+     */
     private void signIn(final String email, final String password) {
         pd = ProgressDialog.show(this, "Authenticating", "Please wait...", true, false);
         pd.show();
@@ -397,13 +401,17 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
             public void onSuccess(AuthResult authResult) {
                 FirebaseEmployeeLogin fe = new FirebaseEmployeeLogin(LoginActivity.this, email, password, mEmailView, mPasswordView, pd);
                 fe.execute();
-
                 //LOGIN USING MY SERVER
                 // myLogin(email,password);
             }
         });
     }
 
+    /**
+     * DEPRECATED...not using http: acbasoftware.com any more... using firebase now.
+     * @param email
+     * @param password
+     */
     private void myLogin(String email, String password) {
         Login login = new Login(this, mEmailView, mPasswordView, pref);
         login.execute(email, Encryption.encryptPassword(password));//sends sha1 encrypted password
@@ -560,7 +568,7 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
                 GraphRequest req = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
                     @Override
                     public void onCompleted(JSONObject object, GraphResponse response) {
-                        Log.e("RESPONSE: ",response.toString());
+                       // Log.e("RESPONSE: ",response.toString());
                         CustomFBProfile custom = new CustomFBProfile(response);
                         Intent i = new Intent(LoginActivity.this, MainActivity.class);
                         i.putExtra("fb_profile", custom);

@@ -129,11 +129,14 @@ public class InboxMessageListAdapter extends ArrayAdapter<FirebaseInboxMetaData>
     public ArrayList<FirebaseInboxMetaData> getList(){
         return this.list;
     }
-
     public boolean contains(String key) {
-        for(FirebaseInboxMetaData meta:this.list){
-            if(meta.getId().equals(key))return true;
-        }
-        return false;
+        FirebaseInboxMetaData inbox = new FirebaseInboxMetaData(key);
+        return this.list.contains(inbox);
+    }
+
+    public FirebaseInboxMetaData getMetaData(String id) {
+        int index = this.list.indexOf(new FirebaseInboxMetaData(id));
+        if(index<0)return null;
+        return this.list.get(index);
     }
 }

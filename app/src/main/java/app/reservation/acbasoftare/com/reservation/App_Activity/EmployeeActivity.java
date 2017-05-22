@@ -47,10 +47,12 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.login.LoginManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -75,9 +77,11 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Encryption;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseEmployee;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseInboxMetaData;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessagingUserMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
+import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
 import app.reservation.acbasoftare.com.reservation.ListAdapters.InboxMessageListAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
@@ -88,7 +92,7 @@ import app.reservation.acbasoftare.com.reservation.Utils.Utils;
  *
  */
 
-public class EmployeeActivity extends AppCompatActivity {
+public class EmployeeActivity extends AppCompatActivity  {
    // private SectionsPagerAdapter mSectionsPagerAdapter;
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -134,8 +138,9 @@ public class EmployeeActivity extends AppCompatActivity {
       //  mViewPager = (ViewPager) findViewById(R.id.container);
        // mViewPager.setAdapter(mSectionsPagerAdapter);
 ///////////////////////////////////////////////////////////////
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_employeeactivity);
-        //setSupportActionBar(toolbar);
+      //  AppBarLayout toolbar = (AppBarLayout) findViewById(R.id.appbar_employeeactivity);
+
+       // setSupportActionBar(toolbar);
         // Create the adapter that will return store_list fragment for each of the three
         // primary sections of the activity.
         mCustomFragPageAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), this);
@@ -173,13 +178,14 @@ public class EmployeeActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.log_out) {
+        switch (id) {
+            case R.id.log_out:
             SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this.getApplicationContext());
             String PREF_USERNAME =  this.getIntent().getStringExtra("PREF_USERNAME");
             String PREF_PASSWORD = this.getIntent().getStringExtra("PREF_PASSWORD");
             pref.edit().putString(PREF_USERNAME, null).putString(PREF_PASSWORD, null).commit();//debug clear memory of use
-            Intent i = new Intent(this, LoginActivity.class);
-            startActivity (i);
+                FirebaseAuth.getInstance().signOut();
+                LoginManager.getInstance().logOut();
             finish();
             return true;
         }
@@ -249,10 +255,10 @@ public class EmployeeActivity extends AppCompatActivity {
                     fragmentStoreList(rootView);//fragmentView0(rootView);
                     break;
                 case 1:
-                    fragmentView2(rootView);
+                    fragmentViewUserSettings(rootView);
                     break;
                 case 2:
-                    fragmentViewInbox(rootView);
+                    fragmentViewInbox(rootView,ea.firebaseEmployee.getId());
                     break;
                 case 3:
                     fragmentViewStoreSettings(rootView);
@@ -265,8 +271,8 @@ public class EmployeeActivity extends AppCompatActivity {
          * Display Messages from users.
          * @param rootView
          */
-        private void fragmentViewInbox(View rootView) {
-            final String user_id = ea.firebaseEmployee.getId();
+        private void fragmentViewInbox(View rootView, String id) {
+            final String user_id = id;
             final ListView inbox_listview = (ListView) rootView.findViewById(R.id.inbox_meta_data_listview);
             InboxMessageListAdapter adapter = null;
             if(inbox_listview.getAdapter() == null) {
@@ -274,6 +280,32 @@ public class EmployeeActivity extends AppCompatActivity {
             }else {
                 adapter = (InboxMessageListAdapter) inbox_listview.getAdapter();
             }
+            inbox_listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
+                    IMessagingMetaData meta = (IMessagingMetaData) adapterView.getItemAtPosition(pos);
+                    InboxMessageListAdapter ad = (InboxMessageListAdapter) inbox_listview.getAdapter();
+                    FirebaseInboxMetaData meta_inbox = ad.getMessage(pos);
+                    if(meta_inbox.isRead()==false){///check if not read then turn off notification
+                        // String path = "message_meta_data/"+ma.user_fb_profile.getId()+"/"+meta_inbox.getId()/
+                        //DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
+                        meta_inbox.setRead(true);
+                        ad.notifyDataSetChanged();
+                    }
+                    // Bitmap user = iv.getDrawingCache();//MediaStore.Images.Media.getBitmap(ma.getContentResolver(), user_uri);
+                    FirebaseMessagingUserMetaData userMeta = new FirebaseMessagingUserMetaData(ea.firebaseEmployee,ea.client_bitmaps.get(ea.firebaseEmployee.getId()));
+                    FirebaseMessagingUserMetaData selectedUser = new FirebaseMessagingUserMetaData(meta);
+                    Intent i = new Intent(ea, MessagingActivity.class);
+                    i.putExtra(Utils.USER, userMeta);
+                    i.putExtra(Utils.SELECTED_USER,selectedUser);
+                    i.putExtra(Utils.USER_BITMAP_LOCATION,userMeta.getImage_storage_path());
+                    i.putExtra(Utils.SELECTED_USER_BITMAP_LOCATION,selectedUser.getId());
+                    ea.startActivity(i);
+                }});
+
+
+            ///////////////////
+
             String path = "messages/"+user_id;
             DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
             final InboxMessageListAdapter finalAdapter = adapter;
@@ -284,8 +316,15 @@ public class EmployeeActivity extends AppCompatActivity {
                         return ;
                     }
                     for(DataSnapshot child : dataSnapshot.getChildren()){//id of all conversations with the key...
-                        if(finalAdapter.contains(child.getKey())){Log.e("CONTAINS: ","Already there: true");continue;}
-                        String meta_path = "message_meta_data/"+child.getKey();//path to a firebaseInboxMetaData object
+                        String selected_user_id = child.getKey();
+                        FirebaseInboxMetaData obj = finalAdapter.getMetaData(selected_user_id);
+                        if(finalAdapter.contains(child.getKey())){
+                            Log.e("CONTAINS: ","Already there: true");
+                            obj.setRead(false);
+                            finalAdapter.notifyDataSetChanged();
+                            continue;
+                        }
+                        String meta_path = "message_meta_data/"+selected_user_id;//path to a firebaseInboxMetaData object
                         DatabaseReference inbox_ref = FirebaseDatabase.getInstance().getReference().child(meta_path);
                         inbox_ref.addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
@@ -644,15 +683,18 @@ public class EmployeeActivity extends AppCompatActivity {
             });
         }
 
-        private void fragmentView2(final View rootView) {
-
+        private void fragmentViewUserSettings(final View rootView) {
             if (ea.firebaseEmployee != null) {
                 StorageReference sr = FirebaseStorage.getInstance().getReference().child(ea.firebaseEmployee.getStore_phone() + "/images/stylists/" + ea.firebaseEmployee.getId());
                 try {
-                    Utils.createFileFromFirebaseToDevice(sr,ea.firebaseEmployee.getId(),ea.client_bitmaps);
                     Bitmap img = Utils.getBitmap(ea,ea.firebaseEmployee.getId(),ea.client_bitmaps);
                     ImageView iv = (ImageView) rootView.findViewById(R.id.imageView_employee_activity);
-                    iv.setImageBitmap(img);
+                    if(img==null) {
+                        Utils.createFileFromFirebaseToDevice(sr, ea.firebaseEmployee.getId(), ea.client_bitmaps,iv);
+                    }else{
+                        iv.setImageBitmap(img);
+                    }
+                  //  Log.e("IS BM NULL? ","NULL? "+Boolean.valueOf(img==null)+" DIR:");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -959,6 +1001,9 @@ public class EmployeeActivity extends AppCompatActivity {
 
         }
 
+        /**
+         * Display reason to use user permission of camera.
+         */
         private void showReason() {
             AlertDialog.Builder alertBuilder = new AlertDialog.Builder(ea);
             alertBuilder.setCancelable(true);
@@ -1065,6 +1110,12 @@ public class EmployeeActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        this.startActivity(intent);
+        super.finish();
         return;
     }
 
@@ -1090,6 +1141,7 @@ public class EmployeeActivity extends AppCompatActivity {
 
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                bitmap = Utils.normalizePicture(bitmap,-90);
                 // Log.d(TAG, String.valueOf(bitmap));
                   Fragment pf = this.mCustomFragPageAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
                // Log.e("pageeee: ## ", String.valueOf(pf==null));
@@ -1099,7 +1151,7 @@ public class EmployeeActivity extends AppCompatActivity {
                 // Get the data from an ImageView as bytes
                 imageView.setDrawingCacheEnabled(true);
                 imageView.buildDrawingCache();
-                 bitmap = imageView.getDrawingCache();
+                bitmap = imageView.getDrawingCache();
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
                 byte[] bytes = baos.toByteArray();

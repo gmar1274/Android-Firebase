@@ -90,9 +90,9 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
 import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
-import app.reservation.acbasoftare.com.reservation.FirebaseWebTasks.FirebaseWebTasks;
 import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
 import app.reservation.acbasoftare.com.reservation.ListAdapters.InboxMessageListAdapter;
+import app.reservation.acbasoftare.com.reservation.ListAdapters.ListViewAdpaterStylist;
 import app.reservation.acbasoftare.com.reservation.ListAdapters.StoreListViewAdapter;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
@@ -148,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
     private HashMap<String, Stylist> sty_hm;
     private boolean noStaff;
     private PublisherInterstitialAd mPublisherInterstitialAd;
+    private GPSLocation gps;
 
     public void showGoogleMaps(final View rootView, final ArrayList<FirebaseStore> store_list) {
 
@@ -317,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         // LoginActivity.debugDisplayGPS(this);
 
-        GPSLocation gps = this.getIntent().getParcelableExtra("gps");
+        gps = this.getIntent().getParcelableExtra("gps");
         if (gps == null) {
             gps = new GPSLocation(this);
         }
@@ -501,24 +502,26 @@ public class MainActivity extends AppCompatActivity {
      */
     private void displayInbox(final Fragment frag, CustomFBProfile cust_prof , FirebaseStore store, ArrayList<Stylist> stylists_list,HashMap<String,String>
                               stylist_bitmaps) {
-        if(store==null || stylists_list==null || stylists_list.size()==0){//no info to display. Nothing to do.
+        View rootView = frag.getView();
+
+        if(rootView==null){
             return;
         }
-
-        View rootView = frag.getView();
-        if(rootView==null)return;
+        //get list view
         final ListView inbox_listview = (ListView) rootView.findViewById(R.id.inbox_meta_data_listview);
-
         InboxMessageListAdapter adapter = null;
 
+        //load the adpter or create adapter
         if(inbox_listview.getAdapter() == null) {
            adapter = new InboxMessageListAdapter(frag.getContext(),new ArrayList<FirebaseInboxMetaData>(),stylist_bitmaps);
         }else {
            adapter = (InboxMessageListAdapter) inbox_listview.getAdapter();
         }
+        //search firbase...get the path
         String path = "messages/"+cust_prof.getId();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
         final InboxMessageListAdapter finalAdapter = adapter;
+        //set listener to load if new message appears
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -529,31 +532,27 @@ public class MainActivity extends AppCompatActivity {
                     String id  = child.getKey();
                     FirebaseInboxMetaData obj = finalAdapter.getMetaData(id);
                     if(obj != null){
-
                         Log.e("CONTAINS: ","Already meta data here there: true");
                         obj.setRead(false);
-                        finalAdapter.notifyDataSetChanged();
                         continue;
-                    }
-                    String meta_path = "message_meta_data/"+id;//path to a firebaseInboxMetaData object
-                    DatabaseReference inbox_ref = FirebaseDatabase.getInstance().getReference().child(meta_path);
-                    inbox_ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.getValue() == null){return;}
-                            //GenericTypeIndicator<FirebaseInboxMetaData> gti = new GenericTypeIndicator<FirebaseInboxMetaData>() {};
-                            FirebaseInboxMetaData inbox_meta = dataSnapshot.getValue(FirebaseInboxMetaData.class);
-                            //inbox_meta.setRead(false);
-                            finalAdapter.add(inbox_meta);
-                            inbox_listview.setAdapter(finalAdapter);
-
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
+                    }//if loaded already doesnt need to load again...otherwise goes here
+                    else {
+                        String meta_path = "message_meta_data/" + id;//path to a firebaseInboxMetaData object
+                        DatabaseReference inbox_ref = FirebaseDatabase.getInstance().getReference().child(meta_path);
+                        inbox_ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                if (dataSnapshot.getValue() == null) {return;}
+                                //GenericTypeIndicator<FirebaseInboxMetaData> gti = new GenericTypeIndicator<FirebaseInboxMetaData>() {};
+                                FirebaseInboxMetaData inbox_meta = dataSnapshot.getValue(FirebaseInboxMetaData.class);
+                                //inbox_meta.setRead(false);
+                                finalAdapter.add(inbox_meta);
+                                inbox_listview.setAdapter(finalAdapter);
+                            }
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {}
+                        });
+                    }////////////////
                 }
 
 
@@ -1256,7 +1255,7 @@ public class MainActivity extends AppCompatActivity {
         stylists_list = new ArrayList<Stylist>(sty_hm.values());
         Collections.sort(stylists_list);
 
-        FirebaseWebTasks.ListViewAdpaterStylist la = new FirebaseWebTasks.ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, stylists_list,this.user_fb_profile,stylist_bitmaps);
+       ListViewAdpaterStylist la = new ListViewAdpaterStylist(MainActivity.this, R.layout.list_view_live_feed, stylists_list,this.user_fb_profile,stylist_bitmaps);
         ListView lv = (ListView) mCustomFragPageAdapter.getCurrentFragmentView(mViewPager.getCurrentItem()).getView().findViewById(R.id.fragment_livefeed_listview);
         if(lv==null)return;
         lv.setAdapter(null);
@@ -1270,7 +1269,7 @@ public class MainActivity extends AppCompatActivity {
                 final Stylist s = stylists_list.get(position);
 
 
-                ((FirebaseWebTasks.ListViewAdpaterStylist) adapterView.getAdapter()).notifyDataSetChanged();
+                ((ListViewAdpaterStylist) adapterView.getAdapter()).notifyDataSetChanged();
                 Toast.makeText(MainActivity.this, s.getName() + " selected.", Toast.LENGTH_SHORT).show();
             }
         });
@@ -1513,7 +1512,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 ma.google_map = null;
                 ma.mapview = null;
-                Log.d("on load: ","frag 1");
                ma.showGoogleMaps(rootView,ma.store_list);
             }
             Spinner spinner = (Spinner) rootView.findViewById(R.id.sortBySpinner);
@@ -1562,6 +1560,11 @@ public class MainActivity extends AppCompatActivity {
             pd.show();
             if (ma.store_list != null) {//empty list if not null
                 ma.store_list.clear();
+            }
+            if(this.ma.gps==null || this.ma.gps.getLocation()==null){
+                Toast.makeText(ma,"Location needs to be enabled!",Toast.LENGTH_LONG).show();
+                pd.dismiss();
+                return;
             }
             DatabaseReference db_ref = FirebaseDatabase.getInstance().getReference().child("user");
             db_ref.addListenerForSingleValueEvent(new ValueEventListener() {

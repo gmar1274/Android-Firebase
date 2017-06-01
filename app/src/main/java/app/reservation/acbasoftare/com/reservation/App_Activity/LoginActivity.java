@@ -20,6 +20,7 @@ import android.view.View.OnClickListener;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -137,6 +138,9 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
         mAuth = FirebaseAuth.getInstance();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        final ImageView logo = (ImageView)this.findViewById(R.id.imageView_logo);
+        logo.setVisibility(View.GONE);
+
 
         callbackManager = CallbackManager.Factory.create();
         AccessTokenTracker t = new AccessTokenTracker() {

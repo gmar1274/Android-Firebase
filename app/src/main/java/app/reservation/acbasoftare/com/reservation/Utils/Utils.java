@@ -501,10 +501,10 @@ public class Utils {
      * Uses BitmapFactory.decodeFile(path:string)
      * uses deafualt logo for id==-1 or shop.
      * @param filepath
-     * @return
+     * @return null if file is not saved
      */
     public static Bitmap decodeFileToBitmap(Context c, String filepath){
-        if( filepath==null || filepath.contains("-1"))return setDefaultBitmap(c);
+        if( filepath==null || filepath.contains("-1"))return null;
         return getBitmapFromFilePath(c,filepath);
     }
     public static Bitmap setDefaultBitmap(Context context) {

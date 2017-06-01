@@ -15,6 +15,12 @@
               tools:ignore="NewApi">
     <!-- Login progress -->
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        ads:srcCompat="@drawable/acba"
+        android:id="@+id/imageView_logo" />
+
     <ProgressBar
         android:id="@+id/login_progress"
         style="?android:attr/progressBarStyleLarge"

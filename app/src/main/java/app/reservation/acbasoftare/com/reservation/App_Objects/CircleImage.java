@@ -20,23 +20,27 @@ public class CircleImage extends Drawable {
     private final RectF mRectF;
     private final int mBitmapWidth;
     private final int mBitmapHeight;
+    private final int radius;
 
     public CircleImage(Bitmap bitmap) {
-        mBitmap = bitmap;
-        mRectF = new RectF();
         mPaint = new Paint();
+        mPaint.setStrokeWidth(5);
         mPaint.setAntiAlias(true);
         mPaint.setDither(true);
         final BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
         mPaint.setShader(shader);
-
+        radius =  bitmap.getWidth();
+        mBitmap = bitmap; //Bitmap.createScaledBitmap(bitmap,radius,radius,false);
         mBitmapWidth = mBitmap.getWidth();
         mBitmapHeight = mBitmap.getHeight();
+        mRectF = new RectF(new Rect(0,0,mBitmapWidth,mBitmapHeight));
+       // bitmap.recycle();
     }
 
     @Override
     public void draw(Canvas canvas) {
-        canvas.drawOval(mRectF, mPaint);
+       //canvas.drawOval(mRectF, mPaint);
+        canvas.drawCircle(radius/2 + .7f, radius/2 + .7f,radius/2+.1f , mPaint);
     }
 
     @Override

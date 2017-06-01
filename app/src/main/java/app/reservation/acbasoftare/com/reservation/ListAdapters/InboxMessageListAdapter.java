@@ -3,7 +3,9 @@ package app.reservation.acbasoftare.com.reservation.ListAdapters;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +13,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,12 +37,14 @@ public class InboxMessageListAdapter extends ArrayAdapter<FirebaseInboxMetaData>
    // private HashMap<String,CircleImage> images_downloaded;
     private ArrayList<FirebaseInboxMetaData> list;
     private HashMap<String,String> file_loc;
+    private HashMap<String,String> tasks;
 
     public InboxMessageListAdapter(Context c, ArrayList<FirebaseInboxMetaData> list, HashMap<String,String> file_loc){
         super(c, R.layout.inbox_message_view_layout,list);
        // this.images_downloaded = new HashMap<>();
         this.list = list;
         this.file_loc = file_loc;
+        this.tasks = new HashMap<>();
     }
 
     public  Bitmap getBitmapStylist(String id){
@@ -59,65 +70,43 @@ public class InboxMessageListAdapter extends ArrayAdapter<FirebaseInboxMetaData>
             notification.setVisibility(android.view.View.GONE);
         }
         final ImageView sty_img = (ImageView)rootView.findViewById(R.id.stylist_imageView);
-        //if(position_item+1 <= this.images_downloaded.size()){
-            //them theres an image for it no need to download....\
         sty_name.setText(metaData.getName().toUpperCase());
-        //DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child()
         store_name.setText("");
-
-
-       // Log.e("ADAPTER: ","CI: "+file_loc.get(metaData.getId())+" META: "+metaData);
-        //if(sty_img.getDrawable()!=null){Log.e("NOT NULL","CI");return rootView;}
-
-        CircleImage ci  = new CircleImage(Utils.decodeFileToBitmap(getContext(),file_loc.get(metaData.getId())));//this.images_downloaded.get(position_item);
-            if (ci != null) {
-                sty_img.setImageBitmap(ci.getBitmap());
-            }else{
-                sty_img.setImageBitmap(Utils.setDefaultBitmap(getContext()));
-            }
-        //}else {/////////////else the adapter has not loaded the stys images yet. Other words this is the first time this adapter has been called
-
-
-            /*StorageReference ref = FirebaseStorage.getInstance().getReference().child(metaData.getImage_storage_path());
-            try {
+        Bitmap bm = Utils.decodeFileToBitmap(getContext(),file_loc.get(metaData.getId()));
+        //this.images_downloaded.get(position_item);
+            if (bm != null) {
+                CircleImage ci  = new CircleImage(bm);
+                sty_img.setImageDrawable(ci);
+            }else{////either the firebase hasnt loaded the stylist from store yet so fetch and check if exists from storage bucket
+                sty_img.setImageDrawable(new CircleImage(Utils.setDefaultBitmap(getContext())));//setImageBitmap(Utils.setDefaultBitmap(getContext()));
+           //got to limit these calss for future optimization........
+               if(this.tasks.get(metaData.getId()) != null){return  convertView ;}
+                else{
+                   this.tasks.put(metaData.getId(),metaData.getId());
+               }
+                String path_formatted=metaData.getImage_storage_path().replace(".png","");
+                StorageReference ref = FirebaseStorage.getInstance().getReference().child(path_formatted);
+                try {
                 final File temp = File.createTempFile(metaData.getId(),Utils.EXT);
                 ref.getFile(temp).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                        Log.e("File","File CREATED!!! File temp path: "+temp.getAbsolutePath());
-
+                        Log.e("File","File CREATED!!!fetched success..");//File temp path: "+temp.getAbsolutePath());
+                        file_loc.put(metaData.getId(),temp.getAbsolutePath());
+                        notifyDataSetChanged();
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.e("Womp","File failed to created...");
-                        e.printStackTrace();
+                        Log.e("Womp","File failed to created...no image exists...fbase");
+                        //e.printStackTrace();
                     }
                 });
-            } catch (IOException e) {
+            } catch (Exception e) {
                 Log.e("File err","File error creating on adapter...");
                 e.printStackTrace();
-            }*/
-
-            /*final StorageReference sr = FirebaseStorage.getInstance().getReference().getRoot().child(metaData.getImage_storage_path());
-            sr.getBytes(MainActivity.IMAGE_DOWNLOAD_LIMIT).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                @Override
-                public void onSuccess(byte[] bytes) {
-                    Bitmap bm = Utils.convertBytesToBitmap(bytes);
-                    CircleImage ci = new CircleImage(bm);
-                    sty_img.setImageBitmap(ci.getBitmap());
-                    images_downloaded.put(metaData.getId(),ci);
                 }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    e.printStackTrace();
-                    Log.e("Fire err. ","Error on image loactiom...not there .."+"\nPath: "+sr.getPath());
-                   // images_downloaded.add(position_item,null);
-                    images_downloaded.put(metaData.getId(),null);
-                }
-            });*/
-        //}
+            }
             return rootView;
     }
     @Override

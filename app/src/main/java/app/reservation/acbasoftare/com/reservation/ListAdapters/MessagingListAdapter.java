@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import app.reservation.acbasoftare.com.reservation.App_Objects.CircleImage;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessage;
 import app.reservation.acbasoftare.com.reservation.Interfaces.IConversation;
 import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
@@ -78,13 +79,15 @@ public int getCount(){
             sender_lay.setVisibility(View.GONE);
             rec_tv.setText(msg.getMessage());
             rec_timestamp_tv.setText(formatted_date);
-            rec.setImageBitmap(userBM);
+            rec.setImageDrawable(new CircleImage(userBM));
+            //rec.setImageBitmap(userBM);
         }else {
             rec_lay.setVisibility(View.GONE);
             rec.setVisibility(View.GONE);
             sender_tv.setText(msg.getMessage());
             sender_timestamp_tv.setText(formatted_date);
-            sender.setImageBitmap(selectedBM);
+            sender.setImageDrawable(new CircleImage(selectedBM));
+            //sender.setImageBitmap(selectedBM);
         }
         return rootView;
     }

@@ -31,5 +31,9 @@
     <string name="FINAL_SALE">*All transactions are non refundable and processed securely.</string>
     <string name="title_activity_messaging">MessagingActivity</string>
 
+    <string name="title_activity_bio">BioActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
 
 </resources>

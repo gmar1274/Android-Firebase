@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +15,6 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -306,7 +304,7 @@ Log.e("Wait: ",s.getWait()+"");
             TextView tv6 = (TextView) convertView.findViewById(R.id.textView6);
             // setListener(tv6, r);
             //Bitmap myBitmap = BitmapFactory.decodeFile("\\res\\drawable\\logo.png");
-            ImageView iv = (ImageView) convertView.findViewById(R.id.quickContactBadge);
+            ImageView iv = (ImageView) convertView.findViewById(R.id.stylistBioImageView);
          //   if (s.getImage_bytes() == null) {
                 //iv.setImageDrawable(R.drawable.acba);//Utils.resize(rootView.getContext(),rootView.getResources().getDrawable(R.drawable.acba),50,50));
            // } else {

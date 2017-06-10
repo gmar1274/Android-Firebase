@@ -1,9 +1,9 @@
 package app.reservation.acbasoftare.com.reservation.App_Activity;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,7 +24,7 @@ import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActi
 import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActivity.sdf;
 
 
-public class TicketHistoryActivity extends AppCompatActivity {
+public class TicketHistoryActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +51,10 @@ public class TicketHistoryActivity extends AppCompatActivity {
         ListView lv = (ListView)this.findViewById(R.id.ticket_history_listview);
         ListAdapterTicket la = new ListAdapterTicket(this,R.layout.ticket_history_listview_item,ticket_history);
         lv.setAdapter(la);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
         //Log.e("Size list:",ticket_history.size()+"");
     }
     @Override

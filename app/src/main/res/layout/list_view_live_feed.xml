@@ -73,11 +73,11 @@
         android:textStyle="normal|bold"
         android:textColor="@color/colorPrimaryDark"/>
 
-    <QuickContactBadge
+    <ImageView
         android:layout_width="112dp"
         app:srcCompat="@drawable/acba"
         android:layout_below="@+id/live_feed_radiobtn"
-        android:id="@+id/quickContactBadge"
+        android:id="@+id/stylistBioImageView"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:adjustViewBounds="true"
@@ -98,7 +98,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toRightOf="@+id/quickContactBadge"
+        app:layout_constraintLeft_toRightOf="@+id/stylistBioImageView"
         />
 
     <TextView

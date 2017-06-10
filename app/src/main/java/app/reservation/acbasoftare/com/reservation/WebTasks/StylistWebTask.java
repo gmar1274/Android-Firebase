@@ -271,7 +271,7 @@ public class StylistWebTask extends AsyncTask<String, Void, String> {
             TextView tv6=(TextView)convertView.findViewById(R.id.textView6);
            // setListener(tv6,r);
             //Bitmap myBitmap = BitmapFactory.decodeFile("\\res\\drawable\\logo.png");
-            QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.quickContactBadge);
+            QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.stylistBioImageView);
 /*
             if(stylist_bitmaps!=null && stylist_bitmaps.size()>= position+1) {
                 iv.setImageBitmap(stylist_bitmaps.get(position));//Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));

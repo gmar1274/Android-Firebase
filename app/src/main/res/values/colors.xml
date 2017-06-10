@@ -11,4 +11,10 @@
     <color name="customBackground">#f6f6f6</color>
     <color name="sender_text_msg">#44ff0000</color>
     <color name="messaging_background_color">#e0e0e0</color>
+
+    <color name="black_overlay">#66000000</color>
+
+    <color name="colorPrimaryTab">#ff0000</color>
+    <color name="colorPrimaryDarkTab">#77000000</color>
+    <color name="colorAccentTab">#ff4081</color>
 </resources>

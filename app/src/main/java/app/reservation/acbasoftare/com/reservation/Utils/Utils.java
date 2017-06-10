@@ -14,6 +14,7 @@ import android.support.annotation.NonNull;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -60,6 +61,13 @@ public class Utils {
     public final static String EXT=".png";
     public static final String USER_BITMAP_LOCATION = "USER_BITMAP_LOCATION";
     public static final String SELECTED_USER_BITMAP_LOCATION = "SELECTED_USER_BITMAP_LOCATION" ;
+    public static final String STYLIST = "stylist";
+    public static final String STORE = "store";
+
+    public static void displayToast(Context c, String msg) {
+        Toast.makeText(c,msg,Toast.LENGTH_LONG).show();
+    }
+
     public static enum TICKET{WAITING,ACTIVE,PASSED};//default is waiting, active means in progress, passed means used already
     /*
     * Needs db analytics to gather intellignet wait per store...

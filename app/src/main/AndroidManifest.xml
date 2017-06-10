@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="app.reservation.acbasoftare.com.reservation"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="app.reservation.acbasoftare.com.reservation">
 
     <service android:name=".MyFirebaseMessagingService">
         <intent-filter>
-            <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            <action android:name="com.google.firebase.MESSAGING_EVENT" />
         </intent-filter>
     </service>
     <service android:name=".MyFirebaseInstanceIDService">
         <intent-filter>
-            <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
         </intent-filter>
     </service>
     <service android:name=".MyFirebaseInstanceIDService">
         <intent-filter>
-            <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+            <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
         </intent-filter>
     </service>
 
     <!-- local service -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- <uses-permission android:name="android.permission.READ_SMS"/> -->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name="android.support.multidex.MultiDexApplication"
         android:allowBackup="true"
         android:icon="@drawable/acba"
-        android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Base.AppTheme">
+        android:theme="@style/Base.ThemeOverlay.AppCompat.Dark"
+        >
         <activity
             android:name=".App_Activity.LoginActivity"
-            android:screenOrientation="portrait"
             android:configChanges="orientation"
-            android:label="@string/app_name"
+            android:theme="@style/Base.AppTheme.NoActionBarLogin"
+            android:label=""
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <action
-                    android:name="android.intent.action.BOOT_COMPLETED"/> <!-- added for service -->
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" /> <!-- added for service -->
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".App_Activity.MainActivity"
-            android:label="@string/title_activity_main"
             android:screenOrientation="portrait"
+            android:label=""
             android:theme="@style/Base.AppTheme.NoActionBar">
 
             <!-- android:parentActivityName=".App_Activity.LoginActivity" -->
@@ -65,12 +65,12 @@
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.VIEW" />
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="@string/fb_login_protocol_scheme"/>
+                <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
         <!--
@@ -83,14 +83,14 @@
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAlGB3JBYA1HMkdwJ23UwLbI89rq38tFr0"/>
+            android:value="AIzaSyAlGB3JBYA1HMkdwJ23UwLbI89rq38tFr0" />
         <!-- android:value="@string/google_maps_key"/> -->
 
         <activity
             android:name=".App_Activity.MapsActivity"
             android:label="@string/title_activity_maps"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan"/>
+            android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".App_Activity.TicketScreenActivity"
             android:label="@string/title_activity_main"
@@ -106,25 +106,24 @@
         -->
         <meta-data
             android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
+            android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
-            android:value="@string/facebook_app_id"/>
+            android:value="@string/facebook_app_id" />
 
         <activity
             android:name=".App_Activity.EmployeeActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustPan"
-            android:theme="@style/Base.AppTheme">
-        </activity>
+            android:theme="@style/Base.AppTheme"
+            android:windowSoftInputMode="adjustPan"></activity>
         <activity
             android:name=".App_Activity.ReservationActivity"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="stateHidden"/>
-        <activity android:name=".App_Activity.DateViewerActivity"/>
+            android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".App_Activity.DateViewerActivity" />
         <activity
             android:name=".App_Activity.RegisterShopActivity"
-            android:label="@string/title_activity_register_shop"/>
+            android:label="@string/title_activity_register_shop" />
         <activity
             android:name=".App_Activity.InStoreTicketReservationActivity"
             android:label="@string/app_name"
@@ -137,7 +136,7 @@
             android:parentActivityName=".App_Activity.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".App_Activity.MainActivity"/>
+                android:value=".App_Activity.MainActivity" />
         </activity>
         <activity
             android:name=".App_Activity.ShopRegristrationActivity"
@@ -150,23 +149,33 @@
             android:name=".App_Activity.MessagingActivity"
             android:label="@string/title_activity_messaging"
             android:parentActivityName=".App_Activity.MainActivity"
-            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"
+            android:theme="@style/Base.AppTheme"
+            android:windowSoftInputMode="adjustPan"
             >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".App_Activity.MainActivity"/>
+                android:value=".App_Activity.MainActivity" />
         </activity>
-        <activity android:name="com.facebook.FacebookActivity"
+        <activity
+            android:name="com.facebook.FacebookActivity"
             android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-            android:label="@string/app_name"/>
-        <meta-data android:name="com.facebook.sdk.ApplicationId"
-            android:value="@string/facebook_app_id"
-            />
+            android:label="@string/app_name" />
 
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id" />
 
+        <activity
+            android:name=".App_Activity.BioActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_bio"
+            android:parentActivityName=".App_Activity.MainActivity"
+            android:theme="@style/FullscreenTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity" />
+        </activity>
     </application>
-
-
 
 </manifest>

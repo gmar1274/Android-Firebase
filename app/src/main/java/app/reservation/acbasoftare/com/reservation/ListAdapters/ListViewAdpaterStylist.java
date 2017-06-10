@@ -3,13 +3,12 @@ package app.reservation.acbasoftare.com.reservation.ListAdapters;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.provider.ContactsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.QuickContactBadge;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,19 +22,25 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import app.reservation.acbasoftare.com.reservation.App_Activity.BioActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MessagingActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.CircleImage;
 import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessagingUserMetaData;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
+import app.reservation.acbasoftare.com.reservation.App_Objects.ProfileIntent;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
+import app.reservation.acbasoftare.com.reservation.Interfaces.IFirebaseStylistAsyncCall;
+import app.reservation.acbasoftare.com.reservation.Interfaces.IStoreProfile;
+import app.reservation.acbasoftare.com.reservation.Interfaces.IStylistProfile;
 import app.reservation.acbasoftare.com.reservation.R;
 import app.reservation.acbasoftare.com.reservation.Utils.Utils;
 
 /**
  * Created by user on 5/31/17.
  */
-public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> {
+public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> implements IStoreProfile, IStylistProfile, IFirebaseStylistAsyncCall {
         private HashMap<String, Boolean> loaded;
         private CustomFBProfile profile;
         private HashMap<String, String> stylist_bitmaps;
@@ -112,61 +117,42 @@ public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> {
                 }
             });
             //Bitmap myBitmap = BitmapFactory.decodeFile("\\res\\drawable\\logo.png");
-            QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.quickContactBadge);
+           // QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.quickContactBadge);
+            final ImageView iv = (ImageView) convertView.findViewById(R.id.stylistBioImageView);
             //if(s.getImage_bytes() == null){
             //iv.setImageDrawable(R.drawable.acba);//Utils.resize(rootView.getContext(),rootView.getResources().getDrawable(R.drawable.acba),50,50));
             // }else {
             //  if (stylist_bitmaps != null && stylist_bitmaps.size()>=position+1 ){
 
-            Bitmap sty_bm = Utils.decodeFileToBitmap(getContext(),stylist_bitmaps.get(s.getId()));
+            Bitmap sty_bm = Utils.decodeFileToBitmap(getContext(),stylist_bitmaps.get(s.getId()));//get the loaded image
+            FirebaseStore store = ma.store_list.get(ma.selectedPosition);
             if(sty_bm==null){
-                //dont do anything...or actually default pic
+                //default pic
                 sty_bm = Utils.setDefaultBitmap(this.getContext());
                 iv.setImageDrawable(new CircleImage(sty_bm));
             }else{
                 iv.setImageDrawable(new CircleImage(sty_bm)); // iv.setImageBitmap(); // iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
             }
-               if (position == 0) {
-                iv.assignContactFromPhone(ma.store_list.get(ma.selectedPosition).getPhone(), true);
-            } else {
-                iv.assignContactFromPhone(s.getPhone(), true);
+               if (position == 0) {//this is the store.
+                   setStoreProfile(iv,store);
+                    //iv.assignContactFromPhone(store_phone, true);
+            } else {//a stylist
+                //iv.assignContactFromPhone(s.getPhone(), true);
                 ////Update whwn the Stylist becomes ACTIVE OR INACTIVE...
                 if (!loaded.containsKey(s.getId())) {
                     /////////////////////////add listener to stylists
                     //I CAN SEE A BUG WHEN USER DELETES A STYLISTS DURONG PEAK HOURS
                     // MIGHT STILL BE LOADED IN APP IF SOMEONE CLICKS to purchase etc...
-                    DatabaseReference sty = FirebaseDatabase.getInstance().getReference().child("stylists/" + ma.store.getStore_number() + "/" + s.getId());
-                    sty.addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            // Log.e("in LA:::.", dataSnapshot.getValue()+"");
-
-                            if (dataSnapshot.getValue() == null) {
-                                remove(s);
-                                stylist_bitmaps.remove(s.getId());
-                                notifyDataSetChanged();
-                                return;
-                            }
-                            Stylist sty = dataSnapshot.getValue(Stylist.class);
-                            //remove(s);
-                            // insert(sty,position);
-                            s.setAvailable(sty.isAvailable());
-                            loaded.put(sty.getId(), true);
-                            notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
+                    queryStylist(store,iv,s);
+                }else{
+                    setStylistProfile(iv,s);
                 }
 
 
             }
             //}
 //}
-            iv.setMode(ContactsContract.QuickContact.MODE_MEDIUM);
+           // iv.setMode(ContactsContract.QuickContact.MODE_MEDIUM);
             // iv.setVisibility(View.VISIBLE);
                 /*r.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -184,4 +170,88 @@ public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> {
             }
             return convertView;
         }
+
+    /**
+     * Set a transition to bio activity. @See bioActivity.java and layout
+     * @param iv
+     * @param store
+     */
+    @Override
+    public void setStoreProfile(ImageView iv, final FirebaseStore store) {
+        iv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String path = ListViewAdpaterStylist.this.stylist_bitmaps.get(store.getGoogle_place_id()); //could be empty/null
+                Intent i = new Intent(ListViewAdpaterStylist.this.getContext() ,BioActivity.class);
+                ProfileIntent pi = new ProfileIntent(path,store);
+                i.putExtra(Utils.STORE,pi);
+               goToBioActivity(i);
+            }
+        });
     }
+
+    /**
+     * Set a transistion to bio activity. @see bioActivity.java and layout
+     * @param iv
+     * @param stylist
+     */
+    @Override
+    public void setStylistProfile(ImageView iv, final Stylist stylist) {
+            iv.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String path = ListViewAdpaterStylist.this.stylist_bitmaps.get(stylist.getId()); //could be empty/null
+                    Intent i = new Intent(ListViewAdpaterStylist.this.getContext() ,BioActivity.class);
+                    ProfileIntent pi = new ProfileIntent(path,stylist);
+                    i.putExtra(Utils.STYLIST,pi);
+                    goToBioActivity(i);
+                }
+            });
+    }
+
+    /**
+     * Firebase
+     * DatabaseReference query
+     * @param store store to query from
+     * @param iv image view of stylist
+     * @param s list view object
+     */
+    @Override
+    public void queryStylist(FirebaseStore store, final ImageView iv, final Stylist s) {
+        DatabaseReference sty = FirebaseDatabase.getInstance().getReference().child("stylists/" + store.getStore_number() + "/" + s.getId());
+        sty.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Log.e("in LA:::.", dataSnapshot.getValue()+"");
+                if (dataSnapshot.getValue() == null) {
+                    remove(s);
+                    stylist_bitmaps.remove(s.getId());
+                    notifyDataSetChanged();
+                    return;
+                }
+                Stylist sty = dataSnapshot.getValue(Stylist.class);
+                s.setAvailable(sty.isAvailable());
+                loaded.put(sty.getId(), true);
+                setStylistProfile(iv,s);
+                notifyDataSetChanged();
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                        ///
+            }
+        });
+    }
+
+    /**
+     *
+     * @param sty
+     * @return from firebase query
+     */
+    @Override
+    public Stylist OnCallback(Stylist sty){
+    return sty;
+   }
+    private void goToBioActivity(Intent i ){
+        this.getContext().startActivity(i);
+    }
+}

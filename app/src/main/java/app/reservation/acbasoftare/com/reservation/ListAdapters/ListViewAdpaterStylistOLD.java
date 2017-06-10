@@ -72,7 +72,7 @@ public class ListViewAdpaterStylistOLD  extends ArrayAdapter<Stylist> {
         TextView tv5 = (TextView) convertView.findViewById(R.id.textView5);
         TextView tv6 = (TextView) convertView.findViewById(R.id.textView6);
 
-        QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.quickContactBadge);
+        QuickContactBadge iv = (QuickContactBadge) convertView.findViewById(R.id.stylistBioImageView);
 
         iv.setImageBitmap(bitmapHashMap.get(s.getId())); // iv.setImageBitmap(Utils.convertBytesToBitmap(Utils.convertToByteArray(s.getImage_bytes())));
         iv.assignContactFromPhone(s.getPhone(), true);

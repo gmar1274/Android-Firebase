@@ -135,6 +135,7 @@ public class LoginActivity extends AppCompatActivity implements ILogin{
     protected void onCreate(Bundle savedInstanceState) {
         //FacebookSdk.sdkInitialize(getApplicationContext());
         //AppEventsLogger.activateApp(this);
+
         mAuth = FirebaseAuth.getInstance();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);

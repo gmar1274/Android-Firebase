@@ -63,6 +63,11 @@ public class Utils {
     public static final String SELECTED_USER_BITMAP_LOCATION = "SELECTED_USER_BITMAP_LOCATION" ;
     public static final String STYLIST = "stylist";
     public static final String STORE = "store";
+    public static final String FIREBASE_MESSAGE_ROOT ="messages" ;
+    public static final String FIREBASE_META_INBOX_ROOT = "message_meta_data";
+    public static final String PROFILE = "user_profile" ;
+    public static final String LOCATIONS = "hashmap_file_loactions" ;
+    public static final String STORE_ID = "-1";
 
     public static void displayToast(Context c, String msg) {
         Toast.makeText(c,msg,Toast.LENGTH_LONG).show();
@@ -619,5 +624,6 @@ public class Utils {
         Bitmap rotated_bm = Bitmap.createBitmap(source,0,0,source.getWidth(),source.getHeight(),m,true);
         return rotated_bm;
     }
+
 
 }

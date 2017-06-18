@@ -5,11 +5,13 @@ import android.os.Parcelable;
 
 import java.text.DecimalFormat;
 
+import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
+
 /**
  * Created by user on 2016-08-06.
  * POJO for firebase json... stylists/store_number/sty_id/{}
  */
-public class Stylist implements Parcelable, Comparable<Stylist> {
+public class Stylist implements Parcelable, Comparable<Stylist>, IMessagingMetaData {
     private String fname, mname, lname,id,phone;
     private int wait;
     private boolean available;
@@ -33,6 +35,11 @@ public class Stylist implements Parcelable, Comparable<Stylist> {
 
     public void setTicket_price(double ticket_price) {
         this.ticket_price = ticket_price;
+    }
+
+    @Override
+    public void setImage_storage_path(String url) {
+
     }
 
     public void setName(String name) {
@@ -229,6 +236,15 @@ public Stylist(){
         if (this.mname == null || this.mname.length() == 0)
             return this.fname + " " + this.lname;
         else return this.fname + " " + mname + " " + lname;
+    }
+
+    /**
+     * NOT IMPLEMENTED IN THIS CLASS....STORE ID/images/stylists/id      .....
+     * @return
+     */
+    @Override
+    public String getImage_storage_path() {
+        return store_id.trim()+"/images/stylists/"+this.id;
     }
 
     public String toString() {

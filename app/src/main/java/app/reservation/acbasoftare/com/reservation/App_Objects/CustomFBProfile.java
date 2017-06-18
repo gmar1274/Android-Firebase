@@ -11,11 +11,13 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
+
 /**
  * Created by user on 4/14/17.
  */
 
-public class CustomFBProfile implements Parcelable{
+public class CustomFBProfile implements Parcelable, IMessagingMetaData{
     private String name,id,email;
     private String pic_url;
     public CustomFBProfile(Profile profile){
@@ -95,6 +97,16 @@ public class CustomFBProfile implements Parcelable{
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getImage_storage_path() {
+        return this.pic_url;
+    }
+
+    @Override
+    public void setImage_storage_path(String url) {
+        this.pic_url = url;
     }
 
     public void setName(String name) {

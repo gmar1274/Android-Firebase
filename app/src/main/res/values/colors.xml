@@ -13,8 +13,9 @@
     <color name="messaging_background_color">#e0e0e0</color>
 
     <color name="black_overlay">#66000000</color>
+<color name="tabText">#000000</color>
 
     <color name="colorPrimaryTab">#ff0000</color>
-    <color name="colorPrimaryDarkTab">#77000000</color>
+    <color name="colorPrimaryDarkTab">#ce0000</color>
     <color name="colorAccentTab">#ff4081</color>
 </resources>

@@ -22,14 +22,13 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import app.reservation.acbasoftare.com.reservation.App_Activity.BioActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MainActivity;
 import app.reservation.acbasoftare.com.reservation.App_Activity.MessagingActivity;
+import app.reservation.acbasoftare.com.reservation.App_Activity.StylistBioScrollingActivity;
 import app.reservation.acbasoftare.com.reservation.App_Objects.CircleImage;
 import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessagingUserMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
-import app.reservation.acbasoftare.com.reservation.App_Objects.ProfileIntent;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.Interfaces.IFirebaseStylistAsyncCall;
 import app.reservation.acbasoftare.com.reservation.Interfaces.IStoreProfile;
@@ -84,6 +83,7 @@ public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> implements ISt
             TextView tv5 = (TextView) convertView.findViewById(R.id.textView5);
             TextView tv6 = (TextView) convertView.findViewById(R.id.textView6);
             Button msg_btn = (Button) convertView.findViewById(R.id.msg_sty_btn);//messege stylist
+            msg_btn.setVisibility(View.GONE);
             if (s.getId().equalsIgnoreCase("-1")) {
                 // Log.e("Button hidden", "id store");
                 msg_btn.setVisibility(View.GONE);
@@ -111,8 +111,8 @@ public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> implements ISt
                     FirebaseMessagingUserMetaData selectedUser = new FirebaseMessagingUserMetaData(ma.store, s);
                     i.putExtra(Utils.USER, userMeta);
                     i.putExtra(Utils.SELECTED_USER, selectedUser);
-                    i.putExtra(Utils.USER_BITMAP_LOCATION,ma.stylist_bitmaps.get(ma.user_fb_profile.getId()));
-                    i.putExtra(Utils.SELECTED_USER_BITMAP_LOCATION,selectedUser.getId());
+                    i.putExtra(Utils.USER_BITMAP_LOCATION, stylist_bitmaps.get(profile.getId()));
+                    i.putExtra(Utils.SELECTED_USER_BITMAP_LOCATION, stylist_bitmaps.get(selectedUser.getId()));
                     getContext().startActivity(i);
                 }
             });
@@ -172,7 +172,8 @@ public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> implements ISt
         }
 
     /**
-     * Set a transition to bio activity. @See bioActivity.java and layout
+     * Needs 4 paramaters - @see StylistBioScrollingActivity.java...
+     * Set a transition to scrolling bio activity. @See scrolling bioActivity.java and layout
      * @param iv
      * @param store
      */
@@ -181,10 +182,13 @@ public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> implements ISt
         iv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String path = ListViewAdpaterStylist.this.stylist_bitmaps.get(store.getGoogle_place_id()); //could be empty/null
-                Intent i = new Intent(ListViewAdpaterStylist.this.getContext() ,BioActivity.class);
-                ProfileIntent pi = new ProfileIntent(path,store);
-                i.putExtra(Utils.STORE,pi);
+                Stylist s = getItem(0);
+                Intent i = new Intent(ListViewAdpaterStylist.this.getContext() ,StylistBioScrollingActivity.class);
+                i.putExtra(Utils.STORE,store);
+                i.putExtra(Utils.STYLIST, s);
+                i.putExtra(Utils.PROFILE,profile);
+                i.putExtra(Utils.LOCATIONS, stylist_bitmaps);
+
                goToBioActivity(i);
             }
         });
@@ -200,10 +204,11 @@ public class ListViewAdpaterStylist extends ArrayAdapter<Stylist> implements ISt
             iv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    String path = ListViewAdpaterStylist.this.stylist_bitmaps.get(stylist.getId()); //could be empty/null
-                    Intent i = new Intent(ListViewAdpaterStylist.this.getContext() ,BioActivity.class);
-                    ProfileIntent pi = new ProfileIntent(path,stylist);
-                    i.putExtra(Utils.STYLIST,pi);
+                    Intent i = new Intent(ListViewAdpaterStylist.this.getContext() ,StylistBioScrollingActivity.class);
+                    i.putExtra(Utils.STORE,ma.store);
+                    i.putExtra(Utils.STYLIST, stylist);
+                    i.putExtra(Utils.PROFILE,profile);
+                    i.putExtra(Utils.LOCATIONS, stylist_bitmaps);
                     goToBioActivity(i);
                 }
             });

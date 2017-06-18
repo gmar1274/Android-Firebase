@@ -23,7 +23,7 @@
         app:layout_constraintLeft_toRightOf="@+id/sender_imageView" android:layout_marginLeft="8dp"
         android:layout_marginEnd="8dp" app:layout_constraintRight_toRightOf="parent"
         android:layout_marginRight="8dp" android:layout_height="wrap_content"
-        android:background="@color/sender_text_msg" android:id="@+id/constraintLayout_sender"
+        android:background="@color/colorPrimaryDark" android:id="@+id/constraintLayout_sender"
         app:layout_constraintHorizontal_bias="0.43"
         android:layout_marginTop="8dp">
 
@@ -31,7 +31,7 @@
             android:text="TextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:id="@+id/sender_textfield"
-            android:textColor="@android:color/background_dark"
+            android:textColor="@android:color/white"
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             android:layout_marginTop="8dp"

@@ -12,8 +12,10 @@ import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData
  * Created by user on 2017-03-21.
  * CLASS TO REPRESENT MESSAGE VIEWS.
  * FIREBASE REPRESENTATION Of: client_messages_meta_data/client_id/{store_name:,stylist_name:,stylist_id:,stylist_photo_uri:, is_new_message_notification,store_number}
+ *
+ * Minimal attributes needed to message in MessageActivity...
  */
-public class FirebaseInboxMetaData implements Parcelable, Comparable<FirebaseInboxMetaData>, IFirebaseMessagingInbox {
+public class FirebaseInboxMetaData implements Parcelable, Comparable<FirebaseInboxMetaData>, IFirebaseMessagingInbox,IMessagingMetaData {
     private String name, id, image_storage_path;
     private boolean isRead;
     public FirebaseInboxMetaData(){
@@ -72,9 +74,8 @@ public class FirebaseInboxMetaData implements Parcelable, Comparable<FirebaseInb
     }
     @Override
     public boolean equals(Object o){
-        if( !(o instanceof FirebaseInboxMetaData))return false;
         FirebaseInboxMetaData md = (FirebaseInboxMetaData)o;
-        return this.hashCode() == md.hashCode();
+        return this.id.equals(md.getId());
     }
 
     @Override

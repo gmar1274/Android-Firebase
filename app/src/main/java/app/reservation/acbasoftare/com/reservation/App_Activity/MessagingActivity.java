@@ -44,6 +44,7 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
     @Override
     public void onBackPressed() {
         if (this.messageListener != null) {
+            messageListener.getDatabase().goOffline();
             //disconnect
         }
         this.finish();
@@ -53,7 +54,7 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messaging);
-
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         //////////////
         //Toolbar toolbar = (Toolbar)this.findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
@@ -67,12 +68,8 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
 
         String user_file = intent.getStringExtra(Utils.USER_BITMAP_LOCATION);
         String selected_user_file = intent.getStringExtra(Utils.SELECTED_USER_BITMAP_LOCATION);
-
         setTitle(selectedUserMeta.getName().toUpperCase());
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-
-       this.loadConversation(this.userMeta, this.selectedUserMeta);
+        this.loadConversation(this.userMeta, this.selectedUserMeta);
         //firebase url: client_messages/client_id/sty_id {list of messages}
         // url for stylist: stylist_messages/sty_id/client_id/{list of msgs}
 
@@ -204,7 +201,7 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.e("error","firebase error cancelled...");
+                databaseError.toException().printStackTrace();
             }
         });
 
@@ -262,4 +259,5 @@ public class MessagingActivity extends AppCompatActivity implements IMessaging {
         }
         return super.onOptionsItemSelected(item);
     }
+
 }

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,6 +22,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,6 +38,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.Profile;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -80,6 +83,7 @@ import java.util.PriorityQueue;
 
 import app.reservation.acbasoftare.com.reservation.App_Objects.CustomFBProfile;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseInboxMetaData;
+import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessage;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseMessagingUserMetaData;
 import app.reservation.acbasoftare.com.reservation.App_Objects.FirebaseStore;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Invoice;
@@ -89,7 +93,9 @@ import app.reservation.acbasoftare.com.reservation.App_Objects.Store;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Stylist;
 import app.reservation.acbasoftare.com.reservation.App_Objects.Ticket;
 import app.reservation.acbasoftare.com.reservation.App_Services.GPSLocation;
+import app.reservation.acbasoftare.com.reservation.App_Services.Notification;
 import app.reservation.acbasoftare.com.reservation.Dialog.CreditCardDialog;
+import app.reservation.acbasoftare.com.reservation.Interfaces.IFirebaseMessages;
 import app.reservation.acbasoftare.com.reservation.Interfaces.IMessagingMetaData;
 import app.reservation.acbasoftare.com.reservation.ListAdapters.InboxMessageListAdapter;
 import app.reservation.acbasoftare.com.reservation.ListAdapters.ListViewAdpaterStylist;
@@ -104,6 +110,12 @@ import static app.reservation.acbasoftare.com.reservation.App_Activity.LoginActi
 
 /**
  * Line ~1,000 is for fragment views
+ * This code is layered as such:
+ *
+ * tab layout page manager. Each tab has a static fragment class.
+ * each fragment has its own method to display the associated view per tab index.
+ *
+ * search "fragmentView()" to jump to fragment view displays...
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -149,7 +161,30 @@ public class MainActivity extends AppCompatActivity {
     private boolean noStaff;
     private PublisherInterstitialAd mPublisherInterstitialAd;
     private GPSLocation gps;
+    private ListView inbox_listview;
 
+    /**
+     * Attemp to encapsulate data from anypoint in app to go to messaging screen...
+     * @param user user custom profile
+     * @param selected_user stylist
+     * @param location
+     */
+    public Intent startMessagingActivityFromAnywhereInApp(IMessagingMetaData user, IMessagingMetaData selected_user, HashMap<String,String> location){
+        Intent i = new Intent(this, MessagingActivity.class);
+        FirebaseMessagingUserMetaData userMeta = new FirebaseMessagingUserMetaData(user);
+        FirebaseMessagingUserMetaData selectedUser = new FirebaseMessagingUserMetaData(selected_user);
+        i.putExtra(Utils.USER, userMeta);
+        i.putExtra(Utils.SELECTED_USER, selectedUser);
+        i.putExtra(Utils.USER_BITMAP_LOCATION, location.get(user.getId()));
+        i.putExtra(Utils.SELECTED_USER_BITMAP_LOCATION, location.get(selected_user.getId()));
+        return i;
+    }
+
+    /**
+     *
+     * @param rootView fragment view to display map
+     * @param store_list all the values to populate map with
+     */
     public void showGoogleMaps(final View rootView, final ArrayList<FirebaseStore> store_list) {
 
         if (mapview == null) {
@@ -275,6 +310,9 @@ public class MainActivity extends AppCompatActivity {
         MainActivity.this.startActivity(intent);
     }
 
+    /**
+     * Displays dialog to reserve a ticket...
+     */
     private void showCreditCard() {
         if (stylists_list == null || store_list == null || store_list.size() == 0)
             return;
@@ -292,7 +330,7 @@ public class MainActivity extends AppCompatActivity {
         super.finish();
         return;
     }
-
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("selected", selectedPosition);
@@ -367,7 +405,11 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        this.user_fb_profile= this.getIntent().getParcelableExtra("fb_profile");
+        CustomFBProfile cust = new CustomFBProfile(Profile.getCurrentProfile());
+        CustomFBProfile cust_intent = this.getIntent().getParcelableExtra("fb_profile");
+        this.user_fb_profile= cust_intent==null?cust:cust_intent;
+
+
         Utils.createFileFromFB(this,user_fb_profile.getId(),stylist_bitmaps,user_fb_profile.getPic_url());
 
         // Create the adapter that will return store_list fragment for each of the three
@@ -379,6 +421,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.setAdapter(mCustomFragPageAdapter);
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+        initTabIcons(tabLayout);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -409,8 +452,10 @@ public class MainActivity extends AppCompatActivity {
                     case 2:
                         displayInbox(frag,user_fb_profile,store,stylists_list,stylist_bitmaps);
                         break;
+                    case 3:
+                        //settingsFrag();
+                        break;
                     default:
-                        Toast.makeText(MainActivity.this,"Error switch cases.",Toast.LENGTH_LONG).show();
                         break;
                 }
             }
@@ -493,6 +538,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Put a drawable image in tab layput
+     * @param tabLayout
+     */
+    private void initTabIcons(TabLayout tabLayout) {
+        for(int i =0 ; i < tabLayout.getTabCount();++i){
+                Drawable d = null;
+                switch (i+1){
+                    case 1:
+                        d=getResources().getDrawable(R.drawable.shop10);
+                        break;
+                    case 2:
+                        d = getResources().getDrawable(R.drawable.ticket);
+                        break;
+                    case 3:
+                        d=getResources().getDrawable(R.drawable.mail100);
+                        break;
+                    case 4:
+                        d=getResources().getDrawable(R.drawable.settingsicon);
+                        break;
+                }
+           if(d!=null) tabLayout.getTabAt(i).setIcon(d);
+        }
+    }
+
+    /**
      * Logic: go to firebase messaging/{id} get all the childs-{id} fetch data from message_meta_data/{id's}
      * @param frag
      * @param cust_prof
@@ -500,7 +570,7 @@ public class MainActivity extends AppCompatActivity {
      * @param stylists_list
      * @param stylist_bitmaps
      */
-    private void displayInbox(final Fragment frag, CustomFBProfile cust_prof , FirebaseStore store, ArrayList<Stylist> stylists_list,HashMap<String,String>
+    private void displayInbox(final Fragment frag, final CustomFBProfile cust_prof , final FirebaseStore store, ArrayList<Stylist> stylists_list, final HashMap<String,String>
                               stylist_bitmaps) {
         View rootView = frag.getView();
 
@@ -508,7 +578,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         //get list view
-        final ListView inbox_listview = (ListView) rootView.findViewById(R.id.inbox_meta_data_listview);
+        inbox_listview = (ListView) rootView.findViewById(R.id.inbox_meta_data_listview);
         InboxMessageListAdapter adapter = null;
 
         //load the adpter or create adapter
@@ -518,25 +588,27 @@ public class MainActivity extends AppCompatActivity {
            adapter = (InboxMessageListAdapter) inbox_listview.getAdapter();
         }
         //search firbase...get the path
+        //listen for a neew message..........notify if new message
         String path = "messages/"+cust_prof.getId();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(path);
         final InboxMessageListAdapter finalAdapter = adapter;
         //set listener to load if new message appears
+        //HORRIBLE BUG BECAUSE DOESNT KNOW WHO SENT THE MESSAGE- BUG FIX:: ATTACH A LISTNER TO EVERY STYLIST IN ADAPTER...
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.getValue() == null){//no data..
                     return ;
                 }
+                //get all contacts from messages i.e. id's of all messages
                 for(DataSnapshot child : dataSnapshot.getChildren()){//id of all conversations with the key...
-                    String id  = child.getKey();
-                    FirebaseInboxMetaData obj = finalAdapter.getMetaData(id);
+                    final String id  = child.getKey();
+                    FirebaseInboxMetaData obj = finalAdapter.getMetaData(id);/////can equal null if not in arraylist
                     if(obj != null){
-                        Log.e("CONTAINS: ","Already meta data here there: true");
-                        obj.setRead(false);
                         continue;
                     }//if loaded already doesnt need to load again...otherwise goes here
                     else {
+                        //FETCHES the meta data for for inbox view
                         String meta_path = "message_meta_data/" + id;//path to a firebaseInboxMetaData object
                         DatabaseReference inbox_ref = FirebaseDatabase.getInstance().getReference().child(meta_path);
                         inbox_ref.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -544,10 +616,11 @@ public class MainActivity extends AppCompatActivity {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 if (dataSnapshot.getValue() == null) {return;}
                                 //GenericTypeIndicator<FirebaseInboxMetaData> gti = new GenericTypeIndicator<FirebaseInboxMetaData>() {};
-                                FirebaseInboxMetaData inbox_meta = dataSnapshot.getValue(FirebaseInboxMetaData.class);
-                                //inbox_meta.setRead(false);
+                                final FirebaseInboxMetaData inbox_meta = dataSnapshot.getValue(FirebaseInboxMetaData.class);
+                                inbox_meta.setRead(true);
                                 finalAdapter.add(inbox_meta);
-                                inbox_listview.setAdapter(finalAdapter);
+                                inbox_listview.setAdapter(finalAdapter);//added to list that wasnt in list
+                                registerFirebaseListener(cust_prof,inbox_meta,finalAdapter,inbox_listview);
                             }
                             @Override
                             public void onCancelled(DatabaseError databaseError) {}
@@ -563,6 +636,40 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    /**
+     *
+     * @param cust_prof user id
+     * @param inbox_meta object view
+     * @param finalAdapter model
+     * @param inbox_listview controller
+     */
+    private void registerFirebaseListener(final CustomFBProfile cust_prof, final FirebaseInboxMetaData inbox_meta, final InboxMessageListAdapter finalAdapter, final ListView inbox_listview) {
+
+        //create a listener per stylist for notification
+        DatabaseReference sty_listener = FirebaseDatabase.getInstance().getReference().child("messages/"+cust_prof.getId()+"/"+inbox_meta.getId());
+        sty_listener.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue()==null)return;
+                GenericTypeIndicator<ArrayList<FirebaseMessage>> gti = new GenericTypeIndicator<ArrayList<FirebaseMessage>>() {};
+                ArrayList<FirebaseMessage> list = dataSnapshot.getValue(gti);
+                FirebaseMessage msg = list.get(list.size()-1);
+                if(msg.getSender_id().equals(cust_prof.getId())){
+                    //dont do nothing because user sent message
+                }else {
+                    Notification.createNotification(MainActivity.this, cust_prof, inbox_meta, stylist_bitmaps);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                databaseError.toException().printStackTrace();
+            }
+        });///////end listener
+
+
     }
 
     /**
@@ -596,7 +703,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAdFailedToLoad(int i) {
-                Log.e("Loading AD: ","Error on ad load.");
                 super.onAdFailedToLoad(i);
             }
 
@@ -612,7 +718,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onAdLoaded() {
-                Log.e("Ad loaded","Ad loaded!");
                 super.onAdLoaded();
             }
         });
@@ -673,7 +778,7 @@ public class MainActivity extends AppCompatActivity {
                 stylists_list = new ArrayList<Stylist>(sty_hm.values());
                 Collections.sort(stylists_list);
                 //got the stylists now need to get images
-                for (final Stylist sty : stylists_list) {
+                for (final Stylist sty : stylists_list) {//fetch each stylist's pic from firebase, create a image on phone temp space.
                     if(sty.getId().equalsIgnoreCase("-1")){stylist_bitmaps.put(sty.getId(),sty.getId());continue;}
                     String path = store.getPhone() + "/images/stylists/" + sty.getId();
                    // Log.e("PATH STORAGE: ",path);
@@ -1092,6 +1197,15 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         if (mapview != null) mapview.onDestroy();
         FirebaseAuth.getInstance().signOut();//guareentee to sign off
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Notification service = new Notification(MainActivity.this,user_fb_profile);
+                service.begin(1);
+                // MainActivity.this.startService()
+            }
+        }).start();
     }
 
     //@Override
@@ -1285,7 +1399,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * A placeholder fragment containing store_list simple view.
      */
-    public static class TabFragment extends Fragment implements MainActivityData {
+    public static class TabFragment extends Fragment implements MainActivityData, IFirebaseMessages {
         private static final String ARG_SECTION_NUMBER = "section_number";
         /**
          * The fragment argument representing the section number for this
@@ -1293,6 +1407,7 @@ public class MainActivity extends AppCompatActivity {
          */
         private MainActivity ma;
         private ArrayList<FirebaseInboxMetaData> meta_data_list;
+       
 
         public TabFragment() {
 
@@ -1328,6 +1443,9 @@ public class MainActivity extends AppCompatActivity {
                 case 2:
                     rootView = inflater.inflate(R.layout.fragment_inbox_layout, container, false);
                     break;
+                case 3:
+                    rootView = inflater.inflate(R.layout.fragment_layout_settings,container,false);
+                    break;
             }
             return displayView(rootView, page - 1);
         }
@@ -1347,8 +1465,56 @@ public class MainActivity extends AppCompatActivity {
                 case 2:
                     fragmentView2(rootView);
                     break;
+                case 3:
+                    fragmentView3(rootView);
             }
             return rootView;
+        }
+
+        /**
+         * Settings tab
+         * @param rootView
+         */
+        private void fragmentView3(View rootView){
+            Button btn = (Button)rootView.findViewById(R.id.btn_signOut);
+            btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    FirebaseAuth.getInstance().signOut();
+                    LoginManager.getInstance().logOut();
+                    ma.finish();
+                }
+            });
+        }
+        @Override
+        public void onCreateContextMenu(ContextMenu menu , View v, ContextMenu.ContextMenuInfo menuInfo){
+            switch (v.getId()){
+                case R.id.inbox_meta_data_listview:
+                    AdapterView.AdapterContextMenuInfo a = (AdapterView.AdapterContextMenuInfo) menuInfo;
+                    FirebaseInboxMetaData meta_inbox = (FirebaseInboxMetaData) ma.inbox_listview.getItemAtPosition(a.position);
+                    menu.setHeaderTitle("Options");
+                    menu.add(Menu.NONE, 1,Menu.NONE, "Delete "+meta_inbox.getName().toUpperCase()+"?");
+                    break;
+            }
+        }
+        @Override
+        public boolean onContextItemSelected(MenuItem item){
+            switch (item.getItemId()){
+                case 1:
+                    AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+                    InboxMessageListAdapter ad = (InboxMessageListAdapter) ma.inbox_listview.getAdapter();
+                    FirebaseInboxMetaData inbox =  ad.getMetaData(info.position);
+                    ad.remove(info.position);
+                    ad.notifyDataSetChanged();
+                    Utils.displayToast(this.getContext(),"Deleted");
+                    String user = ma.user_fb_profile.getId();
+                    deleteMessage(user,inbox.getId());
+                    return true;
+                default:{
+                    Utils.displayToast(this.getContext(),"Nothing happened:(");
+                    return super.onContextItemSelected(item);
+                }
+            }
         }
 
         /**
@@ -1363,6 +1529,7 @@ public class MainActivity extends AppCompatActivity {
         private void fragmentView2(View rootView) {
           //  ma.TAB3 = true; //boolean that indicates dont load stylist or TAB2 again. reset on tab 1
            final ListView lv = (ListView)rootView.findViewById(R.id.inbox_meta_data_listview);
+            this.registerForContextMenu(lv);
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
@@ -1628,6 +1795,34 @@ public class MainActivity extends AppCompatActivity {
         public void setMainActivity(MainActivity ma) {
             this.ma = ma;
         }
+
+        /**
+         *
+         * @param user_id id of user to delete
+         */
+        @Override
+        public void deleteMessage(String user_id, String reciever_id) {
+           // String root_meta_path = Utils.FIREBASE_META_INBOX_ROOT;
+            String message_root_path = Utils.FIREBASE_MESSAGE_ROOT+"/"+user_id+"/"+reciever_id;
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference().child(message_root_path);
+            ref.removeValue().addOnSuccessListener(this.getMainActivity(), new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Log.e("Delete: ","success");
+                }
+            }).addOnFailureListener(this.getMainActivity(), new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+        }
+
+        @Override
+        public void createMessage(String sender_id, String reciever_id, String msg) {
+
+        }
     }
 
 
@@ -1669,6 +1864,11 @@ public class MainActivity extends AppCompatActivity {
                     tf3.setMainActivity(ma);
                     map.put(position, tf3);
                     return tf3;
+                case 3:
+                    TabFragment tf4 = TabFragment.newInstance(position + 1);
+                    tf4.setMainActivity(ma);
+                    map.put(position, tf4);
+                    return tf4;
 
                 default:
                     return null;
@@ -1678,19 +1878,22 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public int getCount() {
             // Show 3 total pages.
-             if(MainActivity.this.user_fb_profile != null)return 3;
+             if(MainActivity.this.user_fb_profile != null)return 4;
             return 2;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
+            Context c = ma.getApplicationContext();
             switch (position) {
                 case 0:
-                    return "Shop Location";
+                    return  "Shops";
                 case 1:
                     return "Live Feed";
                 case 2:
                     return "Messages";
+                case 3:
+                    return "Settings";
             }
             return null;
         }
@@ -1769,4 +1972,7 @@ public class MainActivity extends AppCompatActivity {
     public void displayToast(Context c, String msg){
         Toast.makeText(c,msg,Toast.LENGTH_LONG).show();
     }
+
+
+
 }

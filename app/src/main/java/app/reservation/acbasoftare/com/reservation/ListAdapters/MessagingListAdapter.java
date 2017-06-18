@@ -77,6 +77,7 @@ public int getCount(){
         if(msg.getSender_id().equals(this.user.getId())){ //if its user sent this message
             sender.setVisibility(View.GONE);
             sender_lay.setVisibility(View.GONE);
+            sender_timestamp_tv.setVisibility(View.GONE);
             rec_tv.setText(msg.getMessage());
             rec_timestamp_tv.setText(formatted_date);
             rec.setImageDrawable(new CircleImage(userBM));
@@ -84,6 +85,7 @@ public int getCount(){
         }else {
             rec_lay.setVisibility(View.GONE);
             rec.setVisibility(View.GONE);
+            rec_timestamp_tv.setVisibility(View.GONE);
             sender_tv.setText(msg.getMessage());
             sender_timestamp_tv.setText(formatted_date);
             sender.setImageDrawable(new CircleImage(selectedBM));

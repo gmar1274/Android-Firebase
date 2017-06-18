@@ -318,10 +318,8 @@ public class EmployeeActivity extends AppCompatActivity  {
                     for(DataSnapshot child : dataSnapshot.getChildren()){//id of all conversations with the key...
                         String selected_user_id = child.getKey();
                         FirebaseInboxMetaData obj = finalAdapter.getMetaData(selected_user_id);
-                        if(finalAdapter.contains(child.getKey())){
+                        if(finalAdapter.getList().contains(child.getKey())){
                             Log.e("CONTAINS: ","Already there: true");
-                            obj.setRead(false);
-                            finalAdapter.notifyDataSetChanged();
                             continue;
                         }
                         String meta_path = "message_meta_data/"+selected_user_id;//path to a firebaseInboxMetaData object
@@ -381,7 +379,7 @@ public class EmployeeActivity extends AppCompatActivity  {
                         return ;
                     }
                     for(DataSnapshot child : dataSnapshot.getChildren()){//id of all conversations with the key...
-                        if(finalAdapter.contains(child.getKey())){Log.e("CONTAINS: ","Already there: true");continue;}
+                        if(finalAdapter.getList().contains(child.getKey())){Log.e("CONTAINS: ","Already there: true");continue;}
                         String meta_path = "message_meta_data/"+child.getKey();//path to a firebaseInboxMetaData object
                         DatabaseReference inbox_ref = FirebaseDatabase.getInstance().getReference().child(meta_path);
                         inbox_ref.addListenerForSingleValueEvent(new ValueEventListener() {
